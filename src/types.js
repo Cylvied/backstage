@@ -38,12 +38,25 @@
  */
 
 /**
- * @typedef {Object} Guide
- * @property {Intensity} intensity
+ * 分阶段引导中的一拍。
+ * @typedef {'pending'|'active'|'done'|'skipped'} BeatStatus
+ * @typedef {Object} Beat
+ * @property {string} title
  * @property {string} goal
  * @property {string} firstSigns
+ * @property {BeatStatus} status
+ */
+
+/**
+ * @typedef {Object} Guide
+ * @property {Intensity} intensity
+ * @property {string} goal            整体方向（分阶段时是整条长线的目标）
+ * @property {string} firstSigns      单步引导的起始迹象；分阶段时以当前拍的为准
  * @property {GuideStatus} status
  * @property {number} adoptedAt
+ * @property {Beat[]|null} [beats]    分阶段引导的拍列表；单步引导为 null 或缺省
+ * @property {number} [beatIndex]     当前拍的下标（分阶段时有效）
+ * @property {boolean} [reached]      推演判断当前拍（或单步目标）似乎已经演完；只作提示，不自动换拍
  */
 
 /**
@@ -103,6 +116,7 @@
  * @property {string} fit
  * @property {string|null} threadId
  * @property {Intensity} suggestedIntensity
+ * @property {Array<{ title: string, goal: string, firstSigns: string }>} [beats]   分阶段方案：2–8 拍；单步方案缺省
  */
 
 /**
@@ -114,6 +128,7 @@
  * @property {Array<Partial<Thread>>} upsertThreads          有 id 时 title 可省略；无 id 时必须有 title
  * @property {Signal[]} signals
  * @property {boolean} noChange
+ * @property {boolean} [guideReached]  推演判断当前引导的这一拍（或单步目标）似乎已经演完
  */
 
 /**
@@ -131,6 +146,16 @@
 
 /**
  * @typedef {{ role: 'system'|'user'|'assistant', content: string }} ChatMessage
+ */
+
+/**
+ * 参谋对话的一条记录，存在 chat_metadata.backstage.advisor。
+ * @typedef {Object} AdvisorMessage
+ * @property {'user'|'assistant'} role
+ * @property {string} text            文字部分（已去掉方案卡代码块）
+ * @property {PlanCard[]} cards       参谋附的方案卡，没有则为空数组
+ * @property {number} at              时间戳
+ * @property {string} [error]         仅 assistant：这次回复失败的原因
  */
 
 /**

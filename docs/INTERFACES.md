@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1.2 · 2026-10-30（v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.3 · 2026-10-30（v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -202,6 +202,29 @@ SimPatch = {
 | memory.worldbook | '' | 空 = 角色主世界书 |
 | memory.limit | 8 | 纪要条数上限 |
 
+### 3.9 分阶段引导（v1.3）
+
+用户采纳一张带 `beats` 的方案卡，得到一条**分阶段引导**：一次只注入当前这一拍。
+
+```js
+Guide += {
+    beats: Beat[] | null,       // null 或缺省 = 单步引导（v1.2 的行为不变）
+    beatIndex: number,          // 当前拍下标
+    reached: boolean,           // 推演判断当前拍似乎已演完，只作提示
+}
+Beat = { title, goal, firstSigns, status: 'pending'|'active'|'done'|'skipped' }
+PlanCard += { beats?: Array<{ title, goal, firstSigns }> }   // 2–8 拍
+SimPatch += { guideReached?: boolean }
+```
+
+规则：
+- **同一时刻最多一拍是 `active`**，就是 `beats[beatIndex]`。`guide.firstSigns` 跟当前拍保持一致。
+- **换拍不调用模型**：用户点"完成这一拍"→ 当前拍 `done`，下一个 `pending` 拍变 `active`；没有下一拍 → `guide.status = 'done'`。
+- **跳过**：把某个 `pending` 拍设为 `skipped`；跳过的是当前拍时，同时进入下一拍。
+- **落拍提示**：推演输出 `guideReached: true` 时，apply 把当前引导的 `reached` 设为 true；换拍、改强度、重新采纳时清为 false。**绝不自动换拍。**
+- **找参谋改（替换剩余拍）**：采纳一张分阶段卡时，如果它的 `threadId` 正是当前 active 引导的线、且那条引导也是分阶段的：保留已 `done`/`skipped` 的拍，丢弃其余，追加新卡的拍，新卡第一拍为 `active`。其他情况按普通采纳处理（替换掉旧引导）。
+- 强度对整条引导生效，不分拍。
+
 ## 4. 一轮的流程
 
 ```
@@ -293,7 +316,12 @@ export function applyPatch(state: SimState, patch: SimPatch, opts: { maxCharacte
 export function adoptPlan(state: SimState, card: PlanCard, intensity): SimState    // 新建或挂接线并设 guide；先把其他 active guide 设为 dropped
 export function setGuideStatus(state: SimState, threadId: string, status: 'done'|'dropped'): SimState
 export function setGuideIntensity(state: SimState, threadId: string, intensity): SimState
+// v1.3：分阶段引导（规则见 3.9 节）
+export function advanceBeat(state: SimState, threadId: string): SimState
+export function skipBeat(state: SimState, threadId: string, index: number): SimState
 ```
+
+v1.3 对已有函数的要求：`adoptPlan` 支持带 `beats` 的卡与"替换剩余拍"；`applyPatch` 处理 `guideReached`；`setGuideIntensity` 清除 `reached`；snapshot-store 的状态校验要接受并校验新字段（旧快照没有这些字段也必须有效）；parse 解析卡片的 `beats`（每拍 title、goal 必填，firstSigns 缺省为空串；有效拍少于 2 个则当作单步卡，超过 8 个截断）和 `guideReached`（非布尔则忽略）。
 
 `patch.noChange=true` 且 `patch.signals` 为空时，**保留上一轮的 signals**（其余规则照常：runCount 递增、fadedRuns 累计）。
 
@@ -380,6 +408,14 @@ export function mountSettings(api): void   // 在扩展设置区挂载设置抽�
 | `previewInjection()` | `{ undercurrent, guide, guidePush }`，即下一轮将注入的文本 |
 | `getFloorInfo(floor)` | 某楼推演信息或 null：`{ status, valid, error, edited, signalCount, changedCharacters, createdAt, usage }` |
 | `settings.get()` / `settings.save(patch)` / `settings.listProfiles()` | 读写设置（`Settings`），列出连接配置 `[{ id, name }]` |
+| `advanceBeat(threadId)` / `skipBeat(threadId, index)` | v1.3 分阶段引导：完成当前拍进入下一拍 / 跳过某一拍 |
+| `advisor.history()` | v1.3 参谋对话记录 `AdvisorMessage[]`（跟着当前聊天保存，切换聊天自动是另一份） |
+| `advisor.busy()` | 参谋是否正在回复 |
+| `advisor.send(text)` | 发一条消息，`Promise<AdvisorMessage>`；用户消息会先写入记录，可立刻刷新显示；失败时记录里会有一条带 `error` 的回复，并 reject。等待期间切换聊天则 resolve 为 null |
+| `advisor.summarize()` | 让参谋把讨论整理成方案卡（等同于发一条固定的消息） |
+| `advisor.clear()` | 清空当前聊天的参谋对话 |
+
+参谋回复里的 `cards` 可以直接传给 `adopt(card, intensity)`；带 `beats` 的卡采纳后是分阶段引导。原来的一次性 `plan(request)` 保留，但面板不再使用。
 
 ## 6. 错误处理约定
 

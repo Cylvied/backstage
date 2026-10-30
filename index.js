@@ -9,9 +9,11 @@ import * as inject from './src/host/inject.js';
 import { findBase, makeSnapshot, readSnapshot, isSnapshotValid } from './src/state/snapshot-store.js';
 import { createScheduler } from './src/state/scheduler.js';
 import { parseSimOutput, parsePlanOutput } from './src/sim/parse.js';
-import { applyPatch, adoptPlan, setGuideStatus, setGuideIntensity } from './src/sim/apply.js';
+import * as applyOps from './src/sim/apply.js';
+const { applyPatch, adoptPlan, setGuideStatus, setGuideIntensity } = applyOps;
 import { buildSimPrompt } from './src/prompts/sim-prompt.js';
 import { buildPlanPrompt } from './src/prompts/plan-prompt.js';
+import { buildAdvisorPrompt, splitAdvisorReply } from './src/prompts/advisor-prompt.js';
 import { composeInjection } from './src/inject/compose.js';
 
 /** @typedef {import('./src/types.js').SimJob} SimJob */
@@ -181,6 +183,57 @@ async function plan(request) {
     return parsed.cards;
 }
 
+/** v1.3 新增的合并函数由 Codex 实现；未就绪时给出明确错误，而不是让整个插件加载失败 */
+function requireOp(name) {
+    const fn = applyOps[name];
+    if (typeof fn !== 'function') throw new Error(`当前版本还不支持「${name}」。`);
+    return fn;
+}
+
+// ---------- 剧情参谋对话 ----------
+
+let advisorBusy = false;
+
+/** @param {string} text */
+async function advisorSend(text) {
+    const message = String(text ?? '').trim();
+    if (!message) throw new Error('请先输入想和参谋聊的内容。');
+    if (advisorBusy) throw new Error('参谋还在回复上一条消息。');
+
+    const chatId = host.getChatId();
+    const settings = host.getSettings();
+    const history = host.getAdvisorLog();
+    await host.saveAdvisorLog([...history, { role: 'user', text: message, cards: [], at: Date.now() }]);
+    advisorBusy = true;
+    notifyState();
+
+    try {
+        const { base } = currentBase();
+        const input = await host.collectSimInput(host.getChatView().length - 1, settings);
+        const messages = buildAdvisorPrompt({ state: base.state, input, history, message });
+        const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens });
+        if (host.getChatId() !== chatId) return null; // 等回复期间切换了聊天：丢弃，不写进别的聊天
+        const reply = splitAdvisorReply(res.text);
+        const entry = {
+            role: 'assistant',
+            text: reply.text || (reply.cards.length ? '' : '（参谋没有给出文字回复）'),
+            cards: reply.cards,
+            at: Date.now(),
+        };
+        await host.saveAdvisorLog([...host.getAdvisorLog(), entry]);
+        return entry;
+    } catch (error) {
+        if (host.getChatId() === chatId) {
+            const reason = String(error?.message ?? error);
+            await host.saveAdvisorLog([...host.getAdvisorLog(), { role: 'assistant', text: '', cards: [], at: Date.now(), error: reason }]);
+        }
+        throw error;
+    } finally {
+        advisorBusy = false;
+        notifyState();
+    }
+}
+
 const api = {
     status: () => ({ ...status, scheduler: scheduler.status() }),
     onStatus(fn) { statusListeners.add(fn); return () => statusListeners.delete(fn); },
@@ -190,6 +243,8 @@ const api = {
     adopt: (card, intensity) => editCurrentState(s => adoptPlan(s, card, intensity)),
     setGuideStatus: (threadId, value) => editCurrentState(s => setGuideStatus(s, threadId, value)),
     setGuideIntensity: (threadId, value) => editCurrentState(s => setGuideIntensity(s, threadId, value)),
+    advanceBeat: threadId => editCurrentState(s => requireOp('advanceBeat')(s, threadId)),
+    skipBeat: (threadId, index) => editCurrentState(s => requireOp('skipBeat')(s, threadId, index)),
     editState: editCurrentState,
     previewInjection: () => composeInjection(currentBase().base.state, host.getSettings()),
     onStateChanged(fn) { stateListeners.add(fn); return () => stateListeners.delete(fn); },
@@ -207,6 +262,17 @@ const api = {
             createdAt: snap.createdAt,
             usage: snap.usage,
         };
+    },
+    advisor: {
+        history: () => host.getAdvisorLog(),
+        busy: () => advisorBusy,
+        send: advisorSend,
+        summarize: () => advisorSend('请把我们到目前为止的讨论整理成方案卡。'),
+        async clear() {
+            if (advisorBusy) throw new Error('参谋正在回复，请稍后再清空。');
+            await host.saveAdvisorLog([]);
+            notifyState();
+        },
     },
     settings: {
         get: () => host.getSettings(),

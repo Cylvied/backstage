@@ -18,7 +18,11 @@ export const LIMITS = Object.freeze({
     signalText: 80,
     planCards: 3,
     fadedRunsBeforeDelete: 3,
+    beatsMin: 2,
+    beatsMax: 8,
 });
+
+export const BEAT_STATUSES = Object.freeze(['pending', 'active', 'done', 'skipped']);
 
 export const VOICES = Object.freeze(['here', 'rumor', 'undercurrent']);
 export const THREAD_STAGES = Object.freeze(['seeded', 'growing', 'ripe', 'resolving', 'faded']);

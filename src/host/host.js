@@ -122,6 +122,29 @@ export async function writeSnapshot(floor, swipeId, snapshot) {
     }
 }
 
+// ---------- 参谋对话记录（跟着聊天走，不跟 swipe 走） ----------
+
+const ADVISOR_LOG_LIMIT = 60;
+
+/** @returns {import('../types.js').AdvisorMessage[]} */
+export function getAdvisorLog() {
+    const log = ctx().chatMetadata?.[STORE_KEY]?.advisor;
+    return Array.isArray(log) ? structuredClone(log) : [];
+}
+
+/** @param {import('../types.js').AdvisorMessage[]} log */
+export async function saveAdvisorLog(log) {
+    const c = ctx();
+    c.chatMetadata[STORE_KEY] = { ...(c.chatMetadata[STORE_KEY] ?? {}), advisor: log.slice(-ADVISOR_LOG_LIMIT) };
+    try {
+        await c.saveMetadata();
+        return true;
+    } catch (error) {
+        console.error(LOG_PREFIX, '保存参谋对话失败', error);
+        return false;
+    }
+}
+
 // ---------- 推演输入 ----------
 
 let lastActivatedWorldInfo = [];
