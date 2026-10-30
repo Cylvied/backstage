@@ -6,6 +6,7 @@ import {
     sortThreads, activeGuideThread, beatProgress, adjustBeatsPrompt,
 } from './format.js';
 import { updateThread, removeThread, guideCardForThread } from './state-edits.js';
+import { signalSources } from './signal-sources.js';
 
 /** @typedef {import('../types.js').Thread} Thread */
 
@@ -20,17 +21,22 @@ export function renderThreads(ctx) {
         return wrap;
     }
     const names = new Map(state.characters.map(c => [c.id, c.name]));
+    const settings = ctx.api.settings.get();
+    const leaked = settings.enabled ? signalSources(state, settings).threadIds : new Set();
     for (const t of sortThreads(state.threads)) {
         const key = ctx.ui.editing;
         if (key === `t:${t.id}`) wrap.append(editForm(ctx, t));
         else if (key === `g:${t.id}`) wrap.append(guideForm(ctx, t, activeGuideThread(state)));
-        else wrap.append(card(ctx, t, names));
+        else wrap.append(card(ctx, t, names, leaked.has(t.id)));
     }
     return wrap;
 }
 
-/** @param {any} ctx @param {Thread} t @param {Map<string,string>} names */
-function card(ctx, t, names) {
+/**
+ * @param {any} ctx @param {Thread} t @param {Map<string,string>} names
+ * @param {boolean} leaked  本轮有这条线的迹象被注入
+ */
+function card(ctx, t, names, leaked) {
     const active = t.guide?.status === 'active';
     const progress = beatProgress(t.guide);
     const who = (t.characterIds ?? []).map(id => names.get(id)).filter(Boolean);
@@ -53,6 +59,7 @@ function card(ctx, t, names) {
     return h('article', { class: `bs-card${active ? ' is-guided' : ''}${t.stage === 'faded' ? ' is-faded' : ''}` },
         h('header', { class: 'bs-card-head' }, h('h3', { class: 'bs-card-title' }, t.title), tag),
         h('p', { class: 'bs-meta' }, meta.join(' · ')),
+        leaked ? h('button', { type: 'button', class: 'bs-leak', title: '查看下一轮要注入的纸条', onclick: () => ctx.goTab('note') }, '本轮已透出迹象 ›') : null,
         rows.length ? h('dl', { class: 'bs-dl' }, rows.map(([k, v]) => [h('dt', null, k), h('dd', null, v)])) : null,
         progress ? beatList(ctx, t, active) : null,
         active && t.guide.reached ? reachedHint(ctx, t, progress) : null,

@@ -12,13 +12,19 @@ import { parsePlanOutput } from '../src/sim/parse.js';
 const FIXTURES = '../tests/fixtures';
 
 /**
- * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string }} opts
+ * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string, orphans: string }} opts
  */
 export async function createMockApi(opts) {
     let state = opts.fixture === 'empty'
         ? emptyState()
         : await (await fetch(`${FIXTURES}/states/${opts.fixture}.json`)).json();
     if (opts.guide === 'staged' || opts.guide === 'reached') state = seedStagedGuide(state, opts.guide === 'reached');
+    // orphans=1：加两条没挂在暗线或人物上的迹象（注入时会被过滤掉）
+    if (opts.orphans === '1') {
+        state.signals = [...state.signals,
+            { voice: 'here', text: '窗外忽然下起雨，走廊里一阵脚步声', threadId: null, characterId: null, relevance: 3 },
+            { voice: 'rumor', text: '听说隔壁班有人转学了', threadId: 't_gone00', characterId: null, relevance: 2 }];
+    }
     let settings = structuredClone(DEFAULT_SETTINGS);
 
     // 参谋记录按聊天分开存，模拟"跟着聊天走"；预览页的 devSwitchChat() 在两个聊天间切换
