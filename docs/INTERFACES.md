@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1.4.1 · 2026-10-30（v1.4.1：A 批正确性修复，见 docs/plans/v1.5.md 与本文 3.5、5.2、5.5 节的 A 批说明；v1.4：插件内直填 API，见 3.8 节与 5.10 节；v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.5 · 2026-10-30（v1.5：世界事实、时间戳、事件记录、世界书分层、检查与审核，见第 7 节；v1.4.1：A 批正确性修复，见 docs/plans/v1.5.md 与本文 3.5、5.2、5.5 节的 A 批说明；v1.4：插件内直填 API，见 3.8 节与 5.10 节；v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -433,3 +433,92 @@ export function mountSettings(api): void   // 在扩展设置区挂载设置抽�
 - 纯函数遇到坏输入**返回失败结果，不抛异常**；只有编程错误（违反契约）才抛。
 - 推演失败不影响聊天：写一份 `status='failed'` 的快照（state 沿用基底），界面显示失败原因，不自动重试。
 - 读到损坏或版本不认识的快照：当作没有快照，记 warning，**不改写原数据**。
+
+
+---
+
+## 7. v1.5：世界模型升级（B 批）
+
+> 方案背景见 `docs/plans/v1.5.md`。类型以 `src/types.js` 为准。**所有新字段都是可选的：旧快照没有它们也必须有效**，缺省时按"空"或"时间不明"处理。
+
+### 7.1 三层分离
+
+| 层 | 存在哪 | 谁写 |
+|---|---|---|
+| 世界事实 | `state.chronicle: ChronicleEntry[]` | 模型通过 `patch.addEvents` 提出，检查与审核通过后由 apply 写入并盖戳 |
+| 人物认知 | `Character.knows`；主角对事件的认知用 `ChronicleEntry.known/knownAt` | 模型通过 `upsertCharacters[].knows`、`patch.markKnown` |
+| 露出机会 | `Signal`，可带 `eventId` 指向一条世界事实 | 模型通过 `patch.signals` |
+
+### 7.2 时间戳（程序盖，模型不写）
+
+- `stampOf(clock)`、`elapsedText(since, clock)` 在 `src/util.js`。
+- **时钟只进不退**：apply 合并 `patch.clock` 时，`day` 小于当前值则忽略整个 clock 修改（warning）。
+- **行动的 since**：apply 合并人物时，若 `currentAction.text` 与原值不同（或原来为 null），`currentAction.since = stampOf(合并后的 clock)`；文本相同则沿用原 since。`longAction` 同理（按 text 判断）。模型写来的 `since` 一律丢弃。旧数据没有 since 视为时间不明。
+- **事件的 at**：`addEvents` 写入时 `at = stampOf(合并后的 clock)`。
+- **markKnown**：把对应事件的 `known` 设为 true，`knownAt = stampOf(合并后的 clock)`；已经 known 的忽略；id 不存在的由程序检查丢弃。
+
+### 7.3 事件记录
+
+- `ChronicleEntry.id` 由程序生成（`'e_'` 前缀，util 的 `shortId` 需支持 `'e'`）。
+- 保存上限 `LIMITS.chronicleMax`（80），超出删最早的。
+- 人物被淘汰、暗线删除后，事件里的引用**不清理**（保留历史）。
+- 迹象引用同一补丁里新加的事件：`signals[].eventId` 可写 `"new:N"`（N 为 `addEvents` 的下标），apply 换成真实 id；无法解析时置 null。
+- 迹象的来源规则（compose.selectSignals）扩充为：挂在现存的暗线、人物**或事件**上即可。
+
+### 7.4 世界书分层（Claude）
+
+- `src/memory/lore.js`（纯函数）：给定全部条目、已触发条目、幕后状态、常驻设置、点名列表，按层排序产出候选；`src/host/host.js` 负责读世界书、计 token、按预算截断，结果放进 `SimInput.worldInfo`（带 title、layer）与 `SimInput.loreCatalog`。
+- 层的顺序与预算截断规则见 `docs/plans/v1.5.md` B4。预算 `settings.lore.budget`，范围 `LIMITS.loreBudgetMin–Max`。
+- `patch.loreRequests`：apply 把它并入 `state.loreWanted`（同名续期，`sinceRun = runCount`），超过 `LIMITS.loreWantRuns` 轮未再点名的移除；每轮最多 `LIMITS.loreRequestsMax` 条，多余的丢弃。
+- 快照记录 `loreUsed`（读了哪些条目、来自哪层、多少 token）。
+
+### 7.5 检查与审核
+
+推演一轮的完整流程（index.js 编排）：
+
+```
+模型输出 → parseSimOutput → checkPatch（程序检查，丢弃不合格条目）
+        → extractReviewItems（挑出高风险条目）
+        → 有高风险条目且 review.enabled：buildReviewPrompt → 审核员 → parseReviewOutput → applyVerdicts（丢弃被驳回的条目）
+        → applyPatch → makeSnapshot（带 review、loreUsed）
+```
+
+**`src/sim/check.js`（Codex，纯函数）**
+
+```js
+export function checkPatch(state, patch): { patch: SimPatch, rejected: Rejection[] }
+    // 程序检查，丢弃并记录：clock.day 倒退；引用不存在的人物/暗线/事件 id（characterIds、threadIds、eventId 中的 id；"new:N" 越界）；
+    // markKnown 指向不存在的事件；新增的 knows 里以"知道："开头却没有括号渠道的条目；addEvents 文本为空。
+    // 只丢弃出问题的那一项（某条 knows、某个引用），不丢整个对象。返回的 patch 是新对象。
+export function extractReviewItems(state, patch, opts: { bigJumpDays: number }): ReviewItem[]
+    // 高风险条目：每条 addEvents（kind 'event'）；longAction 由非 done 变为 done（'action_done'）；
+    // 人物 knows 中原来没有的新条目（'knows'）；markKnown 每项（'mark_known'）；clock.day 前进 ≥ bigJumpDays（'clock'）。
+    // summary 用中文一句话写清是什么，供审核员与用户阅读。
+export function applyVerdicts(patch, items, verdicts: Array<{ id, ok, reason }>): { patch: SimPatch, rejected: Rejection[] }
+    // 驳回的条目从补丁中移除（clock 被驳回则 clock 置 null；action_done 被驳回则保留原 longAction 不变，即把这次对 longAction 的修改去掉）。
+    // 缺少裁决的条目视为通过。
+```
+
+**`src/sim/parse.js`（Codex）新增**
+
+```js
+export function parseReviewOutput(text): { ok: true, verdicts: Array<{ id: string, ok: boolean, reason: string }> } | { ok: false, error: string }
+```
+
+并扩充 `parseSimOutput`：解析 `addEvents`、`markKnown`、`loreRequests`、`signals[].eventId`；丢弃模型写来的 `since`、`at`、`known`、`knownAt`。
+
+**`src/prompts/review-prompt.js`（Claude）**：`buildReviewPrompt({ state, items, input, clockBefore, clockAfter })`，要求输出 `{ "verdicts": [ { "id": "r1", "ok": true, "reason": "" } ] }`。
+
+**审核员失败时放行**：调用或解析失败，所有条目视为通过，`review.error` 记录原因。**驳回后不重新推演。**
+
+### 7.6 apply.js 的 v1.5 要求汇总（Codex）
+
+时钟只进不退；行动 since 盖戳；addEvents 写入并盖戳、上限 80；markKnown；`"new:N"` 解析；loreRequests → loreWanted；旧状态缺 `chronicle`、`loreWanted` 时按空处理。snapshot-store 校验接受并校验全部新字段（`Snapshot.review`、`Snapshot.loreUsed` 也一样）。
+
+### 7.7 面板接口新增（Claude 在 index.js 提供）
+
+| 成员 | 说明 |
+|---|---|
+| `getFloorInfo(floor)` | 增加 `review`（ReviewRecord 或 null）、`loreUsed`（数组或空） |
+| `settings.listLoreEntries()` | `Promise<Array<{ world, uid, title, tokens }>>`：当前角色与聊天可用的世界书条目，供选择"推演专用常驻" |
+| `settings.get()/save()` | 新增 `lore`、`review` 两组设置（见 types.js） |

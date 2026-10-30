@@ -18,7 +18,7 @@ export function hashText(text) {
 }
 
 /**
- * @param {'c'|'t'|'s'} prefix
+ * @param {'c'|'t'|'s'|'e'} prefix
  * @returns {string}
  */
 export function shortId(prefix) {
@@ -47,5 +47,31 @@ export function emptyState() {
         threads: [],
         signals: [],
         runCount: 0,
+        chronicle: [],
+        loreWanted: [],
     };
+}
+
+/**
+ * 程序盖戳：按当前 clock 生成 Stamp。
+ * @param {import('./types.js').Clock} clock
+ * @returns {import('./types.js').Stamp}
+ */
+export function stampOf(clock) {
+    return { day: Number.isInteger(clock?.day) ? clock.day : null, slot: String(clock?.slot ?? '') };
+}
+
+/**
+ * 给模型看的"始于何时、已过多久"。
+ * @param {import('./types.js').Stamp|undefined|null} since
+ * @param {import('./types.js').Clock} clock
+ * @returns {string} 例如"始于第 3 天傍晚，至今已过 2 天"；开始时间不明时返回"开始时间不明"
+ */
+export function elapsedText(since, clock) {
+    if (!since || !Number.isInteger(since.day)) return '开始时间不明';
+    const at = `第 ${since.day} 天${since.slot ? since.slot : ''}`;
+    const days = Number.isInteger(clock?.day) ? clock.day - since.day : null;
+    if (days === null) return `始于${at}`;
+    if (days <= 0) return `始于${at}，就在今天`;
+    return `始于${at}，至今已过 ${days} 天`;
 }
