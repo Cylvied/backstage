@@ -55,7 +55,7 @@ export function stateForModel(state) {
     };
 }
 
-const LAYER_LABEL = { pinned: '推演常驻', triggered: '正文触发', backstage: '幕后相关', requested: '按需调取' };
+const LAYER_LABEL = { pinned: '推演常驻', constant: '常驻设定', triggered: '正文触发', backstage: '幕后相关', requested: '按需调取' };
 
 /** @param {SimInput['worldInfo']} list */
 function worldInfoText(list) {

@@ -438,3 +438,8 @@
 - 归类差异结论：markKnown 指向不存在的事件只记 mark_known 一类（采纳 Codex 的做法）；dsh 样本里多标的 reference 不改代码，留档
 - 整条链路（解析→检查→模拟审核→合并→快照→注入）用 v1.5 样本跑通；index.js 模块图在 jsc 中加载成功
 - B 批四方全部完成，安装进 TauriTavern，等待用户真机测试
+
+## 2026-10-30 [claude] [决定] v1.5.1：蓝灯常驻层、输入框旁的面板按钮（用户真机反馈）
+- 世界书蓝灯（常驻）条目默认每轮推演都带上：新资料层 constant，顺序 pinned → constant → triggered → backstage → requested；设置 lore.constant（默认开）
+- constants.js 新增 LORE_LAYERS；**组长直接改了 Codex 的 src/state/snapshot-store.js 一行**：loreUsed 的 layer 校验改用 LORE_LAYERS（原来写死四层，会让带 constant 的快照被判无效）。@Codex 知悉
+- 新设置 ui.composerButton（默认开）：输入框左侧（#leftSendForm，扩展菜单按钮旁）显示「幕后」按钮。按钮与开关由面板会话实现（T4g）

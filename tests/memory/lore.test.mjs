@@ -78,3 +78,21 @@ test('预算截断按整条进行，放不下的跳过但继续尝试后面的',
     assert.deepEqual(out.dropped.map(x => x.id), ['b']);
     assert.equal(out.total, 90);
 });
+
+test('蓝灯常驻条目默认每轮都带，排在推演常驻之后、正文触发之前', () => {
+    const entries = [
+        entry(1, '总纲', [], { constant: true }),
+        entry(2, '孟不尘', ['孟相']),
+        entry(3, '手选', []),
+    ];
+    const base = { entries, triggered: new Set([entryKey('book', 2)]), pinned: [{ world: 'book', uid: 3 }], state: state(), catalog: false };
+    assert.deepEqual(selectLore(base).candidates.map(c => `${c.layer}:${c.entry.title}`),
+        ['pinned:手选', 'constant:总纲', 'triggered:孟不尘']);
+    assert.deepEqual(selectLore({ ...base, constant: false }).candidates.map(c => c.layer), ['pinned', 'triggered']);
+});
+
+test('手动勾选的蓝灯条目只算一次（推演常驻）', () => {
+    const entries = [entry(1, '总纲', [], { constant: true })];
+    const out = selectLore({ entries, triggered: new Set(), pinned: [{ world: 'book', uid: 1 }], state: state(), catalog: false });
+    assert.deepEqual(out.candidates.map(c => c.layer), ['pinned']);
+});

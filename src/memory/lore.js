@@ -12,6 +12,7 @@
  * @property {string} content
  * @property {string[]} keys
  * @property {boolean} disabled
+ * @property {boolean} [constant]   世界书里设为蓝灯（常驻）
  */
 
 /** 数据库插件导出的表格与纪要条目：纪要另有记忆通道，表格不是设定，都不当世界书资料 */
@@ -61,12 +62,13 @@ export function keyMatches(key, text) {
  *   pinned: Array<{ world: string, uid: string|number }>,
  *   state: SimState,
  *   catalog: boolean,                            // 是否启用"目录 + 按需调取"
+ *   constant?: boolean,                          // 是否带上蓝灯常驻条目（缺省为 true）
  * }} args
  * @returns {{ candidates: Array<{ entry: LoreEntry, layer: LoreLayer }>, catalog: string[] }}
- *   candidates 按层的优先顺序排列：常驻 → 正文触发 → 幕后触发 → 按需调取；同一条目只出现一次
+ *   candidates 按层的优先顺序排列：推演常驻 → 蓝灯常驻 → 正文触发 → 幕后触发 → 按需调取；同一条目只出现一次
  *   catalog    其余可用条目的标题（catalog=false 时为空）
  */
-export function selectLore({ entries, triggered, pinned, state, catalog }) {
+export function selectLore({ entries, triggered, pinned, state, catalog, constant = true }) {
     const usable = entries.filter(e => !e.disabled && String(e.content ?? '').trim() && !EXCLUDED_TITLE.test(e.title ?? ''));
     const pinnedSet = new Set((pinned ?? []).map(p => entryKey(p.world, p.uid)));
     const text = backstageText(state);
@@ -82,6 +84,7 @@ export function selectLore({ entries, triggered, pinned, state, catalog }) {
     };
 
     for (const e of usable) if (pinnedSet.has(entryKey(e.world, e.uid))) take(e, 'pinned');
+    if (constant) for (const e of usable) if (e.constant) take(e, 'constant');
     for (const e of usable) if (triggered.has(entryKey(e.world, e.uid))) take(e, 'triggered');
     if (text) for (const e of usable) if (e.keys.some(k => keyMatches(k, text))) take(e, 'backstage');
     for (const e of usable) if (wanted.has(e.title)) take(e, 'requested');

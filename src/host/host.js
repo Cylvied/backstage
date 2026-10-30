@@ -31,6 +31,7 @@ export function getSettings() {
         api: { ...DEFAULT_SETTINGS.api, ...(saved.api ?? {}) },
         lore: { ...DEFAULT_SETTINGS.lore, ...(saved.lore ?? {}), pinned: [...(saved.lore?.pinned ?? DEFAULT_SETTINGS.lore.pinned)] },
         review: { ...DEFAULT_SETTINGS.review, ...(saved.review ?? {}) },
+        ui: { ...DEFAULT_SETTINGS.ui, ...(saved.ui ?? {}) },
     };
     all[STORE_KEY] = merged;
     return merged;
@@ -43,6 +44,7 @@ export function saveSettings(patch) {
     if (patch.api) merged.api = { ...getSettings().api, ...patch.api };
     if (patch.lore) merged.lore = { ...getSettings().lore, ...patch.lore };
     if (patch.review) merged.review = { ...getSettings().review, ...patch.review };
+    if (patch.ui) merged.ui = { ...getSettings().ui, ...patch.ui };
     ctx().extensionSettings[STORE_KEY] = merged;
     ctx().saveSettingsDebounced();
     return merged;
@@ -234,6 +236,7 @@ async function loadAllEntries() {
                     content: String(e.content ?? ''),
                     keys: Array.isArray(e.key) ? e.key.map(String) : [],
                     disabled: !!e.disable,
+                    constant: !!e.constant,
                 });
             }
         } catch (error) {
@@ -265,6 +268,7 @@ async function collectLore(state, settings) {
         pinned: settings.lore.pinned,
         state,
         catalog: settings.lore.catalog,
+        constant: settings.lore.constant !== false,
     });
     const measured = [];
     for (const cand of candidates) measured.push({ ...cand, tokens: await countTokens(cand.entry.content) });
@@ -280,7 +284,7 @@ async function collectLore(state, settings) {
 export async function listLoreEntries() {
     return (await loadAllEntries())
         .filter(e => !e.disabled && e.content.trim() && !/^TavernDB-ACU-/i.test(e.title))
-        .map(e => ({ world: e.world, uid: e.uid, title: e.title, tokens: Math.ceil(e.content.length / 1.6) }));
+        .map(e => ({ world: e.world, uid: e.uid, title: e.title, tokens: Math.ceil(e.content.length / 1.6), constant: e.constant }));
 }
 
 /** 读数据库导出到世界书的纪要。打分挑选由 Codex 的 pickMemos 负责。 */

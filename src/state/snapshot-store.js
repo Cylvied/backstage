@@ -1,5 +1,5 @@
 import { BEAT_STATUSES, CLOCK_PRECISIONS, INTENSITIES, LIVES, LONG_ACTION_STATUSES, LOG_PREFIX,
-    SCHEMA_VERSION, SNAPSHOT_VERSION, STORE_KEY, THREAD_STAGES, VISIBILITIES, VOICES } from '../constants.js';
+    SCHEMA_VERSION, SNAPSHOT_VERSION, STORE_KEY, THREAD_STAGES, VISIBILITIES, VOICES, LORE_LAYERS } from '../constants.js';
 import { emptyState, hashText, shortId } from '../util.js';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -29,7 +29,7 @@ function validReview(value) {
 
 function validLoreUsed(value) {
     return hasStrings(value, ['world', 'title']) && (string(value.uid) || Number.isFinite(value.uid))
-        && ['pinned', 'triggered', 'backstage', 'requested'].includes(value.layer)
+        && LORE_LAYERS.includes(value.layer)
         && Number.isFinite(value.tokens) && value.tokens >= 0;
 }
 

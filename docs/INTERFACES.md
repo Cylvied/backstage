@@ -520,5 +520,7 @@ export function parseReviewOutput(text): { ok: true, verdicts: Array<{ id: strin
 | 成员 | 说明 |
 |---|---|
 | `getFloorInfo(floor)` | 增加 `review`（ReviewRecord 或 null）、`loreUsed`（数组或空） |
-| `settings.listLoreEntries()` | `Promise<Array<{ world, uid, title, tokens }>>`：当前角色与聊天可用的世界书条目，供选择"推演专用常驻" |
+| `settings.listLoreEntries()` | `Promise<Array<{ world, uid, title, tokens, constant }>>`：当前角色与聊天可用的世界书条目，供选择"推演专用常驻"；`constant` 表示世界书里本身是蓝灯常驻 |
+
+**v1.5.1 补充（用户真机反馈）**：新增资料层 `constant`（蓝灯常驻）：世界书里设为常驻的条目每轮推演都带上，不依赖正文触发。层顺序：推演常驻（pinned）→ 蓝灯常驻（constant）→ 正文触发 → 幕后触发 → 按需调取。设置 `lore.constant`（默认 true）可关闭。
 | `settings.get()/save()` | 新增 `lore`、`review` 两组设置（见 types.js） |
