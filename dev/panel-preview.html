@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>幕后 · 面板预览</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+    /* 只模拟宿主的大致外观，方便看面板在宿主里的样子 */
+    :root { --SmartThemeBlurTintColor: rgb(242, 240, 234); --host-text: #222; --host-line: #ccc; }
+    :root.host-dark { --SmartThemeBlurTintColor: rgba(23, 23, 23, 1); --host-text: rgb(220, 220, 210); --host-line: #444; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--SmartThemeBlurTintColor); color: var(--host-text); }
+    .dev-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--host-line); font-size: 13px; }
+    .dev-bar label { display: inline-flex; gap: 4px; align-items: center; }
+    .dev-bar select, .dev-bar button { font: inherit; }
+    .dev-main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 12px; max-width: 1100px; }
+    @media (max-width: 768px) { .dev-main { grid-template-columns: 1fr; } }
+    h4 { margin: 0 0 8px; }
+    #extensionsMenu { border: 1px solid var(--host-line); border-radius: 6px; padding: 4px; margin-bottom: 12px; }
+    .list-group-item { padding: 8px 10px; cursor: pointer; border-radius: 4px; }
+    .list-group-item:hover { background: rgba(127,127,127,.15); }
+    .mes { border-bottom: 1px solid var(--host-line); padding: 8px 0; }
+    .mes_header_info .flex-container { display: flex; align-items: baseline; gap: 6px; }
+    .name_text { font-weight: 600; }
+    .inline-drawer { border: 1px solid var(--host-line); border-radius: 6px; }
+    .inline-drawer-header { padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; }
+    .inline-drawer-content { display: none; padding: 8px 10px; }
+    .inline-drawer.open .inline-drawer-content { display: flex; }
+    .text_pole { width: 100%; padding: 4px 6px; background: transparent; color: inherit; border: 1px solid var(--host-line); border-radius: 4px; font: inherit; }
+    .menu_button { display: inline-block; padding: 6px 10px; border: 1px solid var(--host-line); border-radius: 4px; cursor: pointer; }
+    .checkbox_label { display: flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="dev-bar">
+    <label>样本 <select id="dev-fixture"></select></label>
+    <label>宿主 <select id="dev-theme"><option value="light">浅色</option><option value="dark">深色</option></select></label>
+    <label>状态 <select id="dev-status">
+        <option value="fresh">已是最新</option><option value="running">推演中</option><option value="lagging">落后一轮</option>
+        <option value="failed">上次失败</option><option value="setup">未选连接</option><option value="off">已关闭</option>
+    </select></label>
+    <label>规划 <select id="dev-plan"><option value="ok">成功</option><option value="slow">一直加载</option><option value="fail">失败</option><option value="empty">没有方案</option></select></label>
+    <label><input type="checkbox" id="dev-savefail"> 保存失败</label>
+    <label>打开标签 <select id="dev-tab"><option value="">（不打开）</option><option>人物</option><option>暗线</option><option>纸条</option><option>规划</option></select></label>
+    <button id="dev-apply">应用</button>
+</div>
+<div class="dev-main">
+    <div>
+        <h4>魔杖菜单</h4>
+        <div id="extensionsMenu"></div>
+        <h4>聊天（楼层角标）</h4>
+        <div id="chat"></div>
+    </div>
+    <div>
+        <h4>扩展设置</h4>
+        <div id="extensions_settings2"></div>
+    </div>
+</div>
+<script type="module" src="./preview.js"></script>
+</body>
+</html>

@@ -122,3 +122,37 @@
 - index.js 新增 onStateChanged / getFloorInfo / settings；面板模块加载失败时自动退回简易设置抽屉
 - manifest.json 引用 style.css
 - 面板会话在日志里的署名为 [claude-ui]
+
+## 2026-10-30 11:25 [claude-ui] [完成] T4
+- 改动文件（全部新建，未改任何他人文件）：
+  - src/ui/panel.js（入口：mountPanel / mountSettings、外框、状态条、标签页、魔杖菜单入口）
+  - src/ui/tab-characters.js、src/ui/tab-threads.js、src/ui/tab-note.js、src/ui/tab-plan.js（四个标签页）
+  - src/ui/settings.js（设置抽屉 #backstage_settings_v2）
+  - src/ui/badges.js（楼层角标）
+  - src/ui/state-edits.js（纯函数：togglePin / removeCharacter / updateCharacter / updateThread / removeThread / guideCardForThread / parseList）
+  - src/ui/format.js（纯函数：文案、排序、状态条与角标判断、颜色明暗、设置数值范围）
+  - src/ui/dom.js、src/ui/theme.js（DOM 小工具；跟随宿主明暗）
+  - style.css（所有选择器限定在 #backstage-panel / #backstage_settings_v2 / .bs-badge 下，颜色全部取 --bs-* 变量）
+  - tests/ui/state-edits.test.mjs、tests/ui/format.test.mjs（19 个用例）
+  - dev/panel-preview.html、dev/preview.js、dev/mock-api.js、dev/serve.py（预览页 + 模拟 api + 不缓存的静态服务器）
+- 已验证（内置浏览器，预览页 + 模拟 api，样本取 tests/fixtures/states/*.json；注入、采纳、规划解析用的是项目里的真实纯函数）：
+  - 浅色桌面、深色桌面（1280 宽）、浅色手机、深色手机（375 宽）四种组合；四个标签页
+  - 手机：页面与面板内容都无横向滚动；面板内所有按钮高度 ≥ 44px（脚本逐个量过）
+  - 状态条六种状态（最新 / 推演中 / 落后 / 失败带原因 / 未选连接 / 已关闭）；"立即推演"→推演中→最新
+  - 人物：编辑保存、取消、钉住后排到最前、移除需点两次确认；暗线：切换强度、开始引导（已有引导时提示会替换，确认后旧线变为"引导已放弃"）、编辑、删除
+  - 规划：加载中、失败显示原因、空结果、采纳（会替换时按钮变为"替换并采纳"并说明）；切换聊天时清空方案卡，进行中的请求结果作废
+  - 空状态（emptyState）：三个标签页都有说明；纸条"本轮不注入"
+  - 保存失败（editState reject）：显示原因，表单保持打开、输入不丢
+  - 设置：选中连接后醒目提示消失、状态条同步；数字项按范围夹紧
+  - 楼层角标四种：成功（带变化人数）/ 失败 / 已编辑 / 已失效
+  - 截图在共享笔记目录 T4-screens/（浅色桌面、深色桌面、浅色手机、规划标签页、手机端规划失败+未选连接）
+- 测试：`sh tests/run.sh` 10 个测试文件、165 个用例全部通过（新增 tests/ui 19 个）
+- 预览方法：`python3 dev/serve.py`（端口 8765，仅本机）→ 打开 http://127.0.0.1:8765/dev/panel-preview.html ，顶部可切样本/明暗/状态/规划结果；URL 参数见 dev/preview.js。开发期间用过 8765 端口，已关闭
+- 需要组长注意：
+  1. 没有真机验证：魔杖菜单项（等 #extensionsMenu 出现后再挂，图标用 fa-masks-theater）、inline-drawer 展开（依赖宿主全局处理）、角标挂载位置（.mes_header_info .flex-container，找不到退回 .ch_name）、主题检测（读 --SmartThemeBlurTintColor，再看 body 背景，最后 prefers-color-scheme）都需要 T5 在 TauriTavern 里确认
+  2. 角标和"切换聊天清空方案卡"直接用了 SillyTavern.getContext() 的 eventSource / eventTypes（CHARACTER_MESSAGE_RENDERED、CHAT_CHANGED、MORE_MESSAGES_LOADED、MESSAGE_SWIPED/UPDATED/EDITED/DELETED），没有走 api。若希望面板只通过 api 拿事件，可考虑给 api 加 onChatChanged，我再改
+  3. [接口建议，非阻塞] api.plan 在未选连接时会直接调用 llm，报错信息取决于 llm.js；建议 index.js 在 profileId 为空时先抛"需要先选择推演用的连接"。面板这边状态条已有醒目提示，没有额外拦截
+  4. "开始引导"（给已有的线加引导）是用 guideCardForThread 生成一张 threadId 指向该线的卡，再调 api.adopt，复用 adoptPlan 的"只留一条引导"逻辑，没有新增接口
+  5. 编辑都通过 api.editState，因此保存在最后一条 AI 回复上；没有 AI 回复时 index.js 会 reject，面板显示其原因
+  6. style.css 776 行，超过"单文件尽量 400 行"的建议；按区块分节注释，拆分需要 manifest 引用多个 css，所以没拆
+  7. 我没有改 TASKS.md（看板写明由组长统一更新）
