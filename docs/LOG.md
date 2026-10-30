@@ -19,3 +19,10 @@
 - Codex、dsh 意见书已交付，均遵守了工作区约束
 - 汇总与组长裁定：docs/brainstorm/SUMMARY.md
 - 等待用户拍板第 4 节问题后再写接口文档；在此之前组员不要开工
+
+## 2026-10-30 [claude] [决定] 发布第 1 批实现任务
+- 用户已拍板：导演第一版不做；注入在深度 1，暗流与引导分块；借鉴人物谱 3 点；可选读取数据库纪要
+- 接口文档：docs/INTERFACES.md（v1）；类型：src/types.js
+- 技术栈：原生 JS ES 模块，无构建、无依赖；本机无 Node，测试先写不跑
+- Codex → T2（docs/tasks/T2-codex.md），dsh → T3（docs/tasks/T3-dsh.md），Claude → T1
+- git 规则变更：组员不执行 git 写操作，由组长审查后统一提交（COLLAB.md 第 4 节）

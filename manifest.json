@@ -1,0 +1,11 @@
+{
+    "display_name": "幕后",
+    "name": "backstage",
+    "version": "0.1.0",
+    "description": "后台推演镜头外的人物与暗线，每轮只给正文递一张短纸条；需要时和它一起规划剧情。",
+    "author": "",
+    "js": "index.js",
+    "requires": [],
+    "optional": [],
+    "loading_order": 100
+}
