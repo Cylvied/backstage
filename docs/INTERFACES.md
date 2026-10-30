@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1.1 · 2026-10-30（v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库） · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.2 · 2026-10-30（v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -169,15 +169,20 @@ PlanCard = {
 SimPatch = {
     clock: Partial<Clock> | null,
     protagonist: Partial<Protagonist> | null,
-    upsertCharacters: Array<Partial<Character> & { name: string }>,  // 按 id，其次按 name/aliases 匹配；无匹配则新建
+    upsertCharacters: Array<Partial<Character>>,  // 有 id 时按 id 匹配，name 可省略；无 id（或 id 为 null）时必须有 name，按 name/aliases 匹配，无匹配则新建
     removeCharacterIds: string[],          // 钉住的人忽略此项
-    upsertThreads: Array<Partial<Thread> & { title: string }>,      // 按 id，其次按 title 完全相等匹配
+    upsertThreads: Array<Partial<Thread>>,        // 同上：有 id 时 title 可省略；无 id 时必须有 title
     signals: Signal[],                     // 整体替换上一轮的 signals
     noChange: boolean,                     // 模型声明本轮镜头外无变化（允许，且应常见）
 }
 ```
 
 模型输出格式：一个 ```` ```json ```` 代码块，内容就是 `SimPatch`。`id` 由模型抄写自输入状态；新对象不写 id。规划同理，输出 `{ "cards": PlanCard[] }`。
+
+**v1.2 补充（解析与合并的容错规则）**：
+- `"id": null` 等同于没写 id。有 id 但在状态里找不到、又没有 name/title 的条目，合并时丢弃。
+- 模型写的 `pinned`（人物）、`guide`、`origin`（线）一律忽略：这些只能由用户操作改变，防止模型抹掉用户的引导。
+- `characterIds`、`signals[].characterId`、`signals[].threadId` 里如果写的是名字/标题而不是 id（常见于同一次输出里新建的对象），合并时按名字/标题换成对应 id；换不了的再按悬空引用处理。
 
 ### 3.8 设置 `Settings`
 

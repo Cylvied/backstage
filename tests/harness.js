@@ -70,6 +70,26 @@ export const assert = {
     },
 };
 
+// ---- 读取样本 ----
+
+/**
+ * 读取 tests/fixtures/ 下的文件（路径相对 fixtures 目录），例如 readFixture('states/wuxia.json')。
+ * jsc 提供全局 read()；tests/run.sh 会设置 globalThis.__FIXTURES__ 为 fixtures 目录的绝对路径。
+ * @param {string} path
+ * @returns {string}
+ */
+export function readFixture(path) {
+    if (typeof globalThis.read !== 'function' || !globalThis.__FIXTURES__) {
+        throw new Error('readFixture 只能在 tests/run.sh 中使用');
+    }
+    return globalThis.read(`${globalThis.__FIXTURES__}/${path}`);
+}
+
+/** @param {string} path */
+export function readFixtureJson(path) {
+    return JSON.parse(readFixture(path));
+}
+
 // ---- 注册与运行 ----
 const tests = [];
 

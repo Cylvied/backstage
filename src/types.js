@@ -109,9 +109,9 @@
  * @typedef {Object} SimPatch
  * @property {Partial<Clock>|null} clock
  * @property {Partial<Protagonist>|null} protagonist
- * @property {Array<Partial<Character> & { name: string }>} upsertCharacters
+ * @property {Array<Partial<Character>>} upsertCharacters   有 id 时 name 可省略；无 id 时必须有 name
  * @property {string[]} removeCharacterIds
- * @property {Array<Partial<Thread> & { title: string }>} upsertThreads
+ * @property {Array<Partial<Thread>>} upsertThreads          有 id 时 title 可省略；无 id 时必须有 title
  * @property {Signal[]} signals
  * @property {boolean} noChange
  */

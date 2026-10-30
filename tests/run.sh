@@ -20,7 +20,8 @@ total_failed=0
 for f in $files; do
     entry="$WORK/entry.mjs"
     cat > "$entry" <<EOF
-import '$ROOT/$f';
+globalThis.__FIXTURES__ = '$ROOT/tests/fixtures';
+await import('$ROOT/$f');
 import { run } from '$ROOT/tests/harness.js';
 const failed = await run('$f');
 if (failed) globalThis.__failed = failed;
