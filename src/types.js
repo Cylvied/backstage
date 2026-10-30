@@ -152,7 +152,7 @@
  */
 
 /**
- * @typedef {'pinned'|'constant'|'triggered'|'backstage'|'requested'} LoreLayer   constant = 世界书里设为蓝灯（常驻）的条目
+ * @typedef {'pinned'|'constant'|'triggered'|'backstage'|'requested'} LoreLayer   constant 仅为兼容 v1.5.1 的旧快照，新推演不再产生
  * @typedef {{ world: string, uid: string|number, title: string, layer: LoreLayer, tokens: number }} LoreUsed
  */
 
@@ -195,7 +195,8 @@
  * @property {boolean} injectUndercurrent
  * @property {number} injectDepth
  * @property {{ enabled: boolean, worldbook: string, limit: number }} memory
- * @property {{ budget: number, pinned: Array<{ world: string, uid: string|number }>, catalog: boolean, constant: boolean }} lore   v1.5；constant = 推演时带上蓝灯常驻条目（默认开）
+ * @property {{ budget: number, pinned: Array<{ world: string, uid: string|number }>, unpinned: Array<{ world: string, uid: string|number }>, catalog: boolean }} lore
+ *   v1.5.2："推演常驻" = 世界书里设为常驻的条目（默认勾选，除非在 unpinned 里）＋ 用户手动勾选的 pinned
  * @property {{ enabled: boolean, apiMode: 'same'|'direct', url: string, key: string, model: string, bigJumpDays: number }} review   v1.5
  * @property {{ composerButton: boolean }} ui   v1.5.1：composerButton = 在输入框左侧（扩展菜单按钮旁）显示「幕后」按钮，默认开
  */

@@ -29,7 +29,12 @@ export function getSettings() {
         ...saved,
         memory: { ...DEFAULT_SETTINGS.memory, ...(saved.memory ?? {}) },
         api: { ...DEFAULT_SETTINGS.api, ...(saved.api ?? {}) },
-        lore: { ...DEFAULT_SETTINGS.lore, ...(saved.lore ?? {}), pinned: [...(saved.lore?.pinned ?? DEFAULT_SETTINGS.lore.pinned)] },
+        lore: {
+            ...DEFAULT_SETTINGS.lore,
+            ...(saved.lore ?? {}),
+            pinned: [...(saved.lore?.pinned ?? DEFAULT_SETTINGS.lore.pinned)],
+            unpinned: [...(saved.lore?.unpinned ?? DEFAULT_SETTINGS.lore.unpinned)],
+        },
         review: { ...DEFAULT_SETTINGS.review, ...(saved.review ?? {}) },
         ui: { ...DEFAULT_SETTINGS.ui, ...(saved.ui ?? {}) },
     };
@@ -267,8 +272,8 @@ async function collectLore(state, settings) {
         triggered,
         pinned: settings.lore.pinned,
         state,
+        unpinned: settings.lore.unpinned,
         catalog: settings.lore.catalog,
-        constant: settings.lore.constant !== false,
     });
     const measured = [];
     for (const cand of candidates) measured.push({ ...cand, tokens: await countTokens(cand.entry.content) });

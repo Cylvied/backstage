@@ -21,6 +21,19 @@ const EXCLUDED_TITLE = /^TavernDB-ACU-/i;
 export const entryKey = (world, uid) => `${world}\u0000${uid}`;
 
 /**
+ * 是否算"推演常驻"：用户手动勾选的；或世界书里设为常驻、且用户没有取消勾选的。
+ * 面板的勾选状态也用这个函数判断，两边保持一致。
+ * @param {{ world: string, uid: string|number, constant?: boolean }} entry
+ * @param {Set<string>} pinnedSet
+ * @param {Set<string>} unpinnedSet
+ */
+export function isPinned(entry, pinnedSet, unpinnedSet) {
+    const k = entryKey(entry.world, entry.uid);
+    if (pinnedSet.has(k)) return true;
+    return !!entry.constant && !unpinnedSet.has(k);
+}
+
+/**
  * 把幕后状态里"镜头外在关心什么"拼成一段文本，用来匹配世界书关键词。
  * @param {SimState} state
  */
@@ -61,16 +74,18 @@ export function keyMatches(key, text) {
  *   triggered: Set<string>,                      // entryKey 集合：本轮正文已触发的条目
  *   pinned: Array<{ world: string, uid: string|number }>,
  *   state: SimState,
+ *   unpinned?: Array<{ world: string, uid: string|number }>,   // 用户取消勾选的常驻条目
  *   catalog: boolean,                            // 是否启用"目录 + 按需调取"
- *   constant?: boolean,                          // 是否带上蓝灯常驻条目（缺省为 true）
  * }} args
  * @returns {{ candidates: Array<{ entry: LoreEntry, layer: LoreLayer }>, catalog: string[] }}
- *   candidates 按层的优先顺序排列：推演常驻 → 蓝灯常驻 → 正文触发 → 幕后触发 → 按需调取；同一条目只出现一次
+ *   candidates 按层的优先顺序排列：推演常驻 → 正文触发 → 幕后触发 → 按需调取；同一条目只出现一次。
+ *   推演常驻 = 世界书里设为常驻的条目（默认勾选，除非用户取消）＋ 用户手动勾选的条目
  *   catalog    其余可用条目的标题（catalog=false 时为空）
  */
-export function selectLore({ entries, triggered, pinned, state, catalog, constant = true }) {
+export function selectLore({ entries, triggered, pinned, unpinned = [], state, catalog }) {
     const usable = entries.filter(e => !e.disabled && String(e.content ?? '').trim() && !EXCLUDED_TITLE.test(e.title ?? ''));
     const pinnedSet = new Set((pinned ?? []).map(p => entryKey(p.world, p.uid)));
+    const unpinnedSet = new Set((unpinned ?? []).map(p => entryKey(p.world, p.uid)));
     const text = backstageText(state);
     const wanted = new Set(catalog ? (state.loreWanted ?? []).map(w => w.title) : []);
 
@@ -83,8 +98,7 @@ export function selectLore({ entries, triggered, pinned, state, catalog, constan
         candidates.push({ entry, layer });
     };
 
-    for (const e of usable) if (pinnedSet.has(entryKey(e.world, e.uid))) take(e, 'pinned');
-    if (constant) for (const e of usable) if (e.constant) take(e, 'constant');
+    for (const e of usable) if (isPinned(e, pinnedSet, unpinnedSet)) take(e, 'pinned');
     for (const e of usable) if (triggered.has(entryKey(e.world, e.uid))) take(e, 'triggered');
     if (text) for (const e of usable) if (e.keys.some(k => keyMatches(k, text))) take(e, 'backstage');
     for (const e of usable) if (wanted.has(e.title)) take(e, 'requested');

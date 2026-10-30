@@ -29,7 +29,7 @@ export const LIMITS = Object.freeze({
     beatsMax: 8,
 });
 
-/** 推演资料的来源层，按优先顺序排列（v1.5.1 新增 constant = 世界书蓝灯常驻） */
+/** 推演资料的来源层，按优先顺序排列（constant 仅为兼容 v1.5.1 的旧快照保留，新推演不再产生） */
 export const LORE_LAYERS = Object.freeze(['pinned', 'constant', 'triggered', 'backstage', 'requested']);
 
 export const BEAT_STATUSES = Object.freeze(['pending', 'active', 'done', 'skipped']);
@@ -54,7 +54,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     injectUndercurrent: true,
     injectDepth: 1,
     memory: Object.freeze({ enabled: false, worldbook: '', limit: 8 }),
-    lore: Object.freeze({ budget: 100000, pinned: Object.freeze([]), catalog: true, constant: true }),
+    lore: Object.freeze({ budget: 100000, pinned: Object.freeze([]), unpinned: Object.freeze([]), catalog: true }),
     review: Object.freeze({ enabled: true, apiMode: 'same', url: '', key: '', model: '', bigJumpDays: 2 }),
     ui: Object.freeze({ composerButton: true }),
 });

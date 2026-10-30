@@ -1,5 +1,5 @@
 import { test, assert } from '../harness.js';
-import { selectLore, fitBudget, keyMatches, backstageText, entryKey } from '../../src/memory/lore.js';
+import { selectLore, fitBudget, keyMatches, backstageText, entryKey, isPinned } from '../../src/memory/lore.js';
 import { emptyState } from '../../src/util.js';
 
 const entry = (uid, title, keys = [], extra = {}) => ({ world: 'book', uid, title, content: `${title}的设定`, keys, disabled: false, ...extra });
@@ -79,7 +79,7 @@ test('预算截断按整条进行，放不下的跳过但继续尝试后面的',
     assert.equal(out.total, 90);
 });
 
-test('蓝灯常驻条目默认每轮都带，排在推演常驻之后、正文触发之前', () => {
+test('世界书常驻条目默认算推演常驻，用户取消后不再带', () => {
     const entries = [
         entry(1, '总纲', [], { constant: true }),
         entry(2, '孟不尘', ['孟相']),
@@ -87,12 +87,16 @@ test('蓝灯常驻条目默认每轮都带，排在推演常驻之后、正文�
     ];
     const base = { entries, triggered: new Set([entryKey('book', 2)]), pinned: [{ world: 'book', uid: 3 }], state: state(), catalog: false };
     assert.deepEqual(selectLore(base).candidates.map(c => `${c.layer}:${c.entry.title}`),
-        ['pinned:手选', 'constant:总纲', 'triggered:孟不尘']);
-    assert.deepEqual(selectLore({ ...base, constant: false }).candidates.map(c => c.layer), ['pinned', 'triggered']);
+        ['pinned:总纲', 'pinned:手选', 'triggered:孟不尘']);
+    const out = selectLore({ ...base, unpinned: [{ world: 'book', uid: '1' }] });
+    assert.deepEqual(out.candidates.map(c => c.entry.title), ['手选', '孟不尘']);
 });
 
-test('手动勾选的蓝灯条目只算一次（推演常驻）', () => {
-    const entries = [entry(1, '总纲', [], { constant: true })];
-    const out = selectLore({ entries, triggered: new Set(), pinned: [{ world: 'book', uid: 1 }], state: state(), catalog: false });
-    assert.deepEqual(out.candidates.map(c => c.layer), ['pinned']);
+test('isPinned：手选优先；常驻默认勾选；uid 数字与字符串视为同一条', () => {
+    const pinned = new Set([entryKey('book', 3)]);
+    const unpinned = new Set([entryKey('book', '1')]);
+    assert.ok(isPinned({ world: 'book', uid: 3 }, pinned, unpinned));
+    assert.ok(isPinned({ world: 'book', uid: 2, constant: true }, pinned, unpinned));
+    assert.ok(!isPinned({ world: 'book', uid: 1, constant: true }, pinned, unpinned));
+    assert.ok(!isPinned({ world: 'book', uid: 4 }, pinned, unpinned));
 });
