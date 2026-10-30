@@ -82,3 +82,26 @@ test('已结束的引导不再注入', () => {
     };
     assert.equal(composeInjection(stateWith([], { threads: [thread] }), settings).guide, '');
 });
+
+test('分阶段引导只注入当前拍，并提示不要提前演后面的拍', () => {
+    const thread = {
+        id: 't_dddddd', title: '药王庙旧案', characterIds: [], stage: 'growing', trigger: '', deadline: null,
+        visibility: 'hinted', origin: 'user',
+        guide: {
+            intensity: 'normal', goal: '查清三年前的旧案', firstSigns: '庙门上有新脚印', status: 'active', adoptedAt: 0,
+            beatIndex: 1, reached: false,
+            beats: [
+                { title: '踩点', goal: '发现庙里有人', firstSigns: '', status: 'done' },
+                { title: '夜探', goal: '在庙里找到旧案卷', firstSigns: '庙门上有新脚印', status: 'active' },
+                { title: '对质', goal: '和老周当面对质', firstSigns: '', status: 'pending' },
+            ],
+        },
+    };
+    const out = composeInjection(stateWith([], { threads: [thread] }), settings);
+    assert.match(out.guide, /整体方向：查清三年前的旧案/);
+    assert.match(out.guide, /当前阶段（第 2 \/ 3 拍）：夜探/);
+    assert.match(out.guide, /这一拍要达到：在庙里找到旧案卷/);
+    assert.match(out.guide, /只推进这一拍/);
+    assert.doesNotMatch(out.guide, /对质/);
+    assert.doesNotMatch(out.guide, /踩点/);
+});

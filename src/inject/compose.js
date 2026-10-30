@@ -68,14 +68,31 @@ function undercurrentBlock(signals) {
     ].join('\n');
 }
 
+/**
+ * 分阶段引导的当前拍；不是分阶段或数据不完整时返回 null。
+ * @param {import('../types.js').Guide} guide
+ */
+export function currentBeat(guide) {
+    if (!Array.isArray(guide?.beats) || !guide.beats.length) return null;
+    const beat = guide.beats[guide.beatIndex ?? -1];
+    return beat && beat.status === 'active' ? beat : null;
+}
+
 /** @param {import('../types.js').Thread} thread */
 function guideBlock(thread) {
     const g = thread.guide;
-    const lines = [
-        '〔剧情引导｜来自用户的幕后安排，这不是主角的发言，故事里的角色也看不到这段话〕',
-        `方向：${g.goal || thread.title}`,
-    ];
-    if (g.firstSigns) lines.push(`可以从这些迹象开始：${g.firstSigns}`);
+    const beat = currentBeat(g);
+    const lines = ['〔剧情引导｜来自用户的幕后安排，这不是主角的发言，故事里的角色也看不到这段话〕'];
+    if (beat) {
+        lines.push(`整体方向：${g.goal || thread.title}`);
+        lines.push(`当前阶段（第 ${g.beatIndex + 1} / ${g.beats.length} 拍）：${beat.title}`);
+        lines.push(`这一拍要达到：${beat.goal}`);
+        if (beat.firstSigns) lines.push(`可以从这些迹象开始：${beat.firstSigns}`);
+        lines.push('只推进这一拍。后面的阶段还没到，不要提前演出来，也不要暗示它们。');
+    } else {
+        lines.push(`方向：${g.goal || thread.title}`);
+        if (g.firstSigns) lines.push(`可以从这些迹象开始：${g.firstSigns}`);
+    }
     lines.push(`相关暗线：${thread.title}（${STAGE_LABEL[thread.stage] ?? '在发展'}）`);
     lines.push(`节奏：${PACE[g.intensity] ?? PACE.normal}`);
     lines.push('主角的行动始终优先：主角的选择偏离这个方向时，跟随主角，不要强行拉回。不要替主角说话、做决定或安排主角的行动。');

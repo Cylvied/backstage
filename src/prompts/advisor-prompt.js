@@ -41,10 +41,25 @@ const RULES = `## 怎么和用户讨论
 - 最多 3 张，彼此要有明显区别。
 - goal：希望达到的结果，一两句话。firstSigns：这件事开头时主角身边可能先出现的一两个迹象。fit：为什么贴合当前故事，要具体。suggestedIntensity：seed 只铺垫、normal 自然推进、push 尽快引爆。
 
-方案卡的格式：在文字回答之后，单独附一个 json 代码块：
+## 分阶段方案
+
+用户想规划一段较长的剧情（一段旅程、一个学期、一场案件的来龙去脉），或者要你"排成几个阶段"时，给一张**分阶段方案卡**：在卡里加 beats，把这段剧情排成 2 到 8 拍。
+- 每一拍是一个具体、可以在几轮正文内演完的小目标，按发生顺序排列。
+- 每拍写 title（短名）、goal（这一拍要达到什么）、firstSigns（这一拍开头时主角身边可能出现的迹象）。
+- 卡本身的 goal 写整条长线最终要达到什么。
+- 拍与拍之间要有因果，不要排成互不相干的事件清单。
+- 采纳后一次只引导一拍，用户演完一拍再进入下一拍。
+
+如果资料里有正在进行的分阶段引导，用户想调整它时：给一张 threadId 相同的分阶段卡，beats 只写**还没演的部分**（已经完成的拍会保留）。
+
+方案卡的格式：在文字回答之后，单独附一个 json 代码块。单步方案不写 beats：
 
 \`\`\`json
-{ "cards": [ { "title": "", "goal": "", "firstSigns": "", "fit": "", "threadId": "t_……或null", "suggestedIntensity": "normal" } ] }
+{ "cards": [
+  { "title": "", "goal": "", "firstSigns": "", "fit": "", "threadId": "t_……或null", "suggestedIntensity": "normal" },
+  { "title": "", "goal": "整条长线的目标", "firstSigns": "", "fit": "", "threadId": null, "suggestedIntensity": "normal",
+    "beats": [ { "title": "", "goal": "", "firstSigns": "" }, { "title": "", "goal": "", "firstSigns": "" } ] }
+] }
 \`\`\``;
 
 /**
@@ -52,7 +67,10 @@ const RULES = `## 怎么和用户讨论
  * @param {PlanCard[]} cards
  */
 function cardsAsText(cards) {
-    return cards.map((c, i) => `（方案${i + 1}：${c.title}——${c.goal}）`).join('\n');
+    return cards.map((c, i) => {
+        const beats = Array.isArray(c.beats) && c.beats.length ? `，分 ${c.beats.length} 拍：${c.beats.map(b => b.title).join(' → ')}` : '';
+        return `（方案${i + 1}：${c.title}——${c.goal}${beats}）`;
+    }).join('\n');
 }
 
 /**

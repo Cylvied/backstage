@@ -37,6 +37,8 @@ const RULES = `## 推演规则
 - trigger 写清楚：什么条件会让这条线往前走一步。
 - visibility 是主角对这条线知道多少：hidden（完全不知）、hinted（有所察觉）、known（已经知道）。
 - 带 guide 的线是用户希望推进的方向。让它在镜头外按 guide.intensity 自然往前走：seed 只做铺垫，normal 稳步推进，push 尽快让它出现在主角面前。但不得替主角行动，也不得违背人物动机。不要修改 guide 本身。
+- guide 带 beats 时是分阶段引导：只推进 beats[beatIndex] 这一拍（status 为 active 的那拍），不要提前推进后面的拍。
+- 如果最后一段正文已经明显达到了当前这一拍的目标（分阶段时看当前拍的 goal，否则看 guide.goal），把 guideReached 设为 true；没达到或拿不准就不写。这只是提示用户，不会自动换拍。
 
 迹象（signals）：留给正文作者的提示，0 到 3 条。
 - voice：here（此地此刻：主角身边下一段就可能出现的事）、rumor（风闻：可能经人之口传到主角耳中的消息；主角无法与外界联络时不要写）、undercurrent（暗流：大势的走向，最多 1 条）。
@@ -50,6 +52,7 @@ const FORMAT = `## 输出格式
 \`\`\`json
 {
   "noChange": false,
+  "guideReached": false,
   "clock": { "day": 3, "slot": "傍晚", "precision": "approx" },
   "protagonist": { "location": "城南·客栈", "reachable": true },
   "upsertCharacters": [
