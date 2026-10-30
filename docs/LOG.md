@@ -3,3 +3,14 @@
 ## 2026-10-30 [claude] [决定] 建立协作约束
 - 新建 COLLAB.md / TASKS.md / docs/INTERFACES.md / docs/LOG.md
 - 所有成员开工前请先阅读 COLLAB.md
+
+## 2026-10-30 [claude] [决定] 发布第 1 轮头脑风暴
+- 任务书：docs/brainstorm/BRIEF.md
+- Codex 负责 B1（技术可行性与架构），dsh 负责 B2（产品与叙事设计）
+- 参考资料已下载到 refs/（只读，已 gitignore）
+- 本轮只写意见书，不写代码
+
+## 2026-10-30 [claude] [决定] 加强共用工作区约束
+- COLLAB.md 新增 6.5 节：LOG 只能用 >> 追加、文件名不能只差大小写、refs 只读、依赖与构建只由组长执行等
+- 意见书文件名改为 docs/brainstorm/opinion-<名字>.md（原 claude.md 与 CLAUDE.md 撞名）
+- 第 1 轮头脑风暴期间，组员只能写自己的意见书，其余文件全部只读
