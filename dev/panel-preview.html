@@ -28,7 +28,7 @@
     .inline-drawer-content { display: none; padding: 8px 10px; }
     .inline-drawer.open .inline-drawer-content { display: flex; }
     .text_pole { width: 100%; padding: 4px 6px; background: transparent; color: inherit; border: 1px solid var(--host-line); border-radius: 4px; font: inherit; }
-    .menu_button { display: inline-block; padding: 6px 10px; border: 1px solid var(--host-line); border-radius: 4px; cursor: pointer; }
+    .menu_button { display: inline-block; padding: 6px 10px; border: 1px solid var(--host-line); border-radius: 4px; cursor: pointer; background: transparent; color: inherit; font: inherit; }
     .checkbox_label { display: flex; gap: 6px; align-items: center; }
 </style>
 </head>
@@ -38,10 +38,11 @@
     <label>宿主 <select id="dev-theme"><option value="light">浅色</option><option value="dark">深色</option></select></label>
     <label>状态 <select id="dev-status">
         <option value="fresh">已是最新</option><option value="running">推演中</option><option value="lagging">落后一轮</option>
-        <option value="failed">上次失败</option><option value="setup">未选连接</option><option value="off">已关闭</option>
+        <option value="failed">上次失败</option><option value="setup">未配置 API</option><option value="off">已关闭</option>
     </select></label>
     <label>参谋 <select id="dev-advisor"><option value="empty">空对话</option><option value="multi">多轮对话</option><option value="fail">回复失败</option><option value="slow">一直在想</option></select></label>
     <label>引导 <select id="dev-guide"><option value="">样本原样</option><option value="staged">分阶段进行中</option><option value="reached">分阶段 + 落拍提示</option></select></label>
+    <label>API 测试 <select id="dev-apitest"><option value="ok">成功</option><option value="fail">失败</option></select></label>
     <label><input type="checkbox" id="dev-savefail"> 保存失败</label>
     <label>打开标签 <select id="dev-tab"><option value="">（不打开）</option><option>人物</option><option>暗线</option><option>纸条</option><option>参谋</option></select></label>
     <button id="dev-apply">应用</button>
@@ -53,9 +54,9 @@
         <h4>聊天（楼层角标）</h4>
         <div id="chat"></div>
     </div>
-    <div>
-        <h4>扩展设置</h4>
-        <div id="extensions_settings2"></div>
+    <div id="extensions-settings-button">
+        <h4 class="drawer-toggle">扩展设置</h4>
+        <div id="rm_extensions_block" class="openDrawer"><div id="extensions_settings2"></div></div>
     </div>
 </div>
 <script type="module" src="./preview.js"></script>

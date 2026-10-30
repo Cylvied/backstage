@@ -12,7 +12,7 @@ import { parsePlanOutput } from '../src/sim/parse.js';
 const FIXTURES = '../tests/fixtures';
 
 /**
- * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string }} opts
+ * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string }} opts
  */
 export async function createMockApi(opts) {
     let state = opts.fixture === 'empty'
@@ -25,7 +25,10 @@ export async function createMockApi(opts) {
     let chatId = 'A';
     const logs = { A: opts.advisor === 'multi' ? advisor.multiTurnHistory(state) : [], B: [] };
     let busy = false;
-    settings.profileId = opts.status === 'setup' ? '' : 'p_cheap';
+    // status=setup 模拟刚装好、什么都没填；其他情况预填一个直填 API
+    if (opts.status !== 'setup') {
+        settings.api = { mode: 'direct', url: 'https://generativelanguage.googleapis.com/v1beta/openai', key: 'AIza-preview-not-a-real-key', model: 'gemini-2.5-flash' };
+    }
     settings.enabled = opts.status !== 'off';
 
     const statusListeners = new Set();
@@ -152,15 +155,48 @@ export async function createMockApi(opts) {
         settings: {
             get: () => settings,
             save(patch) {
-                settings = { ...settings, ...patch, memory: { ...settings.memory, ...(patch.memory ?? {}) } };
+                settings = {
+                    ...settings,
+                    ...patch,
+                    memory: { ...settings.memory, ...(patch.memory ?? {}) },
+                    api: { ...settings.api, ...(patch.api ?? {}) },
+                };
                 emitStatus();
                 emitState();
                 return settings;
             },
-            listProfiles: () => [{ id: 'p_cheap', name: 'Gemini Flash（推演用）' }, { id: 'p_main', name: 'Gemini Pro（正文）' }],
+            listProfiles: () => (opts.profiles === '0' ? [] : [{ id: 'p_cheap', name: 'Gemini Flash（推演用）' }, { id: 'p_main', name: 'Gemini Pro（正文）' }]),
+            // 以下三个同 index.js（v1.4）；apiTest=fail 时获取模型和测试连接都失败
+            async fetchModels(a) {
+                const cur = a ?? settings.api;
+                await delay(600);
+                if (!cur.url?.trim()) throw new Error('请先填写 API 地址。');
+                if (opts.apiTest === 'fail') throw new Error('获取模型失败：HTTP 401（密钥不对或没有权限）');
+                return MODELS;
+            },
+            async testApi(patch) {
+                const merged = patch ? { ...settings, ...patch, api: { ...settings.api, ...(patch.api ?? {}) } } : settings;
+                await delay(800);
+                if (merged.api.mode === 'profile') {
+                    if (!merged.profileId) throw new Error('还没有选择连接配置。');
+                } else {
+                    if (!merged.api.url.trim()) throw new Error('请先填写 API 地址。');
+                    if (!merged.api.model.trim()) throw new Error('请先填写模型。');
+                }
+                if (opts.apiTest === 'fail') throw new Error('HTTP 401：API key not valid. Please pass a valid API key.');
+                return { model: merged.api.mode === 'profile' ? 'gemini-2.5-flash（连接配置）' : merged.api.model, ms: 1240, reply: '收到' };
+            },
+            isApiReady() {
+                return settings.api.mode === 'profile' ? !!settings.profileId : !!(settings.api.url.trim() && settings.api.model.trim());
+            },
         },
     };
 }
+
+const MODELS = [
+    'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite',
+    'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-embedding-001', 'gemma-3-27b-it', 'learnlm-2.0-flash-experimental',
+];
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

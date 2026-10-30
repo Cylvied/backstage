@@ -954,3 +954,150 @@ html[data-bs-theme="dark"] .bs-badge {
 #backstage_settings_v2 .bs-set-warn b { color: var(--bs-accent); }
 
 #backstage_settings_v2 .bs-set-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* ---------- 设置抽屉：模型 API ---------- */
+
+#backstage_settings_v2 .bs-set-api {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 6px;
+}
+
+#backstage_settings_v2 .bs-set-head-first { margin-top: 2px; }
+
+#backstage_settings_v2 .bs-set-seg {
+    display: inline-flex;
+    align-self: flex-start;
+    max-width: 100%;
+    padding: 2px;
+    border: 1px solid var(--bs-line-strong);
+    border-radius: var(--bs-radius-small);
+}
+
+#backstage_settings_v2 .bs-set-seg-item {
+    min-height: 32px;
+    padding: 4px 14px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    opacity: 0.7;
+    font: inherit;
+    cursor: pointer;
+}
+
+#backstage_settings_v2 .bs-set-seg-item[aria-checked="true"] {
+    background: var(--bs-accent-soft);
+    color: var(--bs-accent);
+    opacity: 1;
+    font-weight: 600;
+}
+
+#backstage_settings_v2 .bs-set-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#backstage_settings_v2 .bs-set-mode[hidden],
+#backstage_settings_v2 .bs-set-models[hidden],
+#backstage_settings_v2 .bs-set-result[hidden] { display: none; }
+
+#backstage_settings_v2 .bs-set-inline input { flex: 1; min-width: 0; margin: 0; }
+
+#backstage_settings_v2 .bs-set-btn {
+    flex: none;
+    margin: 0;
+    white-space: nowrap;
+}
+
+#backstage_settings_v2 .bs-set-btn:disabled { opacity: 0.5; cursor: default; }
+
+#backstage_settings_v2 .bs-set-note { opacity: 0.7; }
+#backstage_settings_v2 .bs-set-note:empty { display: none; }
+#backstage_settings_v2 [data-kind="error"] { color: var(--bs-danger); opacity: 1; }
+#backstage_settings_v2 [data-kind="warn"] { color: var(--bs-warn); opacity: 1; }
+#backstage_settings_v2 [data-kind="ok"] { color: var(--bs-ok); }
+
+#backstage_settings_v2 .bs-set-models {
+    margin-top: 4px;
+    border: 1px solid var(--bs-line-strong);
+    border-radius: var(--bs-radius-small);
+    overflow: hidden;
+}
+
+#backstage_settings_v2 .bs-set-models-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--bs-line);
+}
+
+#backstage_settings_v2 .bs-set-models-info { opacity: 0.75; }
+
+#backstage_settings_v2 .bs-set-link {
+    flex: none;
+    min-height: 28px;
+    padding: 0 6px;
+    border: 0;
+    background: transparent;
+    color: var(--bs-accent);
+    font: inherit;
+    cursor: pointer;
+}
+
+#backstage_settings_v2 .bs-set-models-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 220px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#backstage_settings_v2 .bs-set-model {
+    min-height: 34px;
+    padding: 6px 10px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-family: var(--bs-mono);
+    font-size: 0.92em;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+#backstage_settings_v2 .bs-set-model:hover { background: var(--bs-accent-soft); }
+#backstage_settings_v2 .bs-set-model[aria-selected="true"] { color: var(--bs-accent); font-weight: 600; }
+#backstage_settings_v2 .bs-set-empty { padding: 8px 10px; opacity: 0.7; }
+
+#backstage_settings_v2 .bs-set-test {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+#backstage_settings_v2 .bs-set-result {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.95em;
+}
+
+#backstage_settings_v2 :is(.bs-set-seg-item, .bs-set-model, .bs-set-link):focus-visible {
+    outline: 2px solid var(--bs-accent);
+    outline-offset: -2px;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    #backstage_settings_v2 .bs-set-seg-item,
+    #backstage_settings_v2 .bs-set-btn,
+    #backstage_settings_v2 .bs-set-model,
+    #backstage_settings_v2 .bs-set-link { min-height: 44px; }
+    #backstage_settings_v2 .bs-set-api :is(input, select) { min-height: 44px; font-size: 16px; }
+}

@@ -28,12 +28,12 @@ export function clockText(clock) {
 /**
  * 顶部状态条。
  * @param {{ lagging: boolean, lastError: string|null, lastRunAt: number, scheduler?: { running: any, queued: number, lastError: string|null } }} status
- * @param {Pick<Settings, 'enabled'|'profileId'>} settings
+ * @param {{ enabled: boolean, apiReady: boolean }} config  apiReady 来自 api.settings.isApiReady()
  * @returns {{ kind: 'off'|'setup'|'running'|'failed'|'lagging'|'fresh', text: string, detail: string }}
  */
-export function statusView(status, settings) {
-    if (!settings.enabled) return { kind: 'off', text: '后台推演已关闭', detail: '' };
-    if (!settings.profileId) return { kind: 'setup', text: '需要先选择推演用的连接', detail: '在扩展设置的「幕后」里选择' };
+export function statusView(status, config) {
+    if (!config.enabled) return { kind: 'off', text: '后台推演已关闭', detail: '' };
+    if (!config.apiReady) return { kind: 'setup', text: '需要先配置模型 API', detail: '在扩展设置的「幕后」里填写' };
     if (status.scheduler?.running) {
         const queued = status.scheduler.queued ? `，另有 ${status.scheduler.queued} 个排队` : '';
         return { kind: 'running', text: '推演中…', detail: queued ? queued.slice(1) : '' };
@@ -198,4 +198,26 @@ export function adoptView(card, current) {
     }
     if (sameThread) return { label: '采纳', note: `会更新「${current.title}」现在的引导。` };
     return { label: '替换并采纳', note: `采纳后会替换当前的引导「${current.title}」。` };
+}
+
+// ---------- 模型 API（v1.4） ----------
+
+/**
+ * 按输入过滤模型列表：忽略大小写，分词后每个词都要出现；完全相同的排最前。
+ * @param {string[]} models
+ * @param {string} query
+ * @param {number} [limit]
+ */
+export function filterModels(models, query, limit = 200) {
+    const q = String(query ?? '').trim().toLowerCase();
+    const words = q.split(/\s+/).filter(Boolean);
+    const hits = (models ?? []).filter(m => words.every(w => m.toLowerCase().includes(w)));
+    hits.sort((a, b) => Number(b.toLowerCase() === q) - Number(a.toLowerCase() === q));
+    return hits.slice(0, limit);
+}
+
+/** 测试连接成功后的一行说明 */
+export function testResultText(res) {
+    const secs = Number.isFinite(res?.ms) ? `${(res.ms / 1000).toFixed(1)} 秒` : '';
+    return ['可用', res?.model, secs].filter(Boolean).join(' · ');
 }

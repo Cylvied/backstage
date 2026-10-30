@@ -5,6 +5,7 @@ import { EXT_NAME } from '../constants.js';
 import { h } from './dom.js';
 import { normalizeNumberSetting, SETTING_RANGES } from './format.js';
 import { registerThemed } from './theme.js';
+import { buildApiSection } from './settings-api.js';
 
 /** @param {any} api */
 export function renderSettingsDrawer(api) {
@@ -45,38 +46,21 @@ function build(api) {
         return h('label', { class: 'bs-set-field' }, h('span', null, label), input, hint ? h('small', null, hint) : null);
     };
 
-    const profile = h('select', { class: 'text_pole', id: 'backstage_profile_select' });
-    const fillProfiles = () => {
-        const current = api.settings.get().profileId;
-        const list = api.settings.listProfiles();
-        const options = [h('option', { value: '' }, list.length ? '（请选择）' : '（连接管理器里还没有连接）')];
-        for (const p of list) options.push(h('option', { value: p.id, selected: p.id === current }, p.name));
-        if (current && !list.some(p => p.id === current)) {
-            options.push(h('option', { value: current, selected: true }, '（已选的连接不存在了）'));
-        }
-        profile.replaceChildren(...options);
-    };
-    profile.addEventListener('change', () => save({ profileId: profile.value }));
-    fillProfiles();
-
     const warning = h('div', { class: 'bs-set-warn', role: 'alert' },
-        h('b', null, '需要先选择推演用的连接。'),
-        h('span', null, '在连接管理器里建一个连接（可以用便宜的模型），再在下面选中它。没选之前不会推演。'));
+        h('b', null, '需要先配置模型 API。'),
+        h('span', null, '在下面填好 API 地址和模型（或选择一个连接配置），点「测试连接」确认可用。配置好之前不会推演。'));
     const syncWarning = () => {
-        const cur = api.settings.get();
-        const missing = !cur.profileId || !api.settings.listProfiles().some(p => p.id === cur.profileId);
-        warning.hidden = !(cur.enabled && missing);
+        warning.hidden = !(api.settings.get().enabled && !api.settings.isApiReady());
     };
+    const apiSection = buildApiSection(api, syncWarning);
 
-    const content = h('div', { class: 'inline-drawer-content bs-set' },
+    // 布局放在内层：宿主靠 .inline-drawer-content 的 display 控制展开收起，不能覆盖它
+    const content = h('div', { class: 'inline-drawer-content' }, h('div', { class: 'bs-set' },
         warning,
+        apiSection.element,
+
+        h('h4', { class: 'bs-set-head' }, '开关'),
         check('启用后台推演', s.enabled, v => save({ enabled: v })),
-        h('label', { class: 'bs-set-field' },
-            h('span', null, '推演用的连接'),
-            h('div', { class: 'bs-set-inline' },
-                profile,
-                h('div', { class: 'menu_button menu_button_icon fa-solid fa-rotate', title: '刷新连接列表', role: 'button', tabindex: 0, onclick: () => { fillProfiles(); syncWarning(); } })),
-            h('small', null, '剧情参谋也用这个连接。')),
 
         h('h4', { class: 'bs-set-head' }, '推演'),
         h('div', { class: 'bs-set-grid' },
@@ -106,10 +90,10 @@ function build(api) {
                 role: 'button',
                 tabindex: 0,
                 onclick: () => document.getElementById('backstage_wand_button')?.click(),
-            }, '打开幕后面板')));
+            }, '打开幕后面板'))));
 
     // 每次展开时刷新连接列表：用户可能刚在连接管理器里新建了连接
-    const toggle = h('div', { class: 'inline-drawer-toggle inline-drawer-header', onclick: () => { fillProfiles(); syncWarning(); } },
+    const toggle = h('div', { class: 'inline-drawer-toggle inline-drawer-header', onclick: () => { apiSection.refresh(); syncWarning(); } },
         h('b', null, EXT_NAME),
         h('div', { class: 'inline-drawer-icon fa-solid fa-circle-chevron-down down' }));
 
@@ -117,4 +101,23 @@ function build(api) {
     registerThemed(drawer);
     syncWarning();
     return drawer;
+}
+
+/**
+ * 打开宿主的扩展设置面板，展开「幕后」设置并滚动到它。找不到设置抽屉时返回 false。
+ */
+export function revealSettings() {
+    const drawer = document.getElementById('backstage_settings_v2');
+    if (!drawer) return false;
+    const block = document.getElementById('rm_extensions_block');
+    if (block && !block.classList.contains('openDrawer')) {
+        /** @type {HTMLElement|null} */ (document.querySelector('#extensions-settings-button .drawer-toggle'))?.click();
+    }
+    const content = drawer.querySelector('.inline-drawer-content');
+    if (content instanceof HTMLElement && getComputedStyle(content).display === 'none') {
+        /** @type {HTMLElement|null} */ (drawer.querySelector('.inline-drawer-toggle'))?.click();
+    }
+    // 宿主展开抽屉有动画，稍等再滚动
+    setTimeout(() => drawer.scrollIntoView({ block: 'start', behavior: 'smooth' }), 300);
+    return true;
 }

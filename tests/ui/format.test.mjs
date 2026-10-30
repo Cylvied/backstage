@@ -1,12 +1,13 @@
 import { test, assert, readFixtureJson } from '../harness.js';
 import { statusView, sortCharacters, sortThreads, badgeView, isDarkColor, normalizeNumberSetting, clockText, activeGuideThread } from '../../src/ui/format.js';
 
-const on = { enabled: true, profileId: 'p1' };
+const on = { enabled: true, apiReady: true };
 const idle = { lagging: false, lastError: null, lastRunAt: 1, scheduler: { running: null, queued: 0, lastError: null } };
 
-test('statusView 优先级：关闭 > 未选连接 > 推演中 > 失败 > 落后 > 最新', () => {
-    assert.equal(statusView(idle, { enabled: false, profileId: '' }).kind, 'off');
-    assert.equal(statusView(idle, { enabled: true, profileId: '' }).kind, 'setup');
+test('statusView 优先级：关闭 > 未配置 API > 推演中 > 失败 > 落后 > 最新', () => {
+    assert.equal(statusView(idle, { enabled: false, apiReady: false }).kind, 'off');
+    assert.equal(statusView(idle, { enabled: true, apiReady: false }).kind, 'setup');
+    assert.match(statusView(idle, { enabled: true, apiReady: false }).text, /模型 API/);
     assert.equal(statusView({ ...idle, lastError: 'x', scheduler: { running: {}, queued: 2, lastError: null } }, on).kind, 'running');
     const failed = statusView({ ...idle, lastError: '超时', lagging: true }, on);
     assert.equal(failed.kind, 'failed');

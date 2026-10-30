@@ -10,7 +10,7 @@ import { renderThreads } from './tab-threads.js';
 import { renderNote } from './tab-note.js';
 import { renderAdvisor } from './tab-advisor.js';
 import { mountBadges } from './badges.js';
-import { renderSettingsDrawer } from './settings.js';
+import { renderSettingsDrawer, revealSettings } from './settings.js';
 
 export { renderSettingsDrawer as mountSettings };
 
@@ -171,15 +171,23 @@ export function mountPanel(api) {
     }
 
     function renderStatus(status = api.status()) {
-        const view = statusView(status, api.settings.get());
+        const view = statusView(status, { enabled: api.settings.get().enabled, apiReady: api.settings.isApiReady() });
         root.dataset.status = view.kind;
         statusText.textContent = view.text;
         statusDetail.textContent = view.detail;
         statusDetail.title = view.detail;
-        runBtn.disabled = view.kind === 'running' || view.kind === 'off' || view.kind === 'setup';
+        // 没配置 API 时，按钮变成「去配置」
+        runBtn.textContent = view.kind === 'setup' ? '去配置' : '立即推演';
+        runBtn.classList.toggle('bs-btn-primary', view.kind === 'setup');
+        runBtn.disabled = view.kind === 'running' || view.kind === 'off';
     }
 
     runBtn.addEventListener('click', () => {
+        if (!api.settings.isApiReady()) {
+            if (revealSettings()) setOpen(false);
+            else notify('在扩展设置（积木图标）里找到「幕后」，填写模型 API。', 'error');
+            return;
+        }
         const ok = api.runNow();
         if (!ok) notify('聊天里还没有 AI 回复，没有可以推演的内容。', 'error');
     });

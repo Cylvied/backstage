@@ -227,3 +227,19 @@
 - 新增直填模式（默认）：地址 + 密钥 + 模型，经宿主后端 custom 源转发；已核实 TauriTavern 的 custom 源支持 custom_include_headers 且无密钥不报错
 - 新增 settings.fetchModels / testApi / isApiReady；API 未就绪时不自动推演
 - 面板会话需在设置抽屉加 API 配置界面（T4d）
+
+## 2026-10-30 13:20 [claude-ui] [完成] T4d
+- 改动文件：
+  - 新建：src/ui/settings-api.js（「模型 API」一节）、tests/ui/api-settings.test.mjs
+  - 修改：src/ui/settings.js（API 节放在最上方；提示改用 isApiReady；新增 revealSettings；修复抽屉无法收起，见下）、src/ui/panel.js（状态条改用 isApiReady，未配置时按钮变「去配置」）、src/ui/format.js（statusView 改收 { enabled, apiReady }；新增 filterModels、testResultText）、style.css、tests/ui/format.test.mjs、dev/mock-api.js、dev/preview.js、dev/panel-preview.html
+- 「模型 API」：分段控件「直填 API」（默认）/「使用连接配置」；直填有 API 地址（placeholder 为 Gemini 的 OpenAI 兼容地址，下方说明"填到 /v1 这一层即可"）、密钥（password + 显示/隐藏）、模型（可手填；「获取模型」后在下方出现可点选的列表，在模型框里输入即可筛选，点选即填入并保存）；连接配置模式保留下拉框，没有连接时提示"建议改用直填 API"；「测试连接」带当前表单值调用 testApi，成功显示"可用 · 模型 · 耗时"，失败显示原因；小字说明密钥保存在本地扩展设置
+- 保存：输入框边打边存（400ms 延迟），切换方式、点选模型、选连接立即保存；立即保存会并入并取消尚未保存的输入（验证中发现：先打字筛选再点选模型，延迟的旧输入会后到并覆盖所选模型，已修复）
+- "是否已配置"统一用 api.settings.isApiReady()：设置顶部提示"需要先配置模型 API"，面板状态条同样文案，按钮变成实心「去配置」→ 关闭面板、打开宿主扩展设置（#extensions-settings-button）、展开「幕后」并滚动过去；找不到设置抽屉时用提示条说明位置
+- 顺带修了 T4 的一个缺陷：原先 .bs-set 的 display:flex 直接加在 .inline-drawer-content 上，会盖掉宿主用来收起抽屉的 display:none，真机上「幕后」设置会一直展开、点标题收不起来。现在布局放在内层 div 上
+- 已验证（预览页脚本 + 截图）：未配置 → 提示与「去配置」→ 填地址/密钥 → 获取模型 → 筛选 → 点选 → 测试成功、提示消失、状态条变"已是最新"；获取模型失败、测试失败显示原因；连接配置模式 + 没有连接时的提示与测试失败；抽屉展开/收起；浅色桌面、深色手机（375 宽无横向滚动，API 区所有按钮和输入框 ≥ 44px）。截图在共享笔记目录 T4d-screens/
+- 测试：`sh tests/run.sh` 15 个测试文件、204 个用例全部通过（tests/ui 新增 4 个、改 1 个）
+- 需要组长注意：
+  1. 模型框同时是筛选框：拉到列表后在框里输入会筛选，同时这段文字也会作为模型名保存（手填和筛选是同一个框，符合"可手填"的要求）；点选后以点选为准
+  2. 「测试连接」不会自动保存；但表单本身是边填边存的，所以测试用的值和保存的值一致
+  3. 面板「去配置」依赖宿主的 #extensions-settings-button .drawer-toggle 和 #rm_extensions_block.openDrawer（取自 refs/TauriTavern/src/index.html），需要真机确认
+  4. 开发期间用过 8765 端口（dev/serve.py），已关闭
