@@ -1,5 +1,5 @@
 import { INTENSITIES, LIMITS, LOG_PREFIX } from '../constants.js';
-import { shortId } from '../util.js';
+import { shortId, stampOf } from '../util.js';
 
 const newCharacter = name => ({ id: shortId('c'), name, aliases: [], location: '',
     currentAction: null, longAction: null, knows: [], life: 'alive', onStage: false, pinned: false });
@@ -21,6 +21,18 @@ function keepOneGuide(threads, preferredId = null) {
     }
 }
 
+function mergeAction(character, update, key, clock) {
+    if (!Object.prototype.hasOwnProperty.call(update, key)) return;
+    const old = character[key];
+    const action = structuredClone(update[key]);
+    if (action) {
+        delete action.since;
+        if (!old || old.text !== action.text) action.since = stampOf(clock);
+        else if (old.since !== undefined) action.since = structuredClone(old.since);
+    }
+    character[key] = action;
+}
+
 /**
  * @param {import('../types.js').SimState} state
  * @param {import('../types.js').SimPatch} patch 已通过 parseSimOutput 校验的补丁
@@ -31,7 +43,8 @@ export function applyPatch(state, patch, { maxCharacters }) {
     const next = structuredClone(state);
     next.runCount++;
     // noChange 不阻止计数与淡出清理，只允许空信号沿用上一轮。
-    if (patch.clock) mergeFields(next.clock, patch.clock, ['day', 'slot', 'precision']);
+    if (patch.clock?.day < next.clock.day) console.warn(`${LOG_PREFIX} 忽略倒退的故事时钟`);
+    else if (patch.clock) mergeFields(next.clock, patch.clock, ['day', 'slot', 'precision']);
     if (patch.protagonist) mergeFields(next.protagonist, patch.protagonist, ['location', 'reachable']);
     for (const update of patch.upsertCharacters) {
         const hasName = typeof update.name === 'string' && Boolean(update.name.trim());
@@ -43,11 +56,13 @@ export function applyPatch(state, patch, { maxCharacters }) {
             character = newCharacter(update.name);
             next.characters.push(character);
         }
-        mergeFields(character, update, ['name', 'aliases', 'location', 'currentAction', 'longAction',
-            'knows', 'life', 'onStage']);
+        mergeAction(character, update, 'currentAction', next.clock);
+        mergeAction(character, update, 'longAction', next.clock);
+        mergeFields(character, update, ['name', 'aliases', 'location', 'knows', 'life', 'onStage']);
         character.knows = character.knows.slice(0, LIMITS.knows);
         character.touchedRun = next.runCount;
     }
+    const historicalCharacters = [...next.characters, ...state.characters];
     const removals = new Set(patch.removeCharacterIds);
     next.characters = next.characters.filter(item => item.pinned || !removals.has(item.id));
     const limit = Number.isFinite(maxCharacters) ? Math.max(0, Math.floor(maxCharacters)) : 12;
@@ -79,6 +94,7 @@ export function applyPatch(state, patch, { maxCharacters }) {
         if (thread.guide?.status === 'active' || thread.stage !== 'faded') thread.fadedRuns = 0;
         else if (!touched.has(thread.id)) thread.fadedRuns = (thread.fadedRuns ?? 0) + 1;
     }
+    const historicalThreads = [...next.threads, ...state.threads];
     next.threads = next.threads.filter(item => item.guide?.status === 'active'
         || item.stage !== 'faded' || item.fadedRuns < LIMITS.fadedRunsBeforeDelete);
     keepOneGuide(next.threads);
@@ -99,10 +115,43 @@ export function applyPatch(state, patch, { maxCharacters }) {
     for (const thread of next.threads) {
         thread.characterIds = [...new Set(thread.characterIds.map(resolveCharacter).filter(id => id !== null))];
     }
+    next.chronicle = next.chronicle ?? [];
+    const eventIds = [];
+    for (const event of patch.addEvents ?? []) {
+        const id = shortId('e');
+        eventIds.push(id);
+        const characterIds = (event.characterIds ?? []).map(ref => historicalCharacters.find(item => item.id === ref)?.id
+            ?? historicalCharacters.find(item => item.name === ref || item.aliases.includes(ref))?.id ?? ref);
+        const threadIds = (event.threadIds ?? []).map(ref => historicalThreads.find(item => item.id === ref)?.id
+            ?? historicalThreads.find(item => item.title === ref)?.id ?? ref);
+        next.chronicle.push({ id, text: event.text, at: stampOf(next.clock), characterIds: [...new Set(characterIds)],
+            threadIds: [...new Set(threadIds)], known: false, knownAt: null });
+    }
+    for (const id of patch.markKnown ?? []) {
+        const event = next.chronicle.find(item => item.id === id);
+        if (event && !event.known) {
+            event.known = true;
+            event.knownAt = stampOf(next.clock);
+        }
+    }
+    next.chronicle = next.chronicle.slice(-LIMITS.chronicleMax);
+    const retainedEvents = new Set(next.chronicle.map(item => item.id));
     for (const signal of next.signals) {
         signal.characterId = resolveCharacter(signal.characterId);
         signal.threadId = resolveThread(signal.threadId);
+        if (signal.eventId !== undefined) {
+            const match = /^new:(\d+)$/.exec(signal.eventId);
+            const id = match ? eventIds[Number(match[1])] : signal.eventId;
+            signal.eventId = retainedEvents.has(id) ? id : null;
+        }
     }
+    next.loreWanted = next.loreWanted ?? [];
+    for (const title of [...new Set(patch.loreRequests ?? [])].slice(0, LIMITS.loreRequestsMax)) {
+        const entry = next.loreWanted.find(item => item.title === title);
+        if (entry) entry.sinceRun = next.runCount;
+        else next.loreWanted.push({ title, sinceRun: next.runCount });
+    }
+    next.loreWanted = next.loreWanted.filter(item => next.runCount - item.sinceRun < LIMITS.loreWantRuns);
     return next;
 }
 

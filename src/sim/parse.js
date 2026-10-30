@@ -122,11 +122,13 @@ function thread(value) {
 
 function signal(value) {
     if (!object(value) || !VOICES.includes(value.voice) || !string(value.text) || !value.text.trim()
-        || ![1, 2, 3].includes(value.relevance) || !nullableString(value.threadId) || !nullableString(value.characterId)) {
+        || ![1, 2, 3].includes(value.relevance) || !nullableString(value.threadId) || !nullableString(value.characterId)
+        || (has(value, 'eventId') && !nullableString(value.eventId))) {
         throw new Error('迹象格式错误');
     }
     return { voice: value.voice, text: Array.from(value.text).slice(0, LIMITS.signalText).join(''),
-        threadId: value.threadId, characterId: value.characterId, relevance: value.relevance };
+        threadId: value.threadId, characterId: value.characterId, relevance: value.relevance,
+        ...(has(value, 'eventId') ? { eventId: value.eventId } : {}) };
 }
 
 function rows(value, parse, label) {
@@ -141,10 +143,11 @@ function rows(value, parse, label) {
 export function parseSimOutput(text) {
     const value = extractJsonBlock(text);
     if (!object(value)) return { ok: false, error: '未找到完整的推演 JSON 对象' };
-    const known = ['clock', 'protagonist', 'upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals', 'noChange', 'guideReached'];
+    const known = ['clock', 'protagonist', 'upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals', 'noChange',
+        'guideReached', 'addEvents', 'markKnown', 'loreRequests'];
     if (!known.some(key => has(value, key))) return { ok: false, error: '推演结果不含有效字段' };
     try {
-        for (const key of ['upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals']) {
+        for (const key of ['upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals', 'addEvents', 'markKnown', 'loreRequests']) {
             if (has(value, key) && !Array.isArray(value[key])) throw new Error(`${key} 必须是数组`);
         }
         if (has(value, 'noChange') && !boolean(value.noChange)) throw new Error('noChange 必须是布尔值');
@@ -152,18 +155,48 @@ export function parseSimOutput(text) {
             day: day => Number.isInteger(day) && day >= 1, slot: string, precision: enumeration(CLOCK_PRECISIONS),
         });
         const protagonist = value.protagonist == null ? null : fields(value.protagonist, { location: string, reachable: boolean });
+        const events = [];
+        const eventIndices = new Map();
+        for (const [index, event] of (value.addEvents ?? []).entries()) {
+            try {
+                if (!object(event) || !string(event.text)) throw new Error('事件缺少文本');
+                const parsed = fields(event, { text: string, characterIds: strings, threadIds: strings });
+                eventIndices.set(index, events.length);
+                events.push(parsed);
+            } catch { warn('事件'); }
+        }
+        const signals = rows(value.signals ?? [], signal, '迹象');
+        for (const item of signals) {
+            const match = /^new:(\d+)$/.exec(item.eventId);
+            if (!match) continue;
+            const index = eventIndices.get(Number(match[1]));
+            // 无效引用保留为越界编号，交给程序检查生成可见的驳回记录。
+            item.eventId = `new:${index ?? events.length}`;
+        }
         return { ok: true, patch: {
             clock, protagonist,
             upsertCharacters: rows(value.upsertCharacters ?? [], character, '人物'),
             removeCharacterIds: (value.removeCharacterIds ?? []).filter(string),
             upsertThreads: rows(value.upsertThreads ?? [], thread, '线索'),
-            signals: rows(value.signals ?? [], signal, '迹象'),
+            signals,
             noChange: value.noChange ?? false,
             ...(boolean(value.guideReached) ? { guideReached: value.guideReached } : {}),
+            ...(has(value, 'addEvents') ? { addEvents: events } : {}),
+            ...(has(value, 'markKnown') ? { markKnown: value.markKnown.filter(string) } : {}),
+            ...(has(value, 'loreRequests') ? { loreRequests: value.loreRequests.filter(string) } : {}),
         } };
     } catch (error) {
         return { ok: false, error: error.message };
     }
+}
+
+/** @returns {{ok:true,verdicts:Array<{id:string,ok:boolean,reason:string}>}|{ok:false,error:string}} */
+export function parseReviewOutput(text) {
+    const value = extractJsonBlock(text);
+    if (!object(value) || !Array.isArray(value.verdicts)) return { ok: false, error: '审核结果缺少 verdicts 数组' };
+    if (!value.verdicts.every(item => object(item) && string(item.id) && item.id.trim()
+        && boolean(item.ok) && string(item.reason))) return { ok: false, error: '审核裁决字段格式错误' };
+    return { ok: true, verdicts: value.verdicts.map(({ id, ok, reason }) => ({ id, ok, reason })) };
 }
 
 /** @returns {{ok:true,cards:import('../types.js').PlanCard[]}|{ok:false,error:string}} */

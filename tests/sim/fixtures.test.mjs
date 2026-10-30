@@ -39,7 +39,15 @@ function verifyFirstSample(idOnly) {
         const person = next.characters.find(item => item.id === update.id);
         assert.ok(person);
         assert.notEqual(JSON.stringify(person), JSON.stringify(base.characters.find(item => item.id === update.id)));
-        for (const [key, value] of Object.entries(update)) assert.deepEqual(person[key], value);
+        for (const [key, value] of Object.entries(update)) {
+            if (['currentAction', 'longAction'].includes(key) && value) {
+                const old = base.characters.find(item => item.id === update.id)[key];
+                const expected = { ...value };
+                if (!old || old.text !== value.text) expected.since = { day: next.clock.day, slot: next.clock.slot };
+                else if (old.since !== undefined) expected.since = old.since;
+                assert.deepEqual(person[key], expected);
+            } else assert.deepEqual(person[key], value);
+        }
         assert.equal(person.touchedRun, base.runCount + 1);
     }
     for (const update of parsed.patch.upsertThreads) {

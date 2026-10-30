@@ -416,3 +416,19 @@
 - 组长脚本复核 0 个问题（JSON 合法、时间不晚于 clock、引用存在、known 与 knownAt 一致、eventId 指向存在的事件）
 - dsh 列出的 5 个不确定点均与接口一致，无需修改：review 的 expectOk 按"能否解析出合法 verdicts"；ok:"true" 判失败；缺裁决视为通过、多余 id 忽略；程序字段在 parse 剥掉、不进 ReviewKind；clock 倒退只丢 clock
 - @Codex：tests/fixtures/v15/ 已就绪，可用于 B 批回归测试
+
+## 2026-10-30 [codex] [完成] B 批
+- 改动文件：src/sim/parse.js、src/sim/apply.js、src/state/snapshot-store.js、tests/sim/fixtures.test.mjs；新增 src/sim/check.js、tests/sim/world-model.test.mjs、tests/integration/world-model.test.mjs；另追加本日志。未修改其他成员文件、样本、接口或 TASKS.md，未执行 git 写操作。
+- 已交付与 INTERFACES 7.5 一致的 checkPatch(state, patch)、extractReviewItems(state, patch, { bigJumpDays })、applyVerdicts(patch, items, verdicts)，以及 parseReviewOutput(text)。检查返回副本，逐项剔除倒退 clock、坏引用、空事件、缺渠道的新认知和无效 markKnown，并生成中文 Rejection；高风险覆盖五类；裁决缺失放行、未知 id 忽略、明确驳回只移除对应修改。
+- 解析支持 addEvents/markKnown/loreRequests/eventId，剔除程序字段。空白事件文本交由 check 生成可见原因；结构非法事件在 parse 丢弃并 warning。解析、检查或审核删事件时均重映射 new:N；引用被删事件则清空，避免移到其他事件。解析遇到无效 new:N 先保留越界占位供 check 记录原因。
+- apply：倒退天数整项 clock 忽略并 warning；行动按 text 变化盖 since，同文本沿用原戳（旧数据缺省仍为时间不明）；新增事件生成 e_ id/at/known=false/knownAt=null；markKnown 仅首次盖 knownAt；事件保留最近 80 条，人物淘汰或线删除不清理历史引用；eventId 不存在或事件被裁掉则 null；loreRequests 按标题去重后最多五项、同名续期、五轮未点名移除。A 批迹象过期、引导保护和写回保护回归均通过。
+- 快照校验支持 since、chronicle、loreWanted、eventId、review、loreUsed；所有新字段缺省兼容，Stamp.day=null 支持时间不明。makeSnapshot 可接收 review/loreUsed 并复制校验。保留上轮审查要求：结构检查不以 firstSigns 一致性或历史引用仍存在为条件。
+- 测试：新增 51 个用例（world-model 单元及样本回归 43、跨模块 8）；包含 dsh 的 20 个推演样本和 14 个审核样本。本人旧 fixtures 测试的 2 个用例调整为既比对原行动字段、又校验新 since 戳，未弱化原字段断言。最终 sh tests/run.sh：23 个测试文件、308 个用例全部通过；本任务文件 git diff --check 无报错。
+- 取舍：兼容 v1.2 名称/别名引用及同轮新建对象；事件中的名称在 apply 转成 id，历史 id 保留。审核员同 id 出现矛盾裁决时明确 false 优先；缺失裁决仍放行。时间先后仅按第 7.2 节天数比较，不猜自由文本时段顺序。程序检查验证的是结构与明确规则，资源/因果充分性仍由审核员和提示词判断。
+- 已就绪待组长审查与安装；测试覆盖纯函数链路及既有写回重基回归，未调用真实模型或执行真机部署。
+
+## 2026-10-30 [claude] [进度] B 批 Codex 部分审查中（暂停，等用户叫继续）
+- 308 个测试全部通过；index.js 模块图在 jsc 中加载成功（所有 import 对得上）
+- v1.5 样本整条链路（解析→检查→模拟审核→合并→快照→注入）：20 个推演样本、14 个审核样本均跑通
+- 唯一差异：bad-markknown-01/02 程序检查只记了 mark_known，样本预期 mark_known + reference。属分类口径差异，不是缺陷，待定是否统一
+- 下一步：结论审查 → 提交 → scripts/install.sh → 请用户真机测试 B 批

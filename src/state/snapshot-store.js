@@ -9,9 +9,32 @@ const strings = value => Array.isArray(value) && value.every(string);
 const integer = value => Number.isInteger(value) && value >= 0;
 const nullableString = value => value === null || string(value);
 const hasStrings = (value, keys) => object(value) && keys.every(key => string(value[key]));
+const stamp = value => object(value) && (value.day === null || (Number.isInteger(value.day) && value.day >= 1)) && string(value.slot);
+const optionalArray = (value, check) => value === undefined || (Array.isArray(value) && value.every(check));
+const usageValid = value => value === null || (object(value) && string(value.model) && Number.isFinite(value.ms) && value.ms >= 0);
+
+function validEvent(value) {
+    return hasStrings(value, ['id', 'text']) && value.id.startsWith('e_') && stamp(value.at)
+        && strings(value.characterIds) && strings(value.threadIds) && boolean(value.known)
+        && (value.knownAt === null || stamp(value.knownAt));
+}
+
+function validReview(value) {
+    return value === undefined || value === null || (object(value) && integer(value.reviewed) && integer(value.approved)
+        && nullableString(value.error) && usageValid(value.usage) && Array.isArray(value.rejected)
+        && value.rejected.every(row => object(row) && ['program', 'reviewer'].includes(row.by) && string(row.reason)
+            && hasStrings(row.item, ['id', 'summary']) && object(row.item.ref)
+            && ['clock', 'event', 'action_done', 'knows', 'mark_known', 'reference', 'other'].includes(row.item.kind)));
+}
+
+function validLoreUsed(value) {
+    return hasStrings(value, ['world', 'title']) && (string(value.uid) || Number.isFinite(value.uid))
+        && ['pinned', 'triggered', 'backstage', 'requested'].includes(value.layer)
+        && Number.isFinite(value.tokens) && value.tokens >= 0;
+}
 
 function validAction(value, long = false) {
-    return value === null || (hasStrings(value, ['text', 'duration']) && (!long
+    return value === null || (hasStrings(value, ['text', 'duration']) && (value.since === undefined || stamp(value.since)) && (!long
         || (LONG_ACTION_STATUSES.includes(value.status) && nullableString(value.outcome))));
 }
 
@@ -36,7 +59,9 @@ function validState(state) {
         || !string(state.clock.slot) || !CLOCK_PRECISIONS.includes(state.clock.precision)
         || !object(state.protagonist) || !string(state.protagonist.location) || !boolean(state.protagonist.reachable)
         || !Array.isArray(state.characters) || !Array.isArray(state.threads) || !Array.isArray(state.signals)) return false;
-    return state.characters.every(item => hasStrings(item, ['id', 'name', 'location']) && strings(item.aliases)
+    return optionalArray(state.chronicle, validEvent)
+        && optionalArray(state.loreWanted, item => hasStrings(item, ['title']) && integer(item.sinceRun))
+        && state.characters.every(item => hasStrings(item, ['id', 'name', 'location']) && strings(item.aliases)
         && strings(item.knows) && item.knows.length <= 5 && LIVES.includes(item.life) && boolean(item.onStage)
         && boolean(item.pinned) && validAction(item.currentAction) && validAction(item.longAction, true)
         && (item.touchedRun === undefined || integer(item.touchedRun)))
@@ -48,6 +73,7 @@ function validState(state) {
         && state.signals.every(item => object(item) && VOICES.includes(item.voice) && string(item.text)
             && Array.from(item.text).length <= 80 && nullableString(item.threadId) && nullableString(item.characterId)
             && [1, 2, 3].includes(item.relevance)
+            && (item.eventId === undefined || nullableString(item.eventId))
             && (item.bornRun === undefined || integer(item.bornRun)));
 }
 
@@ -57,8 +83,8 @@ function validSnapshot(snapshot) {
         && integer(snapshot.basis.swipeId) && string(snapshot.basis.textHash)
         && ['ok', 'failed', 'manual'].includes(snapshot.status) && boolean(snapshot.edited)
         && Number.isFinite(snapshot.createdAt) && snapshot.createdAt >= 0 && nullableString(snapshot.error)
-        && (snapshot.usage === null || (object(snapshot.usage) && string(snapshot.usage.model)
-            && Number.isFinite(snapshot.usage.ms) && snapshot.usage.ms >= 0)) && validState(snapshot.state);
+        && usageValid(snapshot.usage) && validReview(snapshot.review) && optionalArray(snapshot.loreUsed, validLoreUsed)
+        && validState(snapshot.state);
 }
 
 /** @returns {import('../types.js').Snapshot|null} */
@@ -92,10 +118,12 @@ export function findBase(chatView, beforeOrAtFloor) {
 }
 
 /** @returns {import('../types.js').Snapshot} */
-export function makeSnapshot({ parent = null, floor, swipeId, text, state, status = 'ok', error = null, usage = null }) {
+export function makeSnapshot({ parent = null, floor, swipeId, text, state, status = 'ok', error = null, usage = null, review, loreUsed }) {
     const snapshot = { v: SNAPSHOT_VERSION, id: shortId('s'), parentId: parent?.id ?? null,
         basis: { floor, swipeId, textHash: hashText(text) }, status, state: structuredClone(state),
-        edited: status === 'manual', createdAt: Date.now(), error, usage: structuredClone(usage) };
+        edited: status === 'manual', createdAt: Date.now(), error, usage: structuredClone(usage),
+        ...(review !== undefined ? { review: structuredClone(review) } : {}),
+        ...(loreUsed !== undefined ? { loreUsed: structuredClone(loreUsed) } : {}) };
     if (!validSnapshot(snapshot)) throw new TypeError('快照参数不符合接口契约');
     return snapshot;
 }
