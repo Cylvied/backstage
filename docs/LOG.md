@@ -443,3 +443,17 @@
 - 世界书蓝灯（常驻）条目默认每轮推演都带上：新资料层 constant，顺序 pinned → constant → triggered → backstage → requested；设置 lore.constant（默认开）
 - constants.js 新增 LORE_LAYERS；**组长直接改了 Codex 的 src/state/snapshot-store.js 一行**：loreUsed 的 layer 校验改用 LORE_LAYERS（原来写死四层，会让带 constant 的快照被判无效）。@Codex 知悉
 - 新设置 ui.composerButton（默认开）：输入框左侧（#leftSendForm，扩展菜单按钮旁）显示「幕后」按钮。按钮与开关由面板会话实现（T4g）
+
+## 2026-10-30 [claude-ui] [完成] T4g
+- 新建：src/ui/composer-button.js；修改：src/ui/panel.js、settings-page.js、settings-lore.js、world.js、style.css、tests/ui/world.test.mjs、dev/panel-preview.html、dev/preview.js、dev/mock-api.js、dev/mock-world.js
+- 输入框按钮：`<div id="backstage_composer_button" class="fa-solid fa-masks-theater interactable" title="幕后" tabindex="0" role="button">`，style order:2，挂在 #leftSendForm 末尾。点击或回车 / 空格开关面板（与魔杖菜单项同一个开关），aria-pressed 跟随面板开关。没有给它任何尺寸或底色样式：无主题时由宿主的 `#leftSendForm>div` 规则排成原生图标按钮，有 Claude Web 主题时由主题画成圆形按钮
+- 推演中：按钮加 data-bs-running="true"，右上角一个 6px 的淡橙色呼吸小圆点（::after，主题对这个元素没有用到 ::after），title 改为"幕后 · 推演中"；尊重减少动态效果
+- 挂载：一个 body 子树 MutationObserver 同时负责"等 #leftSendForm 出现"和"按钮或容器被移除后重新挂上"（包括外层整块重建）。回调只做 O(1) 检查（按钮还在不在 #leftSendForm 里），变化按 30ms 合并成一次；设置关掉时断开观察者并移除按钮。另在 APP_READY / CHAT_CHANGED / SETTINGS_UPDATED 时顺手检查一次。没有按"找到后断开"只观察容器本身，因为宿主替换外层时容器和它的父元素一起被删，那样观察不到
+- 设置页新增"界面"一节：开关"在输入框旁显示「幕后」按钮"（settings.ui.composerButton，旧设置没有 ui 时视为开），切换后立即显示 / 移除
+- 世界书：world.js 改用 constants.js 的 LORE_LAYERS（不认识的层归为"其他"排最后），constant 层标签"蓝灯常驻"；纸条页资料分组随之多一组。设置页世界书一节在常驻条目列表上方加开关"推演时带上蓝灯常驻条目"（settings.lore.constant）及说明原文；条目列表里 constant 条目加蓝色小标记"蓝灯"，开关开着且有蓝灯条目时在搜索框下提示"开启上面的开关时，蓝灯条目已自动带上，无需再勾选。"；预算说明里的顺序也更新为 推演专用常驻 → 蓝灯常驻 → 正文触发 → 幕后触发 → 按需调取
+- dev：预览页加了模拟输入框（照宿主 #leftSendForm 规则精简），sendform=late（1.5 秒后才出现）/ none，控制台 devRebuildSendForm() 模拟整块重建；cwtheme=1 粗略模拟主题的圆形按钮（两个原生按钮 order 0/1、其余子元素 38px 圆形，手机宽度下生效）；预览页从本地 refs/ 引宿主的 Font Awesome（refs 不在仓库里，缺了只是图标不显示）。模拟数据加了蓝灯层资料和带 constant 的条目
+- 已验证（预览页脚本 + 截图）：按钮排在两个原生按钮后面；点击 / 回车开关面板；晚出现、整块重建、单独被删除后都能自动挂回；设置关掉后移除且重建也不再挂，打开后立即出现；推演中小圆点；蓝灯开关保存与提示显隐、蓝灯标记；纸条页"蓝灯常驻"一组排在推演专用常驻之后。截图在共享笔记目录 T4g-screens/
+- 测试：`sh tests/run.sh` 23 个测试文件、311 个用例全部通过（UI 新增 1 个）
+- 需要组长注意：
+  1. 主题模拟是我按 official-layout.css 的那几条规则手写的近似版，没有加载真主题；真机请看一眼按钮在主题下的样子（尤其桌面宽度：主题对额外子元素的圆形样式只写在 max-width:700px 里，桌面上会是宿主原生的图标样式）
+  2. 开发期间用过 8765 端口，已关闭

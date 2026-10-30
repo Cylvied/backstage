@@ -93,6 +93,8 @@ export function mockLoreUsed(mode) {
     return [
         { world: '启明高中', uid: 1, title: '学校总览与年级分布', layer: 'pinned', tokens: 2380 },
         { world: '启明高中', uid: 2, title: '校园地图', layer: 'pinned', tokens: 1460 },
+        { world: '启明高中', uid: 30, title: '世界观总纲', layer: 'constant', tokens: 4100 },
+        { world: '人物设定', uid: 'rule', title: '写作风格约定', layer: 'constant', tokens: 650 },
         { world: '启明高中', uid: 7, title: '天台', layer: 'triggered', tokens: 520 },
         { world: '启明高中', uid: 9, title: '高三（2）班', layer: 'triggered', tokens: 880 },
         { world: '人物设定', uid: 'chen', title: '陈老师', layer: 'backstage', tokens: 940 },
@@ -108,11 +110,12 @@ export function mockLoreEntries() {
         ['启明高中', 1, '学校总览与年级分布', 2380], ['启明高中', 2, '校园地图', 1460], ['启明高中', 7, '天台', 520],
         ['启明高中', 9, '高三（2）班', 880], ['启明高中', 15, '保送制度', 610], ['启明高中', 21, '启明高中校史', 3120],
         ['启明高中', 22, '教务处与档案室', 740], ['启明高中', 23, '体育馆', 430],
+        ['启明高中', 30, '世界观总纲', 4100, true], ['人物设定', 'rule', '写作风格约定', 650, true],
         ['人物设定', 'chen', '陈老师', 940], ['人物设定', 'zhou', '周牧', 760], ['人物设定', 'lin', '林知夏', 820],
         ['人物设定', 'gao', '高小满', 510], ['人物设定', 'sun', '孙悦', 690],
         ['城市', 'c1', '城区总览（超长条目）', 98000],
-    ].map(([world, uid, title, tokens]) => ({ world, uid, title, tokens }));
+    ].map(([world, uid, title, tokens, constant = false]) => ({ world, uid, title, tokens, constant }));
     // 再补一批，测试搜索和"只显示前 N 条"
-    for (let i = 1; i <= 160; i++) base.push({ world: '杂项', uid: 1000 + i, title: `杂项条目 ${i}`, tokens: 100 + (i * 37) % 900 });
+    for (let i = 1; i <= 160; i++) base.push({ world: '杂项', uid: 1000 + i, title: `杂项条目 ${i}`, tokens: 100 + (i * 37) % 900, constant: false });
     return base;
 }

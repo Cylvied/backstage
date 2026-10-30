@@ -5,6 +5,8 @@
 //   world：full 有事件记录和时间戳（默认）/ none 有时间戳没有事件 / legacy 旧数据，没有任何 v1.5 字段
 //   review：rejects 有驳回（默认）/ fail 审核员失败已放行 / clean 没有高风险改动 / none 没有记录
 //   lore：（默认）各层都有 / empty 这一轮没读世界书 / fail 读取条目列表失败
+//   sendform：late 输入框 1.5 秒后才出现（模拟晚渲染）/ none 没有输入框
+//   cwtheme=1：粗略模拟 Claude Web 2.0 主题对输入框左侧按钮的重绘（圆形按钮、"+"、手机宽度下生效）
 //   skips=1：再加几条能挂靠但没选上的迹象，并让主角与外界隔绝（覆盖"超过上限 / 暗流最多 1 条 / 风闻传不进来"）
 //   mangle=1：模拟主题扩展把扩展设置抽屉里的控件拆出来重排
 //   status=setup：模拟刚装好、模型 API 没填；apitest=fail：获取模型与测试连接都失败；profiles=0：没有连接配置
@@ -72,6 +74,41 @@ $('chat').innerHTML = Array.from({ length: 8 }, (_, i) => {
     </div>`;
 }).join('');
 
+// 宿主输入框：#leftSendForm 里是扩展菜单按钮和选项按钮，我们的按钮会挂在它们后面
+const SEND_FORM = `<div id="send_form"><div id="nonQRFormItems">
+    <div id="leftSendForm" class="alignContentCenter">
+        <div id="options_button" class="fa-solid fa-bars interactable" title="Chat options"></div>
+        <div id="extensionsMenuButton" class="fa-solid fa-magic-wand-sparkles interactable" title="Extensions"></div>
+    </div>
+    <textarea id="send_textarea" rows="1" placeholder="输入消息"></textarea>
+    <div id="rightSendForm" class="alignContentCenter"><div id="send_but" class="fa-solid fa-paper-plane interactable" title="Send"></div></div>
+</div></div>`;
+const putSendForm = () => { $('send_form_slot').innerHTML = SEND_FORM; };
+const sendform = params.get('sendform') ?? '';
+if (sendform === 'late') setTimeout(putSendForm, 1500);
+else if (sendform !== 'none') putSendForm();
+// 控制台里 devRebuildSendForm() 模拟宿主整块重建输入框
+globalThis.devRebuildSendForm = () => { $('send_form_slot').innerHTML = ''; setTimeout(putSendForm, 100); };
+
+if (params.get('cwtheme') === '1') {
+    document.documentElement.setAttribute('data-cw-v4', '');
+    // 模拟主题：两个原生按钮排前（order 0/1），其余子元素统一画成同样的 38px 圆形按钮（主题只在手机宽度下这样排）
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `
+        html[data-cw-v4] #send_form #leftSendForm { display: flex !important; align-items: center !important; gap: 6px !important; }
+        html[data-cw-v4] #send_form #leftSendForm #extensionsMenuButton { order: 0 !important; }
+        html[data-cw-v4] #send_form #leftSendForm #options_button { order: 1 !important; }
+        html[data-cw-v4] #send_form { border-radius: 22px; padding: 8px; }
+        @media (max-width: 700px) {
+            html[data-cw-v4] #send_form #nonQRFormItems { flex-wrap: wrap; }
+            html[data-cw-v4] #send_form #send_textarea { order: 0; flex-basis: 100%; }
+            html[data-cw-v4] #send_form #leftSendForm > * { flex: none !important; width: 38px !important; height: 38px !important; border-radius: 50% !important;
+                background: rgba(31,30,29,.05) !important; font-size: 17px !important; line-height: 1 !important; opacity: 1 !important; }
+            html.host-dark[data-cw-v4] #send_form #leftSendForm > * { background: rgba(255,255,255,.05) !important; }
+        }
+        html[data-cw-v4] #send_form #leftSendForm #extensionsMenuButton::before { content: "\\2b"; }
+    ` }));
+}
+
 // 宿主的 inline-drawer 展开由宿主全局处理，这里模拟一下
 document.addEventListener('click', e => {
     const toggle = e.target.closest?.('.inline-drawer-toggle');
@@ -80,7 +117,7 @@ document.addEventListener('click', e => {
 
 // 宿主事件的最小模拟；调试时可在控制台 devEmit('CHAT_CHANGED') 触发
 const listeners = {};
-const eventTypes = { CHAT_CHANGED: 'chat_id_changed', CHARACTER_MESSAGE_RENDERED: 'character_message_rendered', MESSAGE_SWIPED: 'message_swiped' };
+const eventTypes = { APP_READY: 'app_ready', SETTINGS_UPDATED: 'settings_updated', CHAT_CHANGED: 'chat_id_changed', CHARACTER_MESSAGE_RENDERED: 'character_message_rendered', MESSAGE_SWIPED: 'message_swiped' };
 const eventSource = { on(name, fn) { (listeners[name] ??= []).push(fn); } };
 globalThis.SillyTavern = { getContext: () => ({ eventSource, eventTypes }) };
 globalThis.devEmit = key => (listeners[eventTypes[key]] ?? []).forEach(fn => fn());

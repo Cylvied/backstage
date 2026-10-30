@@ -10,6 +10,7 @@ import { renderThreads } from './tab-threads.js';
 import { renderNote } from './tab-note.js';
 import { renderAdvisor } from './tab-advisor.js';
 import { mountBadges } from './badges.js';
+import { mountComposerButton, updateComposerButton } from './composer-button.js';
 import { renderSettingsDrawer } from './settings.js';
 import { buildSettingsPage } from './settings-page.js';
 
@@ -253,6 +254,7 @@ export function mountPanel(api) {
         ui.open = open;
         root.hidden = !open;
         document.getElementById('backstage_wand_button')?.classList.toggle('is-active', open);
+        updateComposerButton();
         if (open) {
             ui.advisorSig = null;
             // 设置可能在别处改过（如扩展设置里的开关）：重新打开时按最新值重建设置页
@@ -297,6 +299,7 @@ export function mountPanel(api) {
 
     const toggle = () => setOpen(!ui.open);
     addWandItem(toggle);
+    mountComposerButton(api, toggle, () => ui.open);
     // 角标说明里的按钮：打开面板，可指定标签页（如纸条）
     mountBadges(api, tab => {
         setOpen(true);

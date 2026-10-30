@@ -5,6 +5,7 @@ import { h } from './dom.js';
 import { normalizeNumberSetting, SETTING_RANGES } from './format.js';
 import { buildApiSection, saveMerged } from './settings-api.js';
 import { buildLoreSection, buildReviewSection } from './settings-lore.js';
+import { syncComposerButton } from './composer-button.js';
 
 /**
  * @param {any} api
@@ -68,6 +69,13 @@ export function buildSettingsPage(api) {
 
         loreSection.element,
         reviewSection.element,
+
+        h('section', { class: 'bs-set-section' },
+            h('h3', { class: 'bs-set-head' }, '界面'),
+            check('在输入框旁显示「幕后」按钮', s.ui?.composerButton !== false, v => {
+                save({ ui: { composerButton: v } });
+                syncComposerButton();
+            }, '在输入框左侧、扩展菜单按钮旁边，点一下开关幕后面板；魔杖菜单里的入口一直都在')),
 
         h('section', { class: 'bs-set-section' },
             h('h3', { class: 'bs-set-head' }, '数据库纪要'),

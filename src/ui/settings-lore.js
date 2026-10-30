@@ -50,6 +50,7 @@ export function buildLoreSection(api) {
     const status = h('small', { class: 'bs-set-note', role: 'status' });
     const list = h('div', { class: 'bs-lore-pick', role: 'group', 'aria-label': '世界书条目' });
     const pinnedNote = h('p', { class: 'bs-pinned-note' });
+    const constantHint = h('small', { class: 'bs-set-note bs-constant-hint', hidden: true }, '开启上面的开关时，蓝灯条目已自动带上，无需再勾选。');
     const missingBox = h('div', { class: 'bs-pinned-missing' });
 
     function chosenKeys() {
@@ -91,9 +92,11 @@ export function buildLoreSection(api) {
                 syncPinnedNote();
             });
             return h('label', { class: 'bs-lore-item' }, box,
-                h('span', { class: 'bs-lore-item-title' }, e.title || `条目 ${e.uid}`),
+                h('span', { class: 'bs-lore-item-title' }, e.title || `条目 ${e.uid}`,
+                    e.constant ? h('span', { class: 'bs-lore-blue', title: '世界书里设为常驻（蓝灯）的条目' }, '蓝灯') : null),
                 h('span', { class: 'bs-lore-item-meta' }, `${e.world} · ${tokenText(e.tokens)}`));
         }));
+        constantHint.hidden = !(lore.constant && entries.some(e => e.constant));
         if (!entries.length) list.append(h('small', { class: 'bs-set-empty' }, '当前角色和聊天没有可用的世界书条目。'));
         else if (!items.length) list.append(h('small', { class: 'bs-set-empty' }, '没有匹配的条目。'));
         status.textContent = entries.length && total > items.length ? `显示前 ${items.length} 条，共 ${total} 条匹配，可以搜索缩小范围` : '';
@@ -124,11 +127,14 @@ export function buildLoreSection(api) {
         h('div', { class: 'bs-set-field' },
             h('span', null, '推演读取预算'),
             h('div', { class: 'bs-budget' }, range, h('div', { class: 'bs-budget-num' }, number, h('span', { class: 'bs-muted' }, '万 token'))),
-            h('small', null, '每轮推演最多读这么多世界书内容（1 万–30 万）。超出时按 常驻 → 正文触发 → 幕后触发 → 按需调取 的顺序保留，整条截断。当前：', readout)),
+            h('small', null, '每轮推演最多读这么多世界书内容（1 万–30 万）。超出时按 推演专用常驻 → 蓝灯常驻 → 正文触发 → 幕后触发 → 按需调取 的顺序保留，整条截断。当前：', readout)),
+        check('推演时带上蓝灯常驻条目', lore.constant !== false, v => { save({ constant: v }); renderEntries(); },
+            '世界书里设为常驻（蓝灯）的条目每轮推演都会读；条目很多、占预算时可以关掉。'),
         h('div', { class: 'bs-set-field' },
             h('span', null, '推演专用常驻条目'),
             h('small', null, '每轮推演都会带上，不注入正文。适合势力总览、地图这类全局资料。'),
             h('div', { class: 'bs-set-inline' }, search, reload),
+            constantHint,
             pinnedNote,
             missingBox,
             list,

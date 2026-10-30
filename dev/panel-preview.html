@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>幕后 · 面板预览</title>
+<!-- 宿主的 Font Awesome（refs/ 只在本地，缺了也能预览，只是图标不显示） -->
+<link rel="stylesheet" href="../refs/TauriTavern/src/css/fontawesome.min.css">
+<link rel="stylesheet" href="../refs/TauriTavern/src/css/solid.min.css">
 <link rel="stylesheet" href="../style.css">
 <style>
     /* 只模拟宿主的大致外观，方便看面板在宿主里的样子 */
@@ -31,6 +34,15 @@
     .menu_button { display: inline-block; padding: 6px 10px; border: 1px solid var(--host-line); border-radius: 4px; cursor: pointer; background: transparent; color: inherit; font: inherit; }
     .checkbox_label { display: flex; gap: 6px; align-items: center; }
     .cwx-row { margin-top: 8px; padding: 6px; border: 1px dashed var(--host-line); }
+    /* 宿主输入框：照 TauriTavern style.css 的 #leftSendForm / #rightSendForm 规则精简 */
+    #send_form { --bottomFormBlockSize: 32px; border: 1px solid var(--host-line); border-radius: 8px; padding: 4px; }
+    #nonQRFormItems { display: flex; align-items: center; }
+    #leftSendForm, #rightSendForm { display: flex; flex-wrap: wrap; }
+    #leftSendForm { order: 1; padding-left: 2px; }
+    #send_textarea { order: 2; flex: 1; min-height: 32px; border: 0; background: transparent; color: inherit; font: inherit; resize: none; }
+    #rightSendForm { order: 3; padding-right: 2px; }
+    #rightSendForm>div, #leftSendForm>div { width: var(--bottomFormBlockSize); height: var(--bottomFormBlockSize); margin: 0; border: none; cursor: pointer; opacity: 0.7; display: flex; align-items: center; justify-content: center; }
+    #rightSendForm>div:hover, #leftSendForm>div:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -56,6 +68,8 @@
         <div id="extensionsMenu"></div>
         <h4>聊天（楼层角标）</h4>
         <div id="chat"></div>
+        <h4>输入框（devRebuildSendForm() 模拟宿主重建）</h4>
+        <div id="form_sheld"><div id="send_form_slot"></div></div>
     </div>
     <div id="extensions-settings-button">
         <h4 class="drawer-toggle">扩展设置</h4>

@@ -1,6 +1,8 @@
 // v1.5 世界模型的显示用整理：事件记录（大事记）、检查与审核记录、推演读了哪些资料、世界书预算。纯函数。
 // 所有新字段都可能缺省（旧数据）：缺省时按空处理，时间缺省显示"时间不明"。
 
+import { LORE_LAYERS } from '../constants.js';
+
 /** @typedef {import('../types.js').SimState} SimState */
 /** @typedef {import('../types.js').ChronicleEntry} ChronicleEntry */
 /** @typedef {import('../types.js').Stamp} Stamp */
@@ -114,9 +116,10 @@ export function reviewLine(review) {
 
 // ---------- 推演读了哪些资料 ----------
 
-export const LORE_LAYERS = /** @type {const} */ (['pinned', 'triggered', 'backstage', 'requested']);
+// 层的顺序以 constants.js 的 LORE_LAYERS 为准；不认识的层归到最后的"其他"
 export const LORE_LAYER_LABEL = {
     pinned: '推演专用常驻',
+    constant: '蓝灯常驻',
     triggered: '正文触发',
     backstage: '幕后触发',
     requested: '按需调取',
@@ -129,10 +132,12 @@ export const LORE_LAYER_LABEL = {
 export function loreGroups(loreUsed) {
     const list = Array.isArray(loreUsed) ? loreUsed.filter(Boolean) : [];
     const tokensOf = x => (Number.isFinite(Number(x?.tokens)) ? Math.max(0, Math.round(Number(x.tokens))) : 0);
-    const groups = LORE_LAYERS.map(layer => {
+    const known = new Set(LORE_LAYERS);
+    const layers = [...LORE_LAYERS, ...new Set(list.map(x => x.layer).filter(l => !known.has(l)))];
+    const groups = layers.map(layer => {
         const items = list.filter(x => x.layer === layer)
             .map(x => ({ title: String(x.title ?? '').trim() || `条目 ${x.uid}`, world: String(x.world ?? ''), tokens: tokensOf(x) }));
-        return { layer, label: LORE_LAYER_LABEL[layer], tokens: items.reduce((n, x) => n + x.tokens, 0), items };
+        return { layer, label: LORE_LAYER_LABEL[layer] ?? '其他', tokens: items.reduce((n, x) => n + x.tokens, 0), items };
     }).filter(g => g.items.length);
     return { total: groups.reduce((n, g) => n + g.tokens, 0), count: list.length, groups };
 }

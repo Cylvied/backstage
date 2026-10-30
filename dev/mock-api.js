@@ -190,6 +190,7 @@ export async function createMockApi(opts) {
                     api: { ...settings.api, ...(patch.api ?? {}) },
                     lore: { ...settings.lore, ...(patch.lore ?? {}) },
                     review: { ...settings.review, ...(patch.review ?? {}) },
+                    ui: { ...settings.ui, ...(patch.ui ?? {}) },
                 };
                 emitStatus();
                 emitState();

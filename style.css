@@ -1,5 +1,5 @@
 /* 幕后（Backstage）样式。
- * 全部限定在插件自己的根选择器下：#backstage-panel、#backstage_settings_v2、.bs-badge、.bs-badge-pop。
+ * 全部限定在插件自己的根选择器下：#backstage-panel、#backstage_settings_v2、.bs-badge、.bs-badge-pop、#backstage_composer_button。
  * 颜色只从 --bs-* 变量取；明暗由 data-bs-theme（面板 / 设置抽屉自身，角标看 <html>）切换。 */
 
 /* ---------- 配色与字体 ---------- */
@@ -1143,6 +1143,30 @@ html[data-bs-theme="dark"] .bs-badge-pop {
     .bs-badge::after { content: ""; position: absolute; inset: -12px -6px; }
 }
 
+/* ---------- 输入框旁的「幕后」按钮 ----------
+ * 尺寸、底色交给宿主（#leftSendForm>div）或主题，这里只加推演中的小圆点。 */
+
+#backstage_composer_button { position: relative; }
+
+#backstage_composer_button[data-bs-running="true"]::after {
+    content: "";
+    position: absolute;
+    top: 15%;
+    right: 15%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #D97757;
+    animation: bs-composer-pulse 1.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes bs-composer-pulse { 50% { opacity: 0.35; } }
+
+@media (prefers-reduced-motion: reduce) {
+    #backstage_composer_button[data-bs-running="true"]::after { animation: none; }
+}
+
 /* ---------- 扩展设置区里的精简抽屉（其余用宿主样式） ---------- */
 
 #backstage_settings_v2 .bs-drawer-note { margin: 0 0 6px; opacity: 0.8; }
@@ -1396,6 +1420,17 @@ html[data-bs-theme="dark"] .bs-badge-pop {
 #backstage-panel .bs-lore-item input { grid-row: span 2; margin: 0; accent-color: var(--bs-accent); }
 #backstage-panel .bs-lore-item-title { overflow-wrap: anywhere; }
 #backstage-panel .bs-lore-item-meta { font-size: 12px; color: var(--bs-muted); }
+#backstage-panel .bs-lore-blue {
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: 4px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #2F6FD6;
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+#backstage-panel[data-bs-theme="dark"] .bs-lore-blue { background: rgba(96, 165, 250, 0.16); color: #8DB8F5; }
+#backstage-panel .bs-constant-hint[hidden] { display: none; }
 #backstage-panel .bs-lore-pick .bs-set-empty { padding: 10px; }
 
 @media (max-width: 768px) {

@@ -137,3 +137,14 @@ test('迹象挂在事件上也算有来源，并显示指向的事实', () => {
     const entry = [...sum.picked, ...sum.skipped.flatMap(g => g.items)][0];
     assert.equal(eventText(entry), '指向事实：新事（主角尚不知道）');
 });
+
+test('loreGroups：蓝灯常驻排在推演专用常驻之后；不认识的层归为"其他"排最后', () => {
+    const g = loreGroups([
+        { world: 'w', uid: 1, title: '正文', layer: 'triggered', tokens: 10 },
+        { world: 'w', uid: 2, title: '蓝灯', layer: 'constant', tokens: 20 },
+        { world: 'w', uid: 3, title: '常驻', layer: 'pinned', tokens: 30 },
+        { world: 'w', uid: 4, title: '怪', layer: 'mystery', tokens: 40 },
+    ]);
+    assert.deepEqual(g.groups.map(x => x.label), ['推演专用常驻', '蓝灯常驻', '正文触发', '其他']);
+    assert.equal(g.total, 100);
+});
