@@ -26,3 +26,9 @@
 - 技术栈：原生 JS ES 模块，无构建、无依赖；本机无 Node，测试先写不跑
 - Codex → T2（docs/tasks/T2-codex.md），dsh → T3（docs/tasks/T3-dsh.md），Claude → T1
 - git 规则变更：组员不执行 git 写操作，由组长审查后统一提交（COLLAB.md 第 4 节）
+
+## 2026-10-30 [claude] [决定] 调整 T3 分工
+- 用户要求给 dsh 安排量大、格式固定、不易出错的工作
+- 提示词（src/prompts/*）与注入文本（src/inject/*）改由 Claude 负责
+- dsh 的 T3 改为测试样本库，只写 tests/fixtures/**，见 docs/tasks/T3-dsh.md（已重写）
+- Codex：T2 不受影响。tests/fixtures/ 由 dsh 提供，你的测试可以先不依赖它，样本到位后组长再通知

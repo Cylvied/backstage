@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1 · 2026-10-30 · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.1 · 2026-10-30（v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -35,10 +35,11 @@
 | `src/sim/parse.js` | 解析模型输出 → `SimPatch` / `PlanCard[]`，结构校验 | Codex |
 | `src/sim/apply.js` | `applyPatch(state, patch)`，纯函数 | Codex |
 | `src/memory/database-memo.js` | 数据库纪要的筛选与打分（纯函数部分） | Codex |
-| `src/prompts/sim-prompt.js` | 推演提示词组装 | dsh |
-| `src/prompts/plan-prompt.js` | 规划提示词组装 | dsh |
-| `src/inject/compose.js` | 从状态挑选暗流、生成注入文本（纯函数） | dsh |
-| `src/ui/*`、`style.css` | 面板与角标（第 2 批任务） | dsh |
+| `src/prompts/sim-prompt.js` | 推演提示词组装 | Claude |
+| `src/prompts/plan-prompt.js` | 规划提示词组装 | Claude |
+| `src/inject/compose.js` | 从状态挑选暗流、生成注入文本（纯函数） | Claude |
+| `tests/fixtures/**` | 测试样本库：状态、输入、模型输出、世界书纪要 | dsh |
+| `src/ui/*`、`style.css` | 面板与角标（第 2 批任务） | 待定 |
 | `tests/` | 各人测试放在与源码对应的子目录，例如 `tests/state/`；只写自己模块的测试 | 各自 |
 
 模块之间只通过**本文第 5 节列出的导出函数**互相调用。需要新导出：写 `[接口变更提议]`。
@@ -299,7 +300,7 @@ export function pickMemos(entries: Array<{ name: string, content: string, keys: 
 
 按关键词重合打分（参考 `refs/ST-SevenDaysCal/index.js:6823` 的思路，自己实现，**不要复制代码**），中文用 bigram 分词。读世界书由 host 完成。
 
-### 5.7 `src/prompts/sim-prompt.js`、`src/prompts/plan-prompt.js`（dsh）
+### 5.7 `src/prompts/sim-prompt.js`、`src/prompts/plan-prompt.js`（Claude）
 
 ```js
 export function buildSimPrompt({ state: SimState, input: SimInput, settings: Settings }): ChatMessage[]
@@ -318,7 +319,7 @@ SimInput = {
 
 提示词必须让模型输出第 3.7 节规定的 JSON 格式，并落实 `docs/brainstorm/SUMMARY.md` 中三方共同的推演原则（认知边界、不替主角行动、允许无变化、"可能发生"不写成"已经发生"、时间守恒、人物有自己的生活、不凭空制造冲突）。
 
-### 5.8 `src/inject/compose.js`（dsh）
+### 5.8 `src/inject/compose.js`（Claude）
 
 ```js
 export function selectSignals(state: SimState, maxSignals: number): Signal[]
@@ -328,7 +329,7 @@ export function composeInjection(state: SimState, settings: Settings): { undercu
     // 空字符串表示该块不注入；guidePush=true 时 guide 放到深度 0
 ```
 
-注入文本必须用明确标签包裹，让 Gemini 能区分这是幕后备注而不是主角的发言（标签措辞由 dsh 设计，在 LOG 中说明）。
+注入文本必须用明确标签包裹，让 Gemini 能区分这是幕后备注而不是主角的发言。
 
 ### 5.9 `src/host/*`（Claude）
 
