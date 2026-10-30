@@ -92,7 +92,7 @@ test('淡出后连续三次未触及才删除，重新触及重置计数', () =>
 
 test('noChange 空信号保留上一轮，同时推进淡出计数', () => {
     const state = emptyState();
-    state.signals = [signal()];
+    state.signals = [signal({ bornRun: 0 })];
     state.threads = [thread('t_a', { stage: 'faded' })];
     const next = apply(state, { noChange: true });
     assert.deepEqual(next.signals, state.signals);
@@ -206,4 +206,23 @@ test('引用解析优先精确 id，再匹配名称和标题', () => {
     const next = apply(state, { signals: [signal({ characterId: 'c_b', threadId: 't_b' })] });
     assert.equal(next.signals[0].characterId, 'c_b');
     assert.equal(next.signals[0].threadId, 't_b');
+});
+
+test('新迹象盖戳不信任补丁的 bornRun，且不修改冻结入参', () => {
+    const state = freeze(emptyState());
+    const delta = freeze(patch({ signals: [signal({ bornRun: 999 })] }));
+    const next = applyPatch(state, delta, { maxCharacters: 12 });
+    assert.equal(next.signals[0].bornRun, 1);
+    assert.equal(delta.signals[0].bornRun, 999);
+    assert.deepEqual(state.signals, []);
+});
+
+test('noChange 混合新旧迹象按年龄分别过期，不续期', () => {
+    const state = emptyState();
+    state.runCount = 5;
+    state.signals = [signal({ text: '未过期', bornRun: 5 }), signal({ text: '到期', bornRun: 4 }), signal()];
+    const next = apply(freeze(state), { noChange: true });
+    assert.deepEqual(next.signals.map(item => [item.text, item.bornRun]), [['未过期', 5]]);
+    assert.deepEqual(apply(next, { noChange: true }).signals, []);
+    assert.equal(state.signals.length, 3);
 });

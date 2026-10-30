@@ -47,7 +47,8 @@ function validState(state) {
             && (item.fadedRuns === undefined || integer(item.fadedRuns)))
         && state.signals.every(item => object(item) && VOICES.includes(item.voice) && string(item.text)
             && Array.from(item.text).length <= 80 && nullableString(item.threadId) && nullableString(item.characterId)
-            && [1, 2, 3].includes(item.relevance));
+            && [1, 2, 3].includes(item.relevance)
+            && (item.bornRun === undefined || integer(item.bornRun)));
 }
 
 function validSnapshot(snapshot) {
@@ -86,12 +87,6 @@ export function findBase(chatView, beforeOrAtFloor) {
             const snapshot = readSnapshot(message);
             if (isSnapshotValid(snapshot, message)) return { snapshot, state: snapshot.state, floor, stale: false };
         }
-        // 仅作窗口缺失兜底；调用方必须展示 stale，不能将其视为分支已验证。
-        if (validSnapshot(chatView.fallbackSnapshot)) {
-            const snapshot = structuredClone(chatView.fallbackSnapshot);
-            return { snapshot, state: snapshot.state, floor: snapshot.basis.floor, stale: true };
-        }
-        if (chatView.fallbackSnapshot != null) console.warn(`${LOG_PREFIX} 忽略损坏的兜底快照`);
     }
     return { snapshot: null, state: emptyState(), floor: null, stale: false };
 }

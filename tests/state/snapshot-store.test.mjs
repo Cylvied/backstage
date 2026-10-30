@@ -57,12 +57,13 @@ test('跳过空槽、编辑失效和坏版本，向前找有效祖先', () => {
     assert.equal(base.stale, false);
 });
 
-test('无窗口快照采用兜底且标记 stale', () => {
+test('无窗口快照时即使传入有效兜底也返回空状态', () => {
     const saved = snapshot(5);
     const base = findBase(view([null, null], saved), 1);
-    assert.equal(base.snapshot.id, saved.id);
-    assert.equal(base.stale, true);
-    assert.equal(base.floor, 5);
+    assert.equal(base.snapshot, null);
+    assert.equal(base.stale, false);
+    assert.equal(base.floor, null);
+    assert.deepEqual(base.state, emptyState());
 });
 
 test('无兜底、坏兜底、空视图返回新初始状态', () => {
@@ -82,4 +83,19 @@ test('失败快照沿用父状态仍可作为基底', () => {
 
 test('makeSnapshot 的非法参数作为编程错误报告', () => {
     assert.throws(() => makeSnapshot({ floor: -1, swipeId: 0, text: '', state: emptyState() }));
+});
+
+test('迹象 bornRun 可缺省或为非负整数，非法类型和数值拒绝', () => {
+    const state = emptyState();
+    state.signals = [{ voice: 'here', text: '来信', threadId: null, characterId: null, relevance: 2 }];
+    for (const bornRun of [undefined, 0, 2]) {
+        state.signals[0].bornRun = bornRun;
+        const saved = makeSnapshot({ floor: 0, swipeId: 0, text: '正文', state });
+        assert.ok(readSnapshot(message(saved)));
+    }
+    for (const bornRun of [-1, 1.5, '2', null, NaN, Infinity]) {
+        const saved = snapshot();
+        saved.state.signals = [{ ...state.signals[0], bornRun }];
+        assert.equal(readSnapshot(message(saved)), null);
+    }
 });

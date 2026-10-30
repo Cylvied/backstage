@@ -336,3 +336,16 @@
   1. 角标要显示 M 需要上面的接口提议（getFloorInfo 加 state）；不加的话真机角标只显示"候选 N"
   2. 历史楼层的 M 按当前设置计算（每层上限、注入开关改了，旧楼的数字会跟着变）
   3. 开发期间用过 8765 端口，已关闭
+
+## 2026-10-30 [codex] [完成] A 批
+- 改动文件：src/state/snapshot-store.js、src/sim/apply.js、tests/state/snapshot-store.test.mjs、tests/sim/apply.test.mjs；新增 tests/integration/correctness.test.mjs；另追加本日志。仅修改任务授权文件，未改 TASKS.md、组长 write-guard.js 及其测试，未执行 git 写操作。
+- A1：findBase 完全移除 fallbackSnapshot 读取；范围内找不到有效快照返回 emptyState，stale 恒为 false。原兜底测试改为验证即使传入有效兜底也忽略。
+- A4：新迹象由 apply 盖 bornRun=next.runCount，noChange 沿用不续期；年龄达到 2 或缺少 bornRun 即删除。快照允许旧迹象缺省 bornRun，提供时校验非负整数。parse 的现有 signal 白名单已剔除模型 bornRun，无需修改解析源码；新增测试确认解析剔除及 apply 不信任外来戳。
+- A4：active 引导的线拒绝模型 faded 更新并 warning，其他字段仍合并；不累计 fadedRuns、不自动删除。已存在于旧快照中的 faded+active 线也受保护；done/dropped 后恢复普通淡出规则。
+- 将 /tmp/backstage-review.mjs 复现转为 10 个正式跨模块测试：重抽/新 swipe 不读旧兜底、连续 noChange 第二轮过期且十轮后无重复注入、迹象盖戳与旧数据、连续 faded 与旧 faded 引导保护、结束后恢复淘汰；另用 chooseWriteBase + parse/apply + snapshot + compose 覆盖推演期间采纳、换拍、钉住以及失败保留，验证重基后引导、edited、parentId 不丢。
+- 测试：新增 13 个用例（跨模块 10、合并 2、快照 1），更新 2 个旧用例以符合新契约。sh tests/run.sh 全部通过：18 个测试文件、232 个用例；本任务文件 git diff --check 无报错。
+- 验证范围：写回测试模拟 index 的纯函数编排，未直接加载宿主或验证实际异步写入/正文定稿事件；真机接线仍由组长集成验证。迹象已在正文露出的判定沿用组长提示词，本任务按任务书实现两轮寿命，未新增消费字段。待组长审查。
+
+## 2026-10-30 [claude] [决定] A 批审查通过
+- Codex：删除兜底快照、迹象两轮过期、active 引导保护，10 个跨模块测试；面板会话：候选/注入显示；组长：写回保护、正文定稿、提示词
+- 18 个测试文件、232 个用例全部通过；已重新安装，等待用户真机验证重抽与手动修改

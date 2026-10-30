@@ -1,4 +1,4 @@
-import { INTENSITIES, LIMITS } from '../constants.js';
+import { INTENSITIES, LIMITS, LOG_PREFIX } from '../constants.js';
 import { shortId } from '../util.js';
 
 const newCharacter = name => ({ id: shortId('c'), name, aliases: [], location: '',
@@ -68,21 +68,29 @@ export function applyPatch(state, patch, { maxCharacters }) {
             thread = newThread(update.title);
             next.threads.push(thread);
         }
-        mergeFields(thread, update, ['title', 'characterIds', 'stage', 'trigger', 'deadline', 'visibility']);
+        const preventFade = thread.guide?.status === 'active' && update.stage === 'faded';
+        if (preventFade) console.warn(`${LOG_PREFIX} 忽略进行中引导的淡出请求`);
+        mergeFields(thread, update, ['title', 'characterIds', 'trigger', 'deadline', 'visibility']);
+        if (!preventFade) mergeFields(thread, update, ['stage']);
         thread.fadedRuns = 0;
         touched.add(thread.id);
     }
     for (const thread of next.threads) {
-        if (thread.stage !== 'faded') thread.fadedRuns = 0;
+        if (thread.guide?.status === 'active' || thread.stage !== 'faded') thread.fadedRuns = 0;
         else if (!touched.has(thread.id)) thread.fadedRuns = (thread.fadedRuns ?? 0) + 1;
     }
-    next.threads = next.threads.filter(item => item.stage !== 'faded' || item.fadedRuns < LIMITS.fadedRunsBeforeDelete);
+    next.threads = next.threads.filter(item => item.guide?.status === 'active'
+        || item.stage !== 'faded' || item.fadedRuns < LIMITS.fadedRunsBeforeDelete);
     keepOneGuide(next.threads);
     if (patch.guideReached === true) {
         const guide = next.threads.find(item => item.guide?.status === 'active')?.guide;
         if (guide) guide.reached = true;
     }
-    if (!patch.noChange || patch.signals.length) next.signals = structuredClone(patch.signals);
+    if (!patch.noChange || patch.signals.length) {
+        next.signals = structuredClone(patch.signals).map(signal => ({ ...signal, bornRun: next.runCount }));
+    }
+    next.signals = next.signals.filter(signal => Number.isInteger(signal.bornRun) && signal.bornRun >= 0
+        && next.runCount - signal.bornRun < LIMITS.signalMaxAgeRuns);
     // 本轮新建对象尚无模型可知的 ID，先解析名称引用，再清理悬空项。
     const resolveCharacter = ref => next.characters.find(item => item.id === ref)?.id
         ?? next.characters.find(item => item.name === ref || item.aliases.includes(ref))?.id ?? null;
