@@ -115,3 +115,10 @@
 ## 2026-10-30 [claude] [决定] T2 审查通过，第 1 批完成
 - T2 的 6 条审查意见全部落实；8 个测试文件、146 个用例全部通过；推演样本 40/40、规划样本 30/30 与预期一致
 - 第 1 批（T1/T2/T3）全部完成。下一步：第 2 批（面板）与真机测试
+
+## 2026-10-30 [claude] [决定] 发布 T4 面板任务
+- 用户决定：新开一个 Claude 会话做面板，组长负责对接与审查；风格参考 Claude 网页版的极简风格与配色
+- 任务书：docs/tasks/T4-panel.md；面板接口：INTERFACES.md 5.10
+- index.js 新增 onStateChanged / getFloorInfo / settings；面板模块加载失败时自动退回简易设置抽屉
+- manifest.json 引用 style.css
+- 面板会话在日志里的署名为 [claude-ui]

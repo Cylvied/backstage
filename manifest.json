@@ -7,5 +7,6 @@
     "js": "index.js",
     "requires": [],
     "optional": [],
-    "loading_order": 100
+    "loading_order": 100,
+    "css": "style.css"
 }

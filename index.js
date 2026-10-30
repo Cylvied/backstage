@@ -19,6 +19,13 @@ import { composeInjection } from './src/inject/compose.js';
 
 const status = { lagging: false, lastError: /** @type {string|null} */ (null), lastRunAt: 0 };
 const statusListeners = new Set();
+const stateListeners = new Set();
+
+function notifyState() {
+    for (const fn of stateListeners) {
+        try { fn(); } catch (error) { console.warn(LOG_PREFIX, error); }
+    }
+}
 
 function notifyStatus() {
     const full = { ...status, scheduler: scheduler.status() };
@@ -122,6 +129,7 @@ function refreshInjection(event) {
     const lastSnap = lastMessage ? readSnapshot(lastMessage) : null;
     status.lagging = lastAi >= 0 && !(lastSnap && isSnapshotValid(lastSnap, lastMessage));
     notifyStatus();
+    notifyState();
 }
 
 // ---------- 用户操作（面板会调用） ----------
@@ -184,6 +192,31 @@ const api = {
     setGuideIntensity: (threadId, value) => editCurrentState(s => setGuideIntensity(s, threadId, value)),
     editState: editCurrentState,
     previewInjection: () => composeInjection(currentBase().base.state, host.getSettings()),
+    onStateChanged(fn) { stateListeners.add(fn); return () => stateListeners.delete(fn); },
+    getFloorInfo(floor) {
+        const message = host.getChatView().getMessage(floor);
+        const snap = message ? readSnapshot(message) : null;
+        if (!snap) return null;
+        return {
+            status: snap.status,
+            valid: isSnapshotValid(snap, message),
+            error: snap.error,
+            edited: snap.edited,
+            signalCount: snap.state.signals.length,
+            changedCharacters: snap.state.characters.filter(c => c.touchedRun === snap.state.runCount && snap.status === 'ok').map(c => c.name),
+            createdAt: snap.createdAt,
+            usage: snap.usage,
+        };
+    },
+    settings: {
+        get: () => host.getSettings(),
+        save(patch) {
+            const merged = host.saveSettings(patch);
+            refreshInjection();
+            return merged;
+        },
+        listProfiles: () => host.listProfiles(),
+    },
 };
 
 // ---------- 最小设置抽屉（第 2 批会换成完整面板） ----------
@@ -238,6 +271,20 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 }
 
+// ---------- 界面挂载 ----------
+
+async function mountUi() {
+    try {
+        const ui = await import('./src/ui/panel.js');
+        ui.mountPanel(api);
+        ui.mountSettings(api);
+    } catch (error) {
+        // 面板模块还没完成或加载失败：退回最小设置抽屉，核心功能不受影响
+        console.warn(LOG_PREFIX, '面板加载失败，使用简易设置', error);
+        renderSettings();
+    }
+}
+
 // ---------- 启动 ----------
 
 function init() {
@@ -253,9 +300,9 @@ function init() {
             refreshInjection();
         },
     });
-    renderSettings();
-    refreshInjection();
     globalThis.Backstage = api;
+    mountUi();
+    refreshInjection();
     console.info(LOG_PREFIX, `已加载（数据键 ${STORE_KEY}）`);
 }
 

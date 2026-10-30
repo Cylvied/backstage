@@ -40,7 +40,7 @@
 | `src/prompts/plan-prompt.js` | 规划提示词组装 | Claude |
 | `src/inject/compose.js` | 从状态挑选暗流、生成注入文本（纯函数） | Claude |
 | `tests/fixtures/**` | 测试样本库：状态、输入、模型输出、世界书纪要 | dsh |
-| `src/ui/*`、`style.css` | 面板与角标（第 2 批任务） | 待定 |
+| `src/ui/*`、`style.css`、`dev/*` | 面板、设置抽屉、楼层角标，以及开发预览页（T4） | Claude（面板会话） |
 | `tests/` | 各人测试放在与源码对应的子目录，例如 `tests/state/`；只写自己模块的测试 | 各自 |
 
 模块之间只通过**本文第 5 节列出的导出函数**互相调用。需要新导出：写 `[接口变更提议]`。
@@ -353,6 +353,33 @@ export function call({ profileId, messages, maxTokens, signal }): Promise<{ text
 export function apply({ undercurrent, guide, guidePush }, settings): void
 export function clear(): void
 ```
+
+### 5.10 面板接口 `api`（Claude 在 index.js 提供，面板只通过它操作）
+
+面板模块 `src/ui/panel.js` 导出两个函数，由 index.js 在启动时调用：
+
+```js
+export function mountPanel(api): void      // 挂载主面板与入口按钮
+export function mountSettings(api): void   // 在扩展设置区挂载设置抽屉（替代 index.js 的简易抽屉）
+```
+
+`api` 的全部成员（同时挂在 `globalThis.Backstage`，便于调试）：
+
+| 成员 | 说明 |
+|---|---|
+| `status()` | `{ lagging, lastError, lastRunAt, scheduler: { running, queued, lastError } }` |
+| `onStatus(fn)` | 状态变化时回调，返回取消函数 |
+| `getState()` | 当前生效的 `SimState`（只读，不要直接修改） |
+| `onStateChanged(fn)` | 当前状态可能变化时回调（推演完成、切 swipe、编辑、切聊天等），返回取消函数 |
+| `runNow()` | 对最新 AI 回复手动推演；没有 AI 回复返回 false |
+| `plan(request)` | `Promise<PlanCard[]>`，失败时 reject（错误信息可直接展示） |
+| `adopt(card, intensity)` | 采纳方案 → `Promise<SimState>` |
+| `setGuideStatus(threadId, 'done'\|'dropped')` | 完成 / 放弃引导 |
+| `setGuideIntensity(threadId, intensity)` | 调整引导强度 |
+| `editState(mutate)` | `mutate(stateCopy) => newState`，保存为用户编辑；用于钉住、删除、改字段。返回 `Promise<SimState>`，失败 reject |
+| `previewInjection()` | `{ undercurrent, guide, guidePush }`，即下一轮将注入的文本 |
+| `getFloorInfo(floor)` | 某楼推演信息或 null：`{ status, valid, error, edited, signalCount, changedCharacters, createdAt, usage }` |
+| `settings.get()` / `settings.save(patch)` / `settings.listProfiles()` | 读写设置（`Settings`），列出连接配置 `[{ id, name }]` |
 
 ## 6. 错误处理约定
 
