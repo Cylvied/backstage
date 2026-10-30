@@ -182,18 +182,30 @@ test('落拍提示只设置当前引导，false 不撤销提示，不自动换�
     assert.equal(patch(emptyState(), { guideReached: true }).threads.length, 0);
 });
 
-test('快照拒绝非法新字段、坏拍、越界、多 active、错位及迹象不一致', () => {
+test('快照拒绝非法新字段、坏拍、越界、多 active 及错位', () => {
     const mutations = [g => { g.reached = 'true'; }, g => { g.beatIndex = -1; },
         g => { g.beatIndex = 0.5; }, g => { g.beatIndex = 3; }, g => { delete g.beatIndex; },
         g => { g.beats = {}; }, g => { g.beats = []; }, g => { g.beats[1] = null; },
         g => { g.beats[1].title = ''; }, g => { delete g.beats[1].goal; },
         g => { g.beats[1].firstSigns = 42; }, g => { g.beats[1].status = 'bad'; },
-        g => { g.beats[1].status = 'active'; }, g => { g.beatIndex = 1; },
-        g => { g.firstSigns = '错误迹象'; }];
+        g => { g.beats[1].status = 'active'; }, g => { g.beatIndex = 1; }];
     for (const mutate of mutations) {
         const snapshot = saved(initial());
         mutate(guide(snapshot.state));
         assert.equal(read(snapshot), null);
+    }
+});
+
+test('分阶段引导迹象不一致时仍可保存和读取快照，保留用户编辑', () => {
+    for (const edit of [g => { g.firstSigns = '用户修改的引导迹象'; },
+        g => { g.beats[g.beatIndex].firstSigns = '用户修改的当前拍迹象'; }]) {
+        const state = initial();
+        edit(guide(state));
+        assert.notEqual(guide(state).firstSigns, guide(state).beats[guide(state).beatIndex].firstSigns);
+        const snapshot = saved(state);
+        const restored = read(snapshot);
+        assert.ok(restored);
+        assert.deepEqual(restored.state, state);
     }
 });
 

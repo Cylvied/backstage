@@ -27,8 +27,7 @@ function validGuide(value) {
         && value.beats.every(beat => hasStrings(beat, ['title', 'goal', 'firstSigns'])
             && Boolean(beat.title.trim()) && Boolean(beat.goal.trim()) && BEAT_STATUSES.includes(beat.status))
         && value.beats.filter(beat => beat.status === 'active').length <= 1
-        && value.beats.every((beat, index) => beat.status !== 'active' || index === value.beatIndex)
-        && value.firstSigns === value.beats[value.beatIndex].firstSigns;
+        && value.beats.every((beat, index) => beat.status !== 'active' || index === value.beatIndex);
 }
 
 function validState(state) {

@@ -211,3 +211,13 @@
 - dev 模拟 api 新增 advisor.retry()，行为与 index.js 一致（删掉失败回复，用前面的用户消息重新请求，不重复写入；没有可重试的则 reject"没有可以重试的消息。"）
 - 已验证（预览页脚本）：多轮对话里重试成功后记录为 u/a 交替无重复；回复总失败时重试后仍只有一条失败回复、无重复提示条；连续两次失败只有最后一条带「重试」；没有可重试时 retry() reject
 - 测试：`sh tests/run.sh` 全部通过（13 个文件、194 个用例；tests/ui 少了 retryText 的 1 个用例）
+
+## 2026-10-30 [codex] [完成] T5 审查修改
+- 按 docs/reviews/T5-review-1.md 唯一意见，删除快照校验中 guide.firstSigns 与当前拍 firstSigns 的一致性检查，保留字段类型、枚举、索引及 active 拍结构校验；apply.js 换拍同步迹象的逻辑保持不变。
+- 改动文件：src/state/snapshot-store.js、tests/sim/beats.test.mjs；另追加本日志。调整原无效快照用例，新增 1 个回归测试，分别验证编辑引导迹象或当前拍迹象导致不一致时，makeSnapshot 仍可保存、readSnapshot 仍可读取，并完整保留编辑内容。
+- 验证：sh tests/run.sh 全部通过，13 个测试文件、195 个用例（分阶段测试 16 个）；git diff --check -- src/state/snapshot-store.js tests/sim/beats.test.mjs 无报错。
+- 未修改其他成员文件或 TASKS.md，未执行 git 写操作；待组长复审。
+
+## 2026-10-30 [claude] [决定] T5 复审通过，第 2 批完成
+- T5 修改正确：编辑引导迹象后快照仍有效；13 个测试文件、195 个用例全部通过
+- 第 2 批（T4/T4b/T4c 面板、T5 分阶段、T6 参谋与注入）全部完成。下一步：T7 真机测试（scripts/install.sh）
