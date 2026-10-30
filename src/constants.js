@@ -35,6 +35,7 @@ export const CLOCK_PRECISIONS = Object.freeze(['exact', 'approx', 'unknown']);
 /** @type {import('./types.js').Settings} */
 export const DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
+    api: Object.freeze({ mode: 'direct', url: '', key: '', model: '' }),
     profileId: '',
     maxTokens: 2000,
     recentFloors: 4,

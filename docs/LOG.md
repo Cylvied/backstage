@@ -221,3 +221,9 @@
 ## 2026-10-30 [claude] [决定] T5 复审通过，第 2 批完成
 - T5 修改正确：编辑引导迹象后快照仍有效；13 个测试文件、195 个用例全部通过
 - 第 2 批（T4/T4b/T4c 面板、T5 分阶段、T6 参谋与注入）全部完成。下一步：T7 真机测试（scripts/install.sh）
+
+## 2026-10-30 [claude] [决定] 真机测试发现：需要插件内直填 API（接口 v1.4）
+- 用户没有任何连接配置（习惯像数据库、故事神谕那样在插件里直接填 API），原设计的"选连接配置"下拉框是空的
+- 新增直填模式（默认）：地址 + 密钥 + 模型，经宿主后端 custom 源转发；已核实 TauriTavern 的 custom 源支持 custom_include_headers 且无密钥不报错
+- 新增 settings.fetchModels / testApi / isApiReady；API 未就绪时不自动推演
+- 面板会话需在设置抽屉加 API 配置界面（T4d）

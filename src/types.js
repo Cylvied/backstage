@@ -134,6 +134,8 @@
 /**
  * @typedef {Object} Settings
  * @property {boolean} enabled
+ * @property {{ mode: 'direct'|'profile', url: string, key: string, model: string }} api
+ *   推演与参谋用的模型。direct = 插件内直填（默认）；profile = 使用 profileId 指向的连接配置
  * @property {string} profileId
  * @property {number} maxTokens
  * @property {number} recentFloors

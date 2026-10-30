@@ -28,6 +28,7 @@ export function getSettings() {
         ...structuredClone(DEFAULT_SETTINGS),
         ...saved,
         memory: { ...DEFAULT_SETTINGS.memory, ...(saved.memory ?? {}) },
+        api: { ...DEFAULT_SETTINGS.api, ...(saved.api ?? {}) },
     };
     all[STORE_KEY] = merged;
     return merged;
@@ -37,6 +38,7 @@ export function getSettings() {
 export function saveSettings(patch) {
     const merged = { ...getSettings(), ...patch };
     if (patch.memory) merged.memory = { ...getSettings().memory, ...patch.memory };
+    if (patch.api) merged.api = { ...getSettings().api, ...patch.api };
     ctx().extensionSettings[STORE_KEY] = merged;
     ctx().saveSettingsDebounced();
     return merged;

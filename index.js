@@ -60,7 +60,7 @@ async function runJob(job, signal) {
     try {
         const input = await host.collectSimInput(job.floor, settings);
         const messages = buildSimPrompt({ state: base.state, input, settings });
-        const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens, signal });
+        const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens, signal });
         if (signal.aborted) return;
         const usage = { model: res.model, ms: res.ms };
         const parsed = parseSimOutput(res.text);
@@ -177,7 +177,7 @@ async function plan(request) {
     const { base } = currentBase();
     const input = await host.collectSimInput(host.getChatView().length - 1, settings);
     const messages = buildPlanPrompt({ state: base.state, input, request, settings });
-    const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens });
+    const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens });
     const parsed = parsePlanOutput(res.text);
     if (!parsed.ok) throw new Error(`规划结果无法解析：${parsed.error}`);
     return parsed.cards;
@@ -218,7 +218,7 @@ async function advisorSend(text, options = {}) {
         const { base } = currentBase();
         const input = await host.collectSimInput(host.getChatView().length - 1, settings);
         const messages = buildAdvisorPrompt({ state: base.state, input, history, message });
-        const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens });
+        const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens });
         if (host.getChatId() !== chatId) return null; // 等回复期间切换了聊天：丢弃，不写进别的聊天
         const reply = splitAdvisorReply(res.text);
         const entry = {
@@ -300,6 +300,20 @@ const api = {
             return merged;
         },
         listProfiles: () => host.listProfiles(),
+        /** 直填 API：拉取模型列表，参数缺省时用当前设置里的地址和密钥 */
+        fetchModels: (api) => llm.fetchModels(api ?? host.getSettings().api),
+        /** 发一条很短的请求，确认地址、密钥、模型都可用；patch 可以先带上界面里还没保存的值 */
+        async testApi(patch) {
+            const base = host.getSettings();
+            const settings = patch ? { ...base, ...patch, api: { ...base.api, ...(patch.api ?? {}) } } : base;
+            const res = await llm.call({ settings, messages: [{ role: 'user', content: '请只回复两个字：收到' }], maxTokens: 16 });
+            return { model: res.model, ms: res.ms, reply: res.text.trim().slice(0, 40) };
+        },
+        /** 推演用的模型是否已配置好（面板据此显示"需要先配置 API"） */
+        isApiReady() {
+            const s = host.getSettings();
+            return s.api.mode === 'profile' ? !!s.profileId : !!(s.api.url.trim() && s.api.model.trim());
+        },
     },
 };
 
@@ -374,7 +388,8 @@ async function mountUi() {
 function init() {
     host.onHostEvents({
         onReplyFinalized: e => {
-            if (host.getSettings().enabled) enqueueFor(e.floor, 'reply');
+            // API 没配置好时不自动推演（否则每轮都失败、弹提示），面板状态会提示去配置
+            if (host.getSettings().enabled && api.settings.isApiReady()) enqueueFor(e.floor, 'reply');
         },
         onGenerationStarting: e => refreshInjection(e),
         onChanged: () => refreshInjection(),

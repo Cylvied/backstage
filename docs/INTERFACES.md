@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1.3 · 2026-10-30（v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.4 · 2026-10-30（v1.4：插件内直填 API，见 3.8 节与 5.10 节；v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -191,7 +191,9 @@ SimPatch = {
 | 键 | 默认 | 说明 |
 |---|---|---|
 | enabled | true | 总开关 |
-| profileId | '' | 连接管理器里的连接 id；为空时不推演并提示用户 |
+| api.mode | 'direct' | v1.4：`direct` 插件内直填 API（默认）；`profile` 使用连接管理器的连接配置 |
+| api.url / api.key / api.model | '' | v1.4：直填模式的 OpenAI 兼容地址、密钥、模型。由宿主后端的 custom 源转发，无跨域问题。密钥明文存在扩展设置里（与故事神谕、数据库插件相同） |
+| profileId | '' | profile 模式下的连接配置 id |
 | maxTokens | 2000 | 推演请求的输出上限 |
 | recentFloors | 4 | 推演读取的最近楼层数 |
 | maxCharacters | 12 | 人物上限 |
@@ -408,6 +410,9 @@ export function mountSettings(api): void   // 在扩展设置区挂载设置抽�
 | `previewInjection()` | `{ undercurrent, guide, guidePush }`，即下一轮将注入的文本 |
 | `getFloorInfo(floor)` | 某楼推演信息或 null：`{ status, valid, error, edited, signalCount, changedCharacters, createdAt, usage }` |
 | `settings.get()` / `settings.save(patch)` / `settings.listProfiles()` | 读写设置（`Settings`），列出连接配置 `[{ id, name }]` |
+| `settings.fetchModels(api?)` | v1.4：`Promise<string[]>`，用直填的地址和密钥拉模型列表；参数缺省用已保存的设置。失败 reject（信息可直接展示） |
+| `settings.testApi(patch?)` | v1.4：发一条极短请求测试配置，`Promise<{ model, ms, reply }>`；`patch` 可带界面上尚未保存的值 |
+| `settings.isApiReady()` | v1.4：直填模式下地址和模型都已填写，或 profile 模式下已选连接。未就绪时**不会自动推演** |
 | `advanceBeat(threadId)` / `skipBeat(threadId, index)` | v1.3 分阶段引导：完成当前拍进入下一拍 / 跳过某一拍 |
 | `advisor.history()` | v1.3 参谋对话记录 `AdvisorMessage[]`（跟着当前聊天保存，切换聊天自动是另一份） |
 | `advisor.busy()` | 参谋是否正在回复 |
