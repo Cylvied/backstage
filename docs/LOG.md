@@ -14,3 +14,8 @@
 - COLLAB.md 新增 6.5 节：LOG 只能用 >> 追加、文件名不能只差大小写、refs 只读、依赖与构建只由组长执行等
 - 意见书文件名改为 docs/brainstorm/opinion-<名字>.md（原 claude.md 与 CLAUDE.md 撞名）
 - 第 1 轮头脑风暴期间，组员只能写自己的意见书，其余文件全部只读
+
+## 2026-10-30 [claude] [完成] 第 1 轮头脑风暴汇总
+- Codex、dsh 意见书已交付，均遵守了工作区约束
+- 汇总与组长裁定：docs/brainstorm/SUMMARY.md
+- 等待用户拍板第 4 节问题后再写接口文档；在此之前组员不要开工
