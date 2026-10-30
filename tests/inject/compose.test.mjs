@@ -3,12 +3,19 @@ import { selectSignals, composeInjection } from '../../src/inject/compose.js';
 import { emptyState } from '../../src/util.js';
 import { DEFAULT_SETTINGS } from '../../src/constants.js';
 
-function sig(voice, text, relevance = 2, threadId = null) {
+// 默认挂在一条现存的暗线上（未挂暗线或人物的迹象不会被注入）
+const BASE_THREAD = {
+    id: 't_base00', title: '背景线', characterIds: [], stage: 'growing', trigger: '', deadline: null,
+    visibility: 'hidden', origin: 'sim', guide: null,
+};
+
+function sig(voice, text, relevance = 2, threadId = 't_base00') {
     return { voice, text, threadId, characterId: null, relevance };
 }
 
 function stateWith(signals, extra = {}) {
-    return { ...emptyState(), signals, ...extra };
+    const threads = [BASE_THREAD, ...(extra.threads ?? [])];
+    return { ...emptyState(), signals, ...extra, threads };
 }
 
 const settings = { ...DEFAULT_SETTINGS, memory: { ...DEFAULT_SETTINGS.memory } };
@@ -104,4 +111,16 @@ test('分阶段引导只注入当前拍，并提示不要提前演后面的拍',
     assert.match(out.guide, /只推进这一拍/);
     assert.doesNotMatch(out.guide, /对质/);
     assert.doesNotMatch(out.guide, /踩点/);
+});
+
+test('没有挂在暗线或人物上的迹象不注入', () => {
+    const person = { id: 'c_person', name: '老周', aliases: [], location: '', currentAction: null, longAction: null,
+        knows: [], life: 'alive', onStage: false, pinned: false };
+    const s = stateWith([
+        { voice: 'here', text: '窗台上的鸟在梳理羽毛', threadId: null, characterId: null, relevance: 3 },
+        { voice: 'here', text: '挂在已删除暗线上', threadId: 't_gone00', characterId: null, relevance: 3 },
+        { voice: 'rumor', text: '来自人物', threadId: null, characterId: 'c_person', relevance: 1 },
+        sig('here', '来自暗线', 1),
+    ], { characters: [person] });
+    assert.deepEqual(selectSignals(s, 3).map(x => x.text), ['来自人物', '来自暗线']);
 });

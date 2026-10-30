@@ -33,8 +33,12 @@ export function selectSignals(state, maxSignals) {
     if (!limit) return [];
 
     const guideId = activeGuideThread(state)?.id ?? null;
+    const threadIds = new Set(state.threads.map(t => t.id));
+    const characterIds = new Set(state.characters.map(c => c.id));
     const candidates = (state.signals ?? [])
         .filter(s => s && String(s.text ?? '').trim())
+        // 只注入来路清楚的迹象：必须挂在现存的暗线或人物上
+        .filter(s => threadIds.has(s.threadId) || characterIds.has(s.characterId))
         .filter(s => state.protagonist.reachable || s.voice !== 'rumor')
         .map((s, index) => ({ s, index }))
         .sort((a, b) => {
