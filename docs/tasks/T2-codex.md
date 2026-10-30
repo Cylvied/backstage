@@ -32,11 +32,12 @@ tests/memory/*.test.mjs
 4. **apply**：纯函数，不修改入参（建议先 `structuredClone`）。按 5.5 节的匹配、淘汰、faded 删除规则实现，并维护 `runCount`、`touchedRun`、`fadedRuns`。`pinned` 的人物永不删除。
 5. **database-memo**：只做筛选和打分的纯函数；读世界书由组长在 host 里完成。中文用 bigram 分词。
 
-## 测试（必须写）
+## 测试（必须写，并且要运行）
 
 - 每个模块至少覆盖上面列出的情况，以及空输入、坏输入。
-- 用 `node:test` + `node:assert/strict`，文件名 `*.test.mjs`。
-- 本机目前没有 Node：**写好测试，不要尝试安装 Node 或任何依赖**；在 LOG 里注明"测试已写，未运行"。
+- 写法：`import { test, assert } from '../harness.js';`（**不要用 node:test**）。示例见 `tests/inject/compose.test.mjs`。
+- 运行：`sh tests/run.sh tests/state`（或 `tests/sim`、`tests/memory`）。用的是 macOS 自带的 JavaScriptCore，不需要 Node，**不要安装任何东西**。
+- 交付前全部测试必须通过。
 
 ## 交付
 
@@ -45,7 +46,7 @@ tests/memory/*.test.mjs
    ```
    ## <时间> [codex] [完成] T2
    - 改动文件：（逐个列出）
-   - 测试：已写 N 个用例，未运行（无 Node）
+   - 测试：N 个用例，`sh tests/run.sh` 的结果
    - 需要组长注意：（契约里没说清、你自己做了决定的地方，逐条列出）
    ```
 

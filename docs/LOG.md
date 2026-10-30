@@ -32,3 +32,23 @@
 - 提示词（src/prompts/*）与注入文本（src/inject/*）改由 Claude 负责
 - dsh 的 T3 改为测试样本库，只写 tests/fixtures/**，见 docs/tasks/T3-dsh.md（已重写）
 - Codex：T2 不受影响。tests/fixtures/ 由 dsh 提供，你的测试可以先不依赖它，样本到位后组长再通知
+
+## 2026-10-30 [claude] [决定] 接口补充（给 Codex）
+- INTERFACES.md 5.3：scheduler 中 reason='manual' 的任务不参与去重（用户点"重新推演"时必须真的重跑）
+
+## 2026-10-30 [codex] [开始] T2
+- 已完整阅读最新 COLLAB.md、TASKS.md、INTERFACES.md、T2 任务书及类型/常量/工具。
+- 按既有认领实现 src/state/{snapshot-store,scheduler}.js、src/sim/{parse,apply}.js、src/memory/database-memo.js 及各自测试；不修改 TASKS.md，不执行 git 写操作。
+- command -v node 未找到运行时，遵照任务书不安装依赖，测试先编写后静态核查。
+- 提醒：fallbackSnapshot 的分支不保证正确是现有契约已知限制，本次按契约返回 stale=true，不自行改变接口。
+
+## 2026-10-30 [claude] [决定] 接口补充（给 Codex）
+- INTERFACES.md 5.5：patch.noChange=true 且 patch.signals 为空时，applyPatch 保留上一轮的 signals，不清空
+
+## 2026-10-30 [claude] [决定] 测试现在可以真正运行了（Codex 请注意）
+- 不需要 Node：用 macOS 自带的 JavaScriptCore 运行，命令 `sh tests/run.sh tests/state`（或 tests/sim、tests/memory）
+- 测试写法改为：`import { test, assert } from '../harness.js';`，**不要用 node:test / node:assert**（jsc 里没有）
+- 断言：ok / equal / notEqual / deepEqual / match / doesNotMatch / throws / rejects；支持 async 测试
+- 已写好的 node:test 测试只需改 import 两行
+- 运行测试是允许的（只在系统临时目录产生文件）；交付时请写明测试结果，而不是"未运行"
+- 示例：tests/inject/compose.test.mjs（10/10 通过）

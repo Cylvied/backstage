@@ -12,7 +12,8 @@
 - **原生 JavaScript ES 模块，不需要构建**。宿主用 `import()` 加载 `manifest.json` 里的 `js` 入口（`refs/TauriTavern/src/scripts/extensions.js:542`），相对路径 `import` 直接可用。
 - 类型用 **JSDoc** 写，统一引用 `src/types.js` 中的 typedef，例如 `/** @param {import('../types.js').SimState} state */`。
 - **不引入任何第三方依赖**，不用 UI 框架，UI 用原生 DOM + CSS。
-- 本机目前**没有 Node**。纯逻辑模块仍需写测试（`tests/**/*.test.mjs`，用 `node:test` + `node:assert/strict`），能跑就跑；跑不了就在 LOG 里注明"测试已写，未运行"。
+- 本机**没有 Node**，测试用 macOS 自带的 JavaScriptCore 运行：`sh tests/run.sh`（全部）或 `sh tests/run.sh tests/state`（某个目录）。测试文件命名 `tests/**/*.test.mjs`，写法：`import { test, assert } from '../harness.js';`（**不要用 `node:test`**，jsc 里没有）。断言有 `ok / equal / notEqual / deepEqual / match / doesNotMatch / throws / rejects`。
+- jsc 环境没有 `structuredClone`、`AbortController`、`console`，harness 已补了测试用的最小实现；源码里可以正常使用它们（浏览器里都有）。
 - **纯函数模块不得访问宿主**（不碰 `SillyTavern`、`window`、`document`、`globalThis`），这样测试才不依赖浏览器。只有 `src/host/`、`src/ui/` 和 `index.js` 可以访问宿主。
 - 文件编码 UTF-8，缩进 4 空格，单引号，必须写分号。
 - 用户可见的文字一律中文；代码标识符一律英文。
@@ -268,7 +269,7 @@ export function createScheduler({ runJob: (job, signal) => Promise<void>, log })
 }
 ```
 
-去重键 `chatId|floor|swipeId|textHash`；同一聊天串行；`enqueue` 新任务时，取消**排队中**的同聊天旧任务（正在跑的不取消，结果由写回校验决定去留）。
+去重键 `chatId|floor|swipeId|textHash`；**`reason='manual'` 的任务不参与去重**（用户主动要求重新推演）；同一聊天串行；`enqueue` 新任务时，取消**排队中**的同聊天旧任务（正在跑的不取消，结果由写回校验决定去留）。
 
 ### 5.4 `src/sim/parse.js`（Codex）
 
@@ -288,6 +289,8 @@ export function adoptPlan(state: SimState, card: PlanCard, intensity): SimState 
 export function setGuideStatus(state: SimState, threadId: string, status: 'done'|'dropped'): SimState
 export function setGuideIntensity(state: SimState, threadId: string, intensity): SimState
 ```
+
+`patch.noChange=true` 且 `patch.signals` 为空时，**保留上一轮的 signals**（其余规则照常：runCount 递增、fadedRuns 累计）。
 
 人物超过上限时，按"未钉住 → 不在场 → longAction 非 ongoing → 最久未出现在 patch 中"淘汰。`faded` 的线连续 3 次推演未被 upsert 则删除（在线对象上记 `fadedRuns`，这是 types.js 里允许的内部字段）。
 

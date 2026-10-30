@@ -1,0 +1,266 @@
+// 幕后（Backstage）入口：装配各模块、接线宿主事件。
+// 第 1 批只有一个最小设置抽屉；完整面板在第 2 批。
+
+import { EXT_NAME, LOG_PREFIX, STORE_KEY } from './src/constants.js';
+import { hashText } from './src/util.js';
+import * as host from './src/host/host.js';
+import * as llm from './src/host/llm.js';
+import * as inject from './src/host/inject.js';
+import { findBase, makeSnapshot, readSnapshot, isSnapshotValid } from './src/state/snapshot-store.js';
+import { createScheduler } from './src/state/scheduler.js';
+import { parseSimOutput, parsePlanOutput } from './src/sim/parse.js';
+import { applyPatch, adoptPlan, setGuideStatus, setGuideIntensity } from './src/sim/apply.js';
+import { buildSimPrompt } from './src/prompts/sim-prompt.js';
+import { buildPlanPrompt } from './src/prompts/plan-prompt.js';
+import { composeInjection } from './src/inject/compose.js';
+
+/** @typedef {import('./src/types.js').SimJob} SimJob */
+/** @typedef {import('./src/types.js').SimState} SimState */
+
+const status = { lagging: false, lastError: /** @type {string|null} */ (null), lastRunAt: 0 };
+const statusListeners = new Set();
+
+function notifyStatus() {
+    const full = { ...status, scheduler: scheduler.status() };
+    for (const fn of statusListeners) {
+        try { fn(full); } catch (error) { console.warn(LOG_PREFIX, error); }
+    }
+}
+
+// ---------- 推演 ----------
+
+/**
+ * @param {SimJob} job
+ * @param {AbortSignal} signal
+ */
+async function runJob(job, signal) {
+    const settings = host.getSettings();
+    if (!settings.enabled) return;
+
+    const view = host.getChatView();
+    const message = view.getMessage(job.floor);
+    if (view.chatId !== job.chatId || !message || message.isUser
+        || message.swipeId !== job.swipeId || hashText(message.text) !== job.textHash) {
+        return; // 任务排队期间聊天已经变了
+    }
+
+    const base = findBase(view, job.floor - 1);
+    const common = { parent: base.snapshot, floor: job.floor, swipeId: job.swipeId, text: message.text };
+    let snapshot;
+
+    try {
+        const input = await host.collectSimInput(job.floor, settings);
+        const messages = buildSimPrompt({ state: base.state, input, settings });
+        const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens, signal });
+        if (signal.aborted) return;
+        const usage = { model: res.model, ms: res.ms };
+        const parsed = parseSimOutput(res.text);
+        snapshot = parsed.ok
+            ? makeSnapshot({ ...common, state: applyPatch(base.state, parsed.patch, { maxCharacters: settings.maxCharacters }), status: 'ok', error: null, usage })
+            : makeSnapshot({ ...common, state: base.state, status: 'failed', error: `模型输出无法解析：${parsed.error}`, usage });
+    } catch (error) {
+        if (signal.aborted) return;
+        snapshot = makeSnapshot({ ...common, state: base.state, status: 'failed', error: String(error?.message ?? error), usage: null });
+    }
+
+    const written = await host.writeSnapshot(job.floor, job.swipeId, snapshot);
+    if (!written) {
+        console.info(LOG_PREFIX, '推演结果已过期，丢弃', job);
+        return;
+    }
+    status.lastError = snapshot.status === 'failed' ? snapshot.error : null;
+    status.lastRunAt = Date.now();
+    if (snapshot.status === 'failed') {
+        console.warn(LOG_PREFIX, snapshot.error);
+        globalThis.toastr?.warning(snapshot.error, `${EXT_NAME}：推演失败`);
+    }
+    refreshInjection();
+}
+
+const scheduler = createScheduler({
+    runJob,
+    log: (...args) => console.debug(LOG_PREFIX, ...args),
+});
+scheduler.onStatus(() => notifyStatus());
+
+/** @param {'reply'|'manual'} reason */
+function enqueueFor(floor, reason) {
+    const view = host.getChatView();
+    const message = view.getMessage(floor);
+    if (!message || message.isUser) return false;
+    scheduler.enqueue({
+        chatId: view.chatId,
+        floor,
+        swipeId: message.swipeId,
+        textHash: hashText(message.text),
+        reason,
+    });
+    return true;
+}
+
+// ---------- 注入 ----------
+
+/** @param {{ type: string }} [event] 生成开始时传入，用来判断这次是不是重写最后一条 AI 回复 */
+function refreshInjection(event) {
+    const settings = host.getSettings();
+    if (!settings.enabled) {
+        inject.clear();
+        return;
+    }
+    const view = host.getChatView();
+    const lastAi = host.lastAiFloor();
+    let target = view.length - 1;
+    // 重 roll / 新 swipe / 续写：最后那条 AI 回复要被改写，不能用它自己推出来的状态
+    if (event && ['regenerate', 'swipe', 'continue'].includes(event.type) && lastAi === view.length - 1) {
+        target = lastAi - 1;
+    }
+    const base = findBase(view, target);
+    inject.apply(composeInjection(base.state, settings), settings);
+
+    // 最新一条 AI 回复还没有有效快照 = 推演落后一轮
+    const lastMessage = lastAi >= 0 ? view.getMessage(lastAi) : null;
+    const lastSnap = lastMessage ? readSnapshot(lastMessage) : null;
+    status.lagging = lastAi >= 0 && !(lastSnap && isSnapshotValid(lastSnap, lastMessage));
+    notifyStatus();
+}
+
+// ---------- 用户操作（面板会调用） ----------
+
+/** 当前生效的状态：最后一条 AI 回复（或其之前）的有效快照 */
+function currentBase() {
+    const view = host.getChatView();
+    return { view, base: findBase(view, view.length - 1), lastAi: host.lastAiFloor() };
+}
+
+/**
+ * 修改当前状态并保存到最后一条 AI 回复上（标记为用户编辑）。
+ * @param {(state: SimState) => SimState} mutate
+ */
+async function editCurrentState(mutate) {
+    const { view, base, lastAi } = currentBase();
+    if (lastAi < 0) throw new Error('聊天里还没有 AI 回复，无法保存。');
+    const message = view.getMessage(lastAi);
+    const existing = readSnapshot(message);
+    const own = existing && isSnapshotValid(existing, message) ? existing : null;
+    const snapshot = makeSnapshot({
+        parent: null,
+        floor: lastAi,
+        swipeId: message.swipeId,
+        text: message.text,
+        state: mutate(structuredClone(base.state)),
+        status: own ? own.status : 'manual',
+        error: null,
+        usage: own?.usage ?? null,
+    });
+    // 改的是这一楼自己的快照：沿用它原来的父快照；这一楼还没有快照：父快照就是当前基底
+    snapshot.parentId = own ? own.parentId : (base.snapshot?.id ?? null);
+    snapshot.edited = true;
+    const ok = await host.writeSnapshot(lastAi, message.swipeId, snapshot);
+    if (!ok) throw new Error('保存失败：最后一条回复可能刚被修改或切换了。');
+    refreshInjection();
+    return snapshot.state;
+}
+
+/** @param {string} request */
+async function plan(request) {
+    const settings = host.getSettings();
+    const { base } = currentBase();
+    const input = await host.collectSimInput(host.getChatView().length - 1, settings);
+    const messages = buildPlanPrompt({ state: base.state, input, request, settings });
+    const res = await llm.call({ profileId: settings.profileId, messages, maxTokens: settings.maxTokens });
+    const parsed = parsePlanOutput(res.text);
+    if (!parsed.ok) throw new Error(`规划结果无法解析：${parsed.error}`);
+    return parsed.cards;
+}
+
+const api = {
+    status: () => ({ ...status, scheduler: scheduler.status() }),
+    onStatus(fn) { statusListeners.add(fn); return () => statusListeners.delete(fn); },
+    getState: () => currentBase().base.state,
+    runNow: () => enqueueFor(host.lastAiFloor(), 'manual'),
+    plan,
+    adopt: (card, intensity) => editCurrentState(s => adoptPlan(s, card, intensity)),
+    setGuideStatus: (threadId, value) => editCurrentState(s => setGuideStatus(s, threadId, value)),
+    setGuideIntensity: (threadId, value) => editCurrentState(s => setGuideIntensity(s, threadId, value)),
+    editState: editCurrentState,
+    previewInjection: () => composeInjection(currentBase().base.state, host.getSettings()),
+};
+
+// ---------- 最小设置抽屉（第 2 批会换成完整面板） ----------
+
+function renderSettings() {
+    const root = document.getElementById('extensions_settings2') ?? document.getElementById('extensions_settings');
+    if (!root || document.getElementById('backstage_settings')) return;
+    const settings = host.getSettings();
+    const options = host.listProfiles()
+        .map(p => `<option value="${p.id}" ${p.id === settings.profileId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`)
+        .join('');
+
+    root.insertAdjacentHTML('beforeend', `
+<div id="backstage_settings" class="inline-drawer">
+  <div class="inline-drawer-toggle inline-drawer-header"><b>${EXT_NAME}</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>
+  <div class="inline-drawer-content">
+    <label class="checkbox_label"><input id="backstage_enabled" type="checkbox" ${settings.enabled ? 'checked' : ''}> 启用后台推演</label>
+    <label>推演用的连接 <select id="backstage_profile" class="text_pole"><option value="">（请选择）</option>${options}</select></label>
+    <label>每层暗流上限 <input id="backstage_max_signals" class="text_pole" type="number" min="0" max="3" value="${settings.maxSignals}"></label>
+    <label class="checkbox_label"><input id="backstage_memory" type="checkbox" ${settings.memory.enabled ? 'checked' : ''}> 读取数据库纪要</label>
+    <div class="flex-container">
+      <div id="backstage_run" class="menu_button">立即推演</div>
+      <div id="backstage_preview" class="menu_button">查看注入内容</div>
+    </div>
+    <small id="backstage_status"></small>
+  </div>
+</div>`);
+
+    const $ = id => document.getElementById(id);
+    $('backstage_enabled').addEventListener('change', e => { host.saveSettings({ enabled: e.target.checked }); refreshInjection(); });
+    $('backstage_profile').addEventListener('change', e => host.saveSettings({ profileId: e.target.value }));
+    $('backstage_max_signals').addEventListener('change', e => { host.saveSettings({ maxSignals: Number(e.target.value) || 0 }); refreshInjection(); });
+    $('backstage_memory').addEventListener('change', e => host.saveSettings({ memory: { enabled: e.target.checked } }));
+    $('backstage_run').addEventListener('click', () => api.runNow() || globalThis.toastr?.info('还没有 AI 回复可以推演。', EXT_NAME));
+    $('backstage_preview').addEventListener('click', () => {
+        const p = api.previewInjection();
+        const text = [p.undercurrent, p.guide].filter(Boolean).join('\n\n') || '（当前没有要注入的内容）';
+        globalThis.SillyTavern.getContext().callGenericPopup?.(`<pre style="white-space:pre-wrap;text-align:left">${escapeHtml(text)}</pre>`, 1);
+    });
+
+    api.onStatus(s => {
+        const el = $('backstage_status');
+        if (!el) return;
+        el.textContent = s.scheduler.running ? '推演中…'
+            : s.lastError ? `上次推演失败：${s.lastError}`
+            : s.lagging ? '推演落后一轮（最新回复还没有推演结果）'
+            : s.lastRunAt ? '已是最新' : '';
+    });
+}
+
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+// ---------- 启动 ----------
+
+function init() {
+    host.onHostEvents({
+        onReplyFinalized: e => {
+            if (host.getSettings().enabled) enqueueFor(e.floor, 'reply');
+        },
+        onGenerationStarting: e => refreshInjection(e),
+        onChanged: () => refreshInjection(),
+        onChatChanged: () => {
+            scheduler.cancelAll();
+            inject.clear();
+            refreshInjection();
+        },
+    });
+    renderSettings();
+    refreshInjection();
+    globalThis.Backstage = api;
+    console.info(LOG_PREFIX, `已加载（数据键 ${STORE_KEY}）`);
+}
+
+try {
+    init();
+} catch (error) {
+    console.error(LOG_PREFIX, '初始化失败', error);
+}
