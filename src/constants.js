@@ -18,13 +18,13 @@ export const LIMITS = Object.freeze({
     signalText: 80,
     planCards: 3,
     fadedRunsBeforeDelete: 3,
-    signalMaxAgeRuns: 2,
+    signalMaxAgeRuns: 2,       // 迹象最多存活的推演次数（noChange 沿用时也计入）
     chronicleMax: 80,          // 事件记录保存上限，超出时删最早的
     chronicleShow: 25,         // 推演时展示最近多少条（另加与活跃暗线、在场人物相关的较早事件）
     loreRequestsMax: 5,        // 每轮最多点名几条世界书
     loreWantRuns: 5,           // 点名的条目保留几轮（期间再次点名则续期）
     loreBudgetMin: 10000,
-    loreBudgetMax: 300000,   // 迹象最多存活的推演次数（noChange 沿用时也计入）
+    loreBudgetMax: 300000,
     beatsMin: 2,
     beatsMax: 8,
 });

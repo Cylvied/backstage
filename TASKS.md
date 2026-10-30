@@ -34,10 +34,10 @@
 
 | 编号 | 任务 | 负责人 | 状态 | 认领的文件 |
 |---|---|---|---|---|
-| B-Codex | 解析、检查、合并、校验（docs/tasks/B-codex.md） | Codex | 进行中 | src/sim/*, src/state/snapshot-store.js, tests/sim/*, tests/state/*（除 write-guard）, tests/integration/* |
-| B-dsh | v1.5 测试样本（docs/tasks/B-dsh.md） | dsh | 进行中 | tests/fixtures/v15/** |
-| B-UI | 事件记录、时间、审核记录、资料来源的显示；世界书与审核设置 | Claude（面板会话） | 进行中 | src/ui/*, style.css, dev/*, tests/ui/* |
-| B-Claude | 世界书分层与预算、推演/审核提示词、注入、入口编排 | Claude | 进行中 | index.js, src/host/*, src/memory/lore.js, src/prompts/*, src/inject/*, src/types.js, src/constants.js, src/util.js, tests/host/*, tests/memory/*, tests/prompts/*, tests/inject/* |
+| B-Codex | 解析、检查、合并、校验（docs/tasks/B-codex.md） | Codex | 已完成 | src/sim/*, src/state/snapshot-store.js, tests/sim/*, tests/state/*（除 write-guard）, tests/integration/* |
+| B-dsh | v1.5 测试样本（docs/tasks/B-dsh.md） | dsh | 已完成 | tests/fixtures/v15/** |
+| B-UI | 事件记录、时间、审核记录、资料来源的显示；世界书与审核设置 | Claude（面板会话） | 已完成 | src/ui/*, style.css, dev/*, tests/ui/* |
+| B-Claude | 世界书分层与预算、推演/审核提示词、注入、入口编排 | Claude | 已完成 | index.js, src/host/*, src/memory/lore.js, src/prompts/*, src/inject/*, src/types.js, src/constants.js, src/util.js, tests/host/*, tests/memory/*, tests/prompts/*, tests/inject/* |
 
 ## 待办（用户真机试用期间，按反馈排序）
 

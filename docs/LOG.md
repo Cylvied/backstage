@@ -432,3 +432,9 @@
 - v1.5 样本整条链路（解析→检查→模拟审核→合并→快照→注入）：20 个推演样本、14 个审核样本均跑通
 - 唯一差异：bad-markknown-01/02 程序检查只记了 mark_known，样本预期 mark_known + reference。属分类口径差异，不是缺陷，待定是否统一
 - 下一步：结论审查 → 提交 → scripts/install.sh → 请用户真机测试 B 批
+
+## 2026-10-30 [claude] [决定] B 批审查通过
+- Codex：checkPatch / extractReviewItems / applyVerdicts / parseReviewOutput 与接口 7.5 一致；"只丢出问题的那一项"、矛盾裁决 false 优先、缺裁决放行、时间只按天数比较，这些取舍都同意
+- 归类差异结论：markKnown 指向不存在的事件只记 mark_known 一类（采纳 Codex 的做法）；dsh 样本里多标的 reference 不改代码，留档
+- 整条链路（解析→检查→模拟审核→合并→快照→注入）用 v1.5 样本跑通；index.js 模块图在 jsc 中加载成功
+- B 批四方全部完成，安装进 TauriTavern，等待用户真机测试
