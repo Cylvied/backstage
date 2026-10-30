@@ -10,9 +10,25 @@ import { renderThreads } from './tab-threads.js';
 import { renderNote } from './tab-note.js';
 import { renderAdvisor } from './tab-advisor.js';
 import { mountBadges } from './badges.js';
-import { renderSettingsDrawer, revealSettings } from './settings.js';
+import { renderSettingsDrawer } from './settings.js';
+import { buildSettingsPage } from './settings-page.js';
 
-export { renderSettingsDrawer as mountSettings };
+/** 打开面板并进入设置页；mountPanel 之后才有 */
+let openSettingsPage = /** @type {(() => void)|null} */ (null);
+
+/**
+ * 扩展设置区里的精简抽屉；其中「打开幕后设置」进入面板的设置页。
+ * @param {any} api
+ */
+export function mountSettings(api) {
+    renderSettingsDrawer(api, () => {
+        if (openSettingsPage) openSettingsPage();
+        else document.getElementById('backstage_wand_button')?.click();
+    });
+}
+
+const GEAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 
 const TABS = [
     { id: 'characters', label: '人物', render: renderCharacters, count: s => s.characters.length },
@@ -30,6 +46,8 @@ export function mountPanel(api) {
         tab: 'characters',
         editing: /** @type {string|null} */ (null),
         dirty: false,
+        view: /** @type {'tabs'|'settings'} */ ('tabs'),
+        settingsPage: /** @type {{ element: HTMLElement, refresh: () => void }|null} */ (null),
         advisorDraft: '',
         advisorSig: /** @type {string|null} */ (null),
         scrollToEnd: false,
@@ -46,12 +64,16 @@ export function mountPanel(api) {
     const notice = h('div', { class: 'bs-notice', role: 'status', 'aria-live': 'polite' });
     const tabBar = h('nav', { class: 'bs-tabs', role: 'tablist', 'aria-label': '幕后' });
     const body = h('div', { class: 'bs-body', role: 'tabpanel' });
+    const gearBtn = h('button', { type: 'button', class: 'bs-icon-btn bs-gear', 'aria-label': '设置', title: '设置', 'aria-pressed': 'false' });
+    gearBtn.innerHTML = GEAR_SVG;
+    gearBtn.addEventListener('click', () => showSettings(ui.view !== 'settings'));
 
     const sheet = h('aside', { class: 'bs-sheet', role: 'dialog', 'aria-label': EXT_NAME },
         h('div', { class: 'bs-grip', 'aria-hidden': 'true' }),
         h('header', { class: 'bs-head' },
             h('h2', { class: 'bs-title' }, EXT_NAME),
             clock,
+            gearBtn,
             h('button', { type: 'button', class: 'bs-icon-btn', 'aria-label': '关闭', title: '关闭', onclick: () => setOpen(false) }, '×')),
         h('div', { class: 'bs-status' },
             statusDot,
@@ -139,11 +161,38 @@ export function mountPanel(api) {
         }));
     }
 
+    /** 设置页：进入时现建一次（读最新设置），停留期间不重画，免得冲掉正在填的内容 */
+    function showSettings(on) {
+        ui.view = on ? 'settings' : 'tabs';
+        ui.editing = null;
+        ui.settingsPage = on ? buildSettingsPage(api) : null;
+        gearBtn.setAttribute('aria-pressed', String(on));
+        root.dataset.view = ui.view;
+        body.scrollTop = 0;
+        render();
+    }
+
+    function renderSettingsView() {
+        tabBar.hidden = true;
+        body.dataset.tab = 'settings';
+        if (body.firstElementChild?.contains(ui.settingsPage.element)) return;
+        body.replaceChildren(h('div', { class: 'bs-settings-view' },
+            h('div', { class: 'bs-settings-top' },
+                h('button', { type: 'button', class: 'bs-btn bs-btn-quiet bs-back', onclick: () => showSettings(false) }, '‹ 返回'),
+                h('h3', { class: 'bs-settings-title' }, '设置')),
+            ui.settingsPage.element));
+    }
+
     function render() {
         if (!ui.open) { ui.dirty = true; return; }
         ui.dirty = false;
         const state = api.getState();
         clock.textContent = clockText(state.clock);
+        if (ui.view === 'settings') {
+            renderSettingsView();
+            return;
+        }
+        tabBar.hidden = false;
         renderTabs();
         const tab = TABS.find(t => t.id === ui.tab) ?? TABS[0];
         body.dataset.tab = tab.id;
@@ -184,8 +233,8 @@ export function mountPanel(api) {
 
     runBtn.addEventListener('click', () => {
         if (!api.settings.isApiReady()) {
-            if (revealSettings()) setOpen(false);
-            else notify('在扩展设置（积木图标）里找到「幕后」，填写模型 API。', 'error');
+            if (ui.view !== 'settings') showSettings(true);
+            else body.scrollTop = 0;
             return;
         }
         const ok = api.runNow();
@@ -198,6 +247,8 @@ export function mountPanel(api) {
         document.getElementById('backstage_wand_button')?.classList.toggle('is-active', open);
         if (open) {
             ui.advisorSig = null;
+            // 设置可能在别处改过（如扩展设置里的开关）：重新打开时按最新值重建设置页
+            if (ui.view === 'settings') ui.settingsPage = buildSettingsPage(api);
             renderStatus();
             render();
             sheet.querySelector('.bs-tab[aria-selected="true"]')?.focus({ preventScroll: true });
@@ -207,6 +258,7 @@ export function mountPanel(api) {
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && ui.open) {
             if (ui.editing) ctx.stopEdit();
+            else if (ui.view === 'settings') showSettings(false);
             else setOpen(false);
         }
     });
@@ -229,6 +281,11 @@ export function mountPanel(api) {
             render();
         });
     }
+
+    openSettingsPage = () => {
+        setOpen(true);
+        showSettings(true);
+    };
 
     const toggle = () => setOpen(!ui.open);
     addWandItem(toggle);

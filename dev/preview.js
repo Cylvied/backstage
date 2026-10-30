@@ -1,6 +1,7 @@
 // 预览页脚本：读 URL 参数 → 搭一个假宿主 → 用模拟 api 挂载真实面板。
 // 参数：?fixture=wuxia&theme=dark&status=fresh&savefail=1&tab=参谋&advisor=multi&guide=reached&noanim=1
 //   advisor：empty 空对话 / multi 多轮（含单步卡、分阶段卡、失败回复）/ fail 每次都失败 / slow 一直在想
+//   mangle=1：模拟主题扩展把扩展设置抽屉里的控件拆出来重排
 //   status=setup：模拟刚装好、模型 API 没填；apitest=fail：获取模型与测试连接都失败；profiles=0：没有连接配置
 //   guide：staged 第一条线是进行到第 2 拍的分阶段引导 / reached 同上并带"这一拍看起来已经演完了"提示
 
@@ -79,6 +80,21 @@ globalThis.Backstage = api;
 const ui = await import('../src/ui/panel.js');
 ui.mountPanel(api);
 ui.mountSettings(api);
+
+// mangle=1：粗略模拟主题扩展（如 Claude Web 2.0）接管设置抽屉——把每个控件拆出来放进它自己的排版行，
+// 原来的标签和结构留在原处。用来确认精简抽屉被这样重排后仍然可用。
+if (params.get('mangle') === '1') {
+    const content = document.querySelector('#backstage_settings_v2 .inline-drawer-content');
+    const rows = document.createElement('div');
+    rows.className = 'cwx-rows';
+    for (const control of content.querySelectorAll('input, select, textarea, button, .menu_button')) {
+        const row = document.createElement('div');
+        row.className = 'cwx-row';
+        row.append(control);
+        rows.append(row);
+    }
+    content.append(rows);
+}
 
 if (opts.tab) {
     $('backstage_wand_button').click();

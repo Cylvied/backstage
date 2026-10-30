@@ -1,4 +1,4 @@
-// 设置抽屉里的「模型 API」一节：直填 API（默认）或使用连接管理器的连接配置；获取模型、测试连接。
+// 面板设置页里的「模型 API」一节：直填 API（默认）或使用连接管理器的连接配置；获取模型、测试连接。
 
 import { h } from './dom.js';
 import { filterModels, testResultText } from './format.js';
@@ -37,14 +37,14 @@ export function buildApiSection(api, onChange) {
 
     // ---- 直填 ----
     const debounced = typed.push;
-    const textInput = (value, attrs) => h('input', { class: 'text_pole', type: 'text', value: value ?? '', autocomplete: 'off', spellcheck: 'false', ...attrs });
+    const textInput = (value, attrs) => h('input', { class: 'bs-input', type: 'text', value: value ?? '', autocomplete: 'off', spellcheck: 'false', ...attrs });
 
     const url = textInput(s.api?.url, { placeholder: URL_PLACEHOLDER, inputmode: 'url' });
     url.addEventListener('input', () => debounced({ api: { url: url.value.trim() } }));
 
     const key = textInput(s.api?.key, { type: 'password', placeholder: 'sk-… / AIza…', autocomplete: 'new-password' });
     key.addEventListener('input', () => debounced({ api: { key: key.value.trim() } }));
-    const eye = h('button', { type: 'button', class: 'menu_button bs-set-btn', 'aria-pressed': 'false' }, '显示');
+    const eye = h('button', { type: 'button', class: 'bs-btn bs-set-btn', 'aria-pressed': 'false' }, '显示');
     eye.addEventListener('click', () => {
         const show = key.type === 'password';
         key.type = show ? 'text' : 'password';
@@ -95,7 +95,7 @@ export function buildApiSection(api, onChange) {
         }
     });
 
-    const fetchBtn = h('button', { type: 'button', class: 'menu_button bs-set-btn' }, '获取模型');
+    const fetchBtn = h('button', { type: 'button', class: 'bs-btn bs-set-btn' }, '获取模型');
     const fetchNote = h('small', { class: 'bs-set-note', role: 'status' });
     fetchBtn.addEventListener('click', async () => {
         fetchBtn.disabled = true;
@@ -127,7 +127,7 @@ export function buildApiSection(api, onChange) {
             listBox));
 
     // ---- 连接配置 ----
-    const profile = h('select', { class: 'text_pole', id: 'backstage_profile_select' });
+    const profile = h('select', { class: 'bs-input', id: 'backstage_profile_select' });
     const profileNote = h('small');
     const fillProfiles = () => {
         const current = api.settings.get().profileId;
@@ -148,11 +148,11 @@ export function buildApiSection(api, onChange) {
             h('span', null, '连接配置'),
             h('div', { class: 'bs-set-inline' },
                 profile,
-                h('button', { type: 'button', class: 'menu_button bs-set-btn', title: '重新读取连接列表', onclick: fillProfiles }, '刷新')),
+                h('button', { type: 'button', class: 'bs-btn bs-set-btn', title: '重新读取连接列表', onclick: fillProfiles }, '刷新')),
             profileNote));
 
     // ---- 测试连接 ----
-    const testBtn = h('button', { type: 'button', class: 'menu_button bs-set-btn' }, '测试连接');
+    const testBtn = h('button', { type: 'button', class: 'bs-btn bs-set-btn' }, '测试连接');
     const result = h('div', { class: 'bs-set-result', role: 'status', hidden: true });
     testBtn.addEventListener('click', async () => {
         testBtn.disabled = true;
@@ -175,8 +175,8 @@ export function buildApiSection(api, onChange) {
         }
     });
 
-    const section = h('section', { class: 'bs-set-api', 'aria-label': '模型 API' },
-        h('h4', { class: 'bs-set-head bs-set-head-first' }, '模型 API'),
+    const section = h('section', { class: 'bs-set-section bs-set-api', 'aria-label': '模型 API' },
+        h('h3', { class: 'bs-set-head' }, '模型 API'),
         h('div', { class: 'bs-set-seg', role: 'radiogroup', 'aria-label': '接入方式' }, modeButtons),
         directBox,
         profileBox,

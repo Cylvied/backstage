@@ -33,7 +33,7 @@ export function clockText(clock) {
  */
 export function statusView(status, config) {
     if (!config.enabled) return { kind: 'off', text: '后台推演已关闭', detail: '' };
-    if (!config.apiReady) return { kind: 'setup', text: '需要先配置模型 API', detail: '在扩展设置的「幕后」里填写' };
+    if (!config.apiReady) return { kind: 'setup', text: '需要先配置模型 API', detail: '点「去配置」填写地址和模型' };
     if (status.scheduler?.running) {
         const queued = status.scheduler.queued ? `，另有 ${status.scheduler.queued} 个排队` : '';
         return { kind: 'running', text: '推演中…', detail: queued ? queued.slice(1) : '' };
@@ -220,4 +220,21 @@ export function filterModels(models, query, limit = 200) {
 export function testResultText(res) {
     const secs = Number.isFinite(res?.ms) ? `${(res.ms / 1000).toFixed(1)} 秒` : '';
     return ['可用', res?.model, secs].filter(Boolean).join(' · ');
+}
+
+/**
+ * 扩展设置抽屉里那一行 API 状态。
+ * @param {Settings} settings
+ * @param {boolean} ready  api.settings.isApiReady()
+ * @param {Array<{ id: string, name: string }>} profiles
+ * @returns {{ kind: 'ok'|'setup'|'off', text: string }}
+ */
+export function apiStatusView(settings, ready, profiles) {
+    if (!ready) return { kind: 'setup', text: '需要先配置模型 API' };
+    const prefix = settings.enabled ? '已配置' : '已配置（后台推演已关闭）';
+    if (settings.api?.mode === 'profile') {
+        const name = profiles?.find(p => p.id === settings.profileId)?.name ?? settings.profileId;
+        return { kind: settings.enabled ? 'ok' : 'off', text: `${prefix} · 连接配置：${name}` };
+    }
+    return { kind: settings.enabled ? 'ok' : 'off', text: `${prefix} · ${settings.api?.model ?? ''}` };
 }
