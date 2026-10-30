@@ -1,12 +1,13 @@
 /* 幕后（Backstage）样式。
- * 全部限定在插件自己的根选择器下：#backstage-panel、#backstage_settings_v2、.bs-badge。
+ * 全部限定在插件自己的根选择器下：#backstage-panel、#backstage_settings_v2、.bs-badge、.bs-badge-pop。
  * 颜色只从 --bs-* 变量取；明暗由 data-bs-theme（面板 / 设置抽屉自身，角标看 <html>）切换。 */
 
 /* ---------- 配色与字体 ---------- */
 
 #backstage-panel,
 #backstage_settings_v2,
-.bs-badge {
+.bs-badge,
+.bs-badge-pop {
     --bs-bg: #FAF9F5;
     --bs-card: #F0EEE6;
     --bs-card-hover: #EAE7DD;
@@ -32,7 +33,8 @@
 
 #backstage-panel[data-bs-theme="dark"],
 #backstage_settings_v2[data-bs-theme="dark"],
-html[data-bs-theme="dark"] .bs-badge {
+html[data-bs-theme="dark"] .bs-badge,
+html[data-bs-theme="dark"] .bs-badge-pop {
     --bs-bg: #262624;
     --bs-card: #30302E;
     --bs-card-hover: #383835;
@@ -647,6 +649,18 @@ html[data-bs-theme="dark"] .bs-badge {
 }
 
 #backstage-panel .bs-source-from { font-size: 12.5px; color: var(--bs-muted); }
+#backstage-panel .bs-source-run::before { content: " · "; }
+#backstage-panel .bs-source-run { opacity: 0.75; }
+
+#backstage-panel .bs-inject-summary {
+    margin: 0 4px;
+    font-size: 13.5px;
+    color: var(--bs-text);
+}
+
+#backstage-panel .bs-skip-group { margin-top: 10px; }
+#backstage-panel .bs-skip-group .bs-sources { margin-top: 6px; }
+#backstage-panel .bs-skip-reason { margin: 0; font-weight: 600; color: var(--bs-text); font-size: 12.5px; }
 
 #backstage-panel .bs-orphans {
     margin: -4px 4px 0;
@@ -655,7 +669,7 @@ html[data-bs-theme="dark"] .bs-badge {
 }
 
 #backstage-panel .bs-orphans summary { cursor: pointer; min-height: 28px; }
-#backstage-panel .bs-orphans ul { margin: 4px 0 0; padding-left: 18px; }
+#backstage-panel .bs-orphans .bs-source { opacity: 0.85; }
 
 #backstage-panel .bs-leak {
     margin-top: 6px;
@@ -947,6 +961,48 @@ html[data-bs-theme="dark"] .bs-badge {
 .bs-badge[data-kind="failed"]::before { background: var(--bs-danger); }
 .bs-badge[data-kind="edited"]::before { background: var(--bs-accent); }
 .bs-badge[data-kind="stale"]::before { background: var(--bs-muted); }
+
+/* 点开角标后的说明 */
+.bs-badge-pop {
+    position: fixed;
+    z-index: 10050;
+    max-width: min(320px, calc(100vw - 16px));
+    padding: 10px 12px;
+    border: 1px solid var(--bs-line);
+    border-radius: var(--bs-radius);
+    background: var(--bs-bg);
+    color: var(--bs-text);
+    box-shadow: var(--bs-shadow);
+    font-family: var(--bs-sans);
+    font-size: 13px;
+    line-height: 1.55;
+    text-align: left;
+    white-space: normal;
+}
+
+.bs-badge-pop p { margin: 0; }
+.bs-badge-pop .bs-badge-pop-head { font-weight: 600; }
+.bs-badge-pop[data-kind="failed"] .bs-badge-pop-head { color: var(--bs-danger); }
+.bs-badge-pop .bs-badge-pop-line { margin-top: 4px; color: var(--bs-muted); }
+.bs-badge-pop-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.bs-badge-pop-btn {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--bs-line-strong);
+    border-radius: var(--bs-radius-small);
+    background: transparent;
+    color: var(--bs-text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.bs-badge-pop-btn:hover { background: var(--bs-card); }
+.bs-badge-pop-btn:focus-visible { outline: 2px solid var(--bs-accent); outline-offset: 1px; }
+
+@media (pointer: coarse), (max-width: 767px) {
+    .bs-badge-pop-btn { min-height: 44px; }
+}
 
 @media (pointer: coarse) {
     /* 手机上角标本身较小，用透明外扩加大可点范围 */

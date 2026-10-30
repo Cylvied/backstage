@@ -120,7 +120,6 @@ export function mountPanel(api) {
         },
         /** @param {(state: any) => any} mutate */
         edit(mutate, okText) { return ctx.call(() => api.editState(mutate), okText); },
-        /** 切到参谋页，并把文字放进输入框（光标在末尾） */
         /** 切到某个标签页 */
         goTab(id) {
             ui.tab = id;
@@ -128,6 +127,7 @@ export function mountPanel(api) {
             body.scrollTop = 0;
             render();
         },
+        /** 切到参谋页，并把文字放进输入框（光标在末尾） */
         goAdvisor(prefill) {
             ui.tab = 'advisor';
             ui.editing = null;
@@ -296,7 +296,13 @@ export function mountPanel(api) {
 
     const toggle = () => setOpen(!ui.open);
     addWandItem(toggle);
-    mountBadges(api, () => setOpen(true));
+    // 角标说明里的按钮：打开面板，可指定标签页（如纸条）
+    mountBadges(api, tab => {
+        setOpen(true);
+        if (!tab) return;
+        if (ui.view === 'settings') showSettings(false);
+        ctx.goTab(tab);
+    });
     renderStatus();
 }
 

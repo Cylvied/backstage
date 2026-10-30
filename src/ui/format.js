@@ -78,21 +78,36 @@ export function activeGuideThread(state) {
 }
 
 /**
- * 楼层角标。info 为 api.getFloorInfo 的返回值。
- * @returns {{ kind: 'ok'|'failed'|'edited'|'stale', text: string, title: string }|null}
+ * 楼层角标。info 为 api.getFloorInfo 的返回值；sum 为这层状态的 injectionSummary（拿不到状态时省略，只显示候选数）。
+ * lines 是点开角标后显示的说明，一行一条。
+ * @param {any} info
+ * @param {{ total: number, injected: number, disabled: boolean, skipped: Array<{ label: string, items: any[] }> }} [sum]
+ * @returns {{ kind: 'ok'|'failed'|'edited'|'stale', text: string, title: string, lines: string[] }|null}
  */
-export function badgeView(info) {
+export function badgeView(info, sum) {
     if (!info) return null;
-    if (!info.valid) return { kind: 'stale', text: '幕后 · 已失效', title: '这条回复改过，推演结果不再适用' };
-    if (info.status === 'failed') return { kind: 'failed', text: '幕后 · 失败', title: info.error ? `推演失败：${info.error}` : '推演失败' };
-    if (info.edited) return { kind: 'edited', text: '幕后 · 已编辑', title: '你在面板里修改过这一层的推演' };
-    if (info.status === 'manual') return { kind: 'edited', text: '幕后 · 手动', title: '这一层没有推演，由手动编辑产生' };
-    const parts = [];
-    if (info.changedCharacters?.length) parts.push(`${info.changedCharacters.length} 人有变化`);
-    if (info.signalCount) parts.push(`${info.signalCount} 条迹象`);
-    const title = parts.length ? `推演完成：${parts.join('，')}` : '推演完成：镜头外无明显变化';
-    const short = info.changedCharacters?.length ? `幕后 · ${info.changedCharacters.length}` : '幕后';
-    return { kind: 'ok', text: short, title: info.changedCharacters?.length ? `${title}（${info.changedCharacters.join('、')}）` : title };
+    const make = (kind, text, lines) => ({ kind, text, title: lines.join('\n'), lines });
+    if (!info.valid) return make('stale', '幕后 · 已失效', ['这条回复改过，推演结果不再适用']);
+    if (info.status === 'failed') return make('failed', '幕后 · 失败', [info.error ? `推演失败：${info.error}` : '推演失败']);
+
+    const total = sum ? sum.total : (info.signalCount ?? 0);
+    const signalLines = [];
+    let tail = null;
+    if (sum && total) {
+        signalLines.push(`候选 ${total} 条迹象 · 注入 ${sum.injected} 条${sum.disabled ? '（注入已关闭）' : ''}`);
+        if (!sum.disabled) for (const g of sum.skipped) signalLines.push(`未注入 ${g.items.length} 条：${g.label}`);
+        tail = `注入 ${sum.injected}/${total}`;
+    } else if (total) {
+        signalLines.push(`候选 ${total} 条迹象`);
+        tail = `候选 ${total}`;
+    }
+
+    if (info.edited) return make('edited', ['幕后 · 已编辑', tail].filter(Boolean).join(' · '), ['你在面板里修改过这一层的推演', ...signalLines]);
+    if (info.status === 'manual') return make('edited', ['幕后 · 手动', tail].filter(Boolean).join(' · '), ['这一层没有推演，由手动编辑产生', ...signalLines]);
+    const changed = info.changedCharacters ?? [];
+    const head = changed.length ? `推演完成：${changed.length} 人有变化（${changed.join('、')}）`
+        : total ? '推演完成' : '推演完成：镜头外无明显变化';
+    return make('ok', ['幕后', changed.length ? `${changed.length} 人` : null, tail].filter(Boolean).join(' · '), [head, ...signalLines]);
 }
 
 /**

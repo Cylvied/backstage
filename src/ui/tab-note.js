@@ -1,7 +1,7 @@
 // 「纸条」标签页：下一轮会注入正文的原文，以及每条迹象的来源。
 
 import { h } from './dom.js';
-import { signalSources, sourceText, VOICE_LABEL } from './signal-sources.js';
+import { injectionSummary, sourceText } from './signal-sources.js';
 
 /** @param {any} ctx */
 export function renderNote(ctx) {
@@ -14,7 +14,10 @@ export function renderNote(ctx) {
         return wrap;
     }
     const p = ctx.api.previewInjection();
-    const { picked, orphans } = signalSources(ctx.api.getState(), settings);
+    const sum = injectionSummary(ctx.api.getState(), settings);
+    wrap.append(h('p', { class: 'bs-inject-summary', role: 'status' }, sum.total
+        ? `本轮候选 ${sum.total} 条迹象，实际注入 ${sum.injected} 条${sum.disabled ? '（暗流注入已关闭）' : ''}`
+        : '本轮没有候选迹象'));
 
     if (!p.undercurrent && !p.guide) {
         wrap.append(empty('本轮不注入', settings.injectUndercurrent
@@ -23,22 +26,34 @@ export function renderNote(ctx) {
     }
     if (p.undercurrent) {
         wrap.append(block('暗流', `深度 ${settings.injectDepth}`, p.undercurrent,
-            picked.length ? h('ul', { class: 'bs-sources', 'aria-label': '本轮注入的迹象及来源' }, picked.map(s =>
-                h('li', { class: 'bs-source' },
-                    h('span', { class: 'bs-source-voice' }, s.voiceLabel),
-                    h('span', { class: 'bs-source-text' }, s.text),
-                    h('span', { class: 'bs-source-from' }, sourceText(s))))) : null));
+            sum.picked.length ? h('ul', { class: 'bs-sources', 'aria-label': '本轮注入的迹象及来源' }, sum.picked.map(sourceItem)) : null));
     }
-    if (settings.injectUndercurrent && orphans.length) wrap.append(orphanNote(orphans));
+    if (sum.skipped.length) wrap.append(skippedNote(sum));
     if (p.guide) wrap.append(block('引导', p.guidePush ? '深度 0 · 尽快引爆' : `深度 ${settings.injectDepth}`, p.guide));
     return wrap;
 }
 
-/** 没挂在暗线或人物上的迹象：不注入，折叠列出原文 */
-function orphanNote(orphans) {
+/** @param {import('./signal-sources.js').SignalEntry} s */
+function sourceItem(s) {
+    return h('li', { class: 'bs-source' },
+        h('span', { class: 'bs-source-voice' }, s.voiceLabel),
+        h('span', { class: 'bs-source-text' }, s.text),
+        h('span', { class: 'bs-source-from' }, sourceText(s) || '来源不明',
+            s.bornRun !== null ? h('span', { class: 'bs-source-run' }, `第 ${s.bornRun} 轮产生`) : null));
+}
+
+/** 没注入的迹象：一行说明，点开按原因分组列出 */
+function skippedNote(sum) {
+    const count = sum.skipped.reduce((n, g) => n + g.items.length, 0);
+    const only = sum.skipped.length === 1 ? sum.skipped[0] : null;
+    const title = only?.reason === 'orphan' ? `另有 ${count} 条迹象没有挂在暗线或人物上，未注入`
+        : only ? `另有 ${count} 条迹象未注入：${only.label}`
+        : `另有 ${count} 条迹象未注入`;
     return h('details', { class: 'bs-orphans' },
-        h('summary', null, `另有 ${orphans.length} 条迹象没有挂在暗线或人物上，未注入`),
-        h('ul', null, orphans.map(s => h('li', null, `【${VOICE_LABEL[s.voice] ?? '暗流'}】${String(s.text).trim()}`))));
+        h('summary', null, title),
+        sum.skipped.map(g => h('div', { class: 'bs-skip-group' },
+            only ? null : h('p', { class: 'bs-skip-reason' }, `${g.label} · ${g.items.length} 条`),
+            h('ul', { class: 'bs-sources' }, g.items.map(sourceItem)))));
 }
 
 function block(title, where, text, extra) {

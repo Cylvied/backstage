@@ -12,7 +12,7 @@ import { parsePlanOutput } from '../src/sim/parse.js';
 const FIXTURES = '../tests/fixtures';
 
 /**
- * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string, orphans: string }} opts
+ * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string, orphans: string, skips: string }} opts
  */
 export async function createMockApi(opts) {
     let state = opts.fixture === 'empty'
@@ -25,6 +25,18 @@ export async function createMockApi(opts) {
             { voice: 'here', text: '窗外忽然下起雨，走廊里一阵脚步声', threadId: null, characterId: null, relevance: 3 },
             { voice: 'rumor', text: '听说隔壁班有人转学了', threadId: 't_gone00', characterId: null, relevance: 2 }];
     }
+    // skips=1：能挂靠但没选上的迹象（超过上限、第二条暗流），外加主角隔绝时被剔除的风闻
+    if (opts.skips === '1' && state.threads.length) {
+        const [t1, t2 = t1] = state.threads;
+        state.protagonist = { ...state.protagonist, reachable: false };
+        state.signals = [...state.signals,
+            { voice: 'rumor', text: '有人在传，说这事上面早就知道了', threadId: t1.id, characterId: null, relevance: 3 },
+            { voice: 'undercurrent', text: '另一头也有人在暗中盘算', threadId: t2.id, characterId: null, relevance: 2 },
+            { voice: 'here', text: '桌上多了一张没署名的便条', threadId: t1.id, characterId: null, relevance: 1 },
+            { voice: 'here', text: '走廊尽头的灯坏了一盏', threadId: t2.id, characterId: null, relevance: 1 }];
+    }
+    // 模拟 apply 给迹象盖的产生轮次：样本里没有的，前一半算上一轮、后一半算这一轮
+    state.signals = state.signals.map((s, i, all) => ({ bornRun: Math.max(1, state.runCount - (i < all.length / 2 ? 1 : 0)), ...s }));
     let settings = structuredClone(DEFAULT_SETTINGS);
 
     // 参谋记录按聊天分开存，模拟"跟着聊天走"；预览页的 devSwitchChat() 在两个聊天间切换
@@ -100,7 +112,8 @@ export async function createMockApi(opts) {
         },
         previewInjection: () => composeInjection(state, settings),
         getFloorInfo(floor) {
-            const base = { error: null, edited: false, signalCount: state.signals.length, changedCharacters: [], createdAt: Date.now(), usage: { model: 'mock', ms: 3200 } };
+            // state：这一层的推演状态（接口变更提议中的字段）；预览里各层都用当前状态
+            const base = { error: null, edited: false, signalCount: state.signals.length, changedCharacters: [], createdAt: Date.now(), usage: { model: 'mock', ms: 3200 }, state };
             switch (floor) {
                 case 1: return { ...base, status: 'ok', valid: true, changedCharacters: state.characters.slice(0, 2).map(c => c.name) };
                 case 3: return { ...base, status: 'failed', valid: true, error: '模型输出无法解析：缺少 signals' };

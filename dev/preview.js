@@ -2,6 +2,7 @@
 // 参数：?fixture=wuxia&theme=dark&status=fresh&savefail=1&tab=参谋&advisor=multi&guide=reached&noanim=1
 //   advisor：empty 空对话 / multi 多轮（含单步卡、分阶段卡、失败回复）/ fail 每次都失败 / slow 一直在想
 //   orphans=1：加两条没挂在暗线或人物上的迹象（纸条页应提示未注入）
+//   skips=1：再加几条能挂靠但没选上的迹象，并让主角与外界隔绝（覆盖"超过上限 / 暗流最多 1 条 / 风闻传不进来"）
 //   mangle=1：模拟主题扩展把扩展设置抽屉里的控件拆出来重排
 //   status=setup：模拟刚装好、模型 API 没填；apitest=fail：获取模型与测试连接都失败；profiles=0：没有连接配置
 //   guide：staged 第一条线是进行到第 2 拍的分阶段引导 / reached 同上并带"这一拍看起来已经演完了"提示
@@ -24,6 +25,7 @@ const opts = {
     apiTest: params.get('apitest') ?? 'ok',
     profiles: params.get('profiles') ?? '2',
     orphans: params.get('orphans') ?? '0',
+    skips: params.get('skips') ?? '0',
 };
 
 const $ = id => document.getElementById(id);
@@ -39,7 +41,7 @@ $('dev-apply').addEventListener('click', () => {
     const next = new URLSearchParams({
         fixture: $('dev-fixture').value, theme: $('dev-theme').value, status: $('dev-status').value,
         savefail: $('dev-savefail').checked ? '1' : '0', tab: $('dev-tab').value,
-        advisor: $('dev-advisor').value, guide: $('dev-guide').value, apitest: $('dev-apitest').value, profiles: opts.profiles, orphans: opts.orphans,
+        advisor: $('dev-advisor').value, guide: $('dev-guide').value, apitest: $('dev-apitest').value, profiles: opts.profiles, orphans: opts.orphans, skips: opts.skips,
     });
     location.search = next.toString();
 });

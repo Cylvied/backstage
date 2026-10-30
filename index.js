@@ -296,6 +296,7 @@ const api = {
             changedCharacters: snap.state.characters.filter(c => c.touchedRun === snap.state.runCount && snap.status === 'ok').map(c => c.name),
             createdAt: snap.createdAt,
             usage: snap.usage,
+            state: snap.state,   // 只读：角标据此计算"候选 N · 注入 M"
         };
     },
     advisor: {

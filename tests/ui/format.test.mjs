@@ -47,9 +47,26 @@ test('badgeView 四种情况', () => {
     assert.equal(badgeView({ valid: true, status: 'ok', edited: true }).kind, 'edited');
     const ok = badgeView({ valid: true, status: 'ok', edited: false, signalCount: 2, changedCharacters: ['甲', '乙'] });
     assert.equal(ok.kind, 'ok');
-    assert.equal(ok.text, '幕后 · 2');
+    assert.equal(ok.text, '幕后 · 2 人 · 候选 2');
     assert.match(ok.title, /甲、乙/);
     assert.equal(badgeView({ valid: true, status: 'ok', changedCharacters: [], signalCount: 0 }).text, '幕后');
+});
+
+test('badgeView 有本层状态时显示"注入 M/N"并说明没注入的原因', () => {
+    const info = { valid: true, status: 'ok', edited: false, signalCount: 2, changedCharacters: [] };
+    const sum = { total: 2, injected: 0, disabled: false, skipped: [{ label: '没挂在暗线或人物上', items: [{}, {}] }] };
+    const v = badgeView(info, sum);
+    assert.equal(v.text, '幕后 · 注入 0/2');
+    assert.equal(v.lines[1], '候选 2 条迹象 · 注入 0 条');
+    assert.equal(v.lines[2], '未注入 2 条：没挂在暗线或人物上');
+    assert.equal(v.title, v.lines.join('\n'));
+    const off = badgeView(info, { total: 2, injected: 0, disabled: true, skipped: [{ label: '暗流注入已关闭', items: [{}, {}] }] });
+    assert.match(off.lines[1], /注入已关闭/);
+    assert.equal(off.lines.length, 2);
+    const edited = badgeView({ ...info, edited: true }, { total: 1, injected: 1, disabled: false, skipped: [] });
+    assert.equal(edited.kind, 'edited');
+    assert.equal(edited.text, '幕后 · 已编辑 · 注入 1/1');
+    assert.equal(badgeView({ valid: true, status: 'failed', error: 'x' }, sum).lines.length, 1);
 });
 
 test('isDarkColor 识别 rgb / rgba / hex，透明返回 null', () => {

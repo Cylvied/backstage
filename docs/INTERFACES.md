@@ -413,7 +413,7 @@ export function mountSettings(api): void   // 在扩展设置区挂载设置抽�
 | `setGuideIntensity(threadId, intensity)` | 调整引导强度 |
 | `editState(mutate)` | `mutate(stateCopy) => newState`，保存为用户编辑；用于钉住、删除、改字段。返回 `Promise<SimState>`，失败 reject |
 | `previewInjection()` | `{ undercurrent, guide, guidePush }`，即下一轮将注入的文本 |
-| `getFloorInfo(floor)` | 某楼推演信息或 null：`{ status, valid, error, edited, signalCount, changedCharacters, createdAt, usage }` |
+| `getFloorInfo(floor)` | 某楼推演信息或 null：`{ status, valid, error, edited, signalCount, changedCharacters, createdAt, usage, state }`（`state` 只读，A 批新增） |
 | `settings.get()` / `settings.save(patch)` / `settings.listProfiles()` | 读写设置（`Settings`），列出连接配置 `[{ id, name }]` |
 | `settings.fetchModels(api?)` | v1.4：`Promise<string[]>`，用直填的地址和密钥拉模型列表；参数缺省用已保存的设置。失败 reject（信息可直接展示） |
 | `settings.testApi(patch?)` | v1.4：发一条极短请求测试配置，`Promise<{ model, ms, reply }>`；`patch` 可带界面上尚未保存的值 |
