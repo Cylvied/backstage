@@ -199,15 +199,3 @@ export function adoptView(card, current) {
     if (sameThread) return { label: '采纳', note: `会更新「${current.title}」现在的引导。` };
     return { label: '替换并采纳', note: `采纳后会替换当前的引导「${current.title}」。` };
 }
-
-/**
- * 某条失败回复之前最近的一条用户消息（用于"重试"）。
- * @param {import('../types.js').AdvisorMessage[]} history
- * @param {number} index  失败回复的下标
- */
-export function retryText(history, index) {
-    for (let i = index - 1; i >= 0; i--) {
-        if (history[i]?.role === 'user' && history[i].text?.trim()) return history[i].text;
-    }
-    return '';
-}

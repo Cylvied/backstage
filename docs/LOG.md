@@ -202,3 +202,12 @@
 - 组长亲自在预览页检查：参谋对话（浅色桌面）、分阶段暗线卡与落拍提示（深色手机），风格与交互都符合要求
 - 采纳面板会话的建议：index.js 新增 api.advisor.retry()（重试不重复写入用户消息），INTERFACES.md 5.10 已更新；请面板会话把「重试」改用它
 - Ctrl/⌘+回车发送保留；「整理成方案」的固定消息显示在记录里，保留
+
+## 2026-10-30 12:40 [claude-ui] [完成] T4c
+- 改动文件：src/ui/tab-advisor.js、src/ui/format.js、tests/ui/advisor-format.test.mjs、dev/mock-api.js
+- 参谋页「重试」改用 api.advisor.retry()：只有最后一条失败回复带「重试」（retry 只处理这种情况），旧的失败回复不再有按钮；重试不再重复写入用户消息
+- 发送 / 整理成方案 / 重试统一走一个 run(ctx, request) 辅助函数；判断"失败原因已写进对话"改为比较最后一条记录的时间戳（重试时记录条数不变，原来按条数判断会误弹提示条）
+- 删除不再使用的 format.js retryText 及其测试
+- dev 模拟 api 新增 advisor.retry()，行为与 index.js 一致（删掉失败回复，用前面的用户消息重新请求，不重复写入；没有可重试的则 reject"没有可以重试的消息。"）
+- 已验证（预览页脚本）：多轮对话里重试成功后记录为 u/a 交替无重复；回复总失败时重试后仍只有一条失败回复、无重复提示条；连续两次失败只有最后一条带「重试」；没有可重试时 retry() reject
+- 测试：`sh tests/run.sh` 全部通过（13 个文件、194 个用例；tests/ui 少了 retryText 的 1 个用例）

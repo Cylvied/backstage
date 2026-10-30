@@ -103,12 +103,12 @@ export async function createMockApi(opts) {
         advisor: {
             history: () => logs[chatId],
             busy: () => busy,
-            async send(text) {
+            async send(text, { retry = false } = {}) {
                 const message = String(text ?? '').trim();
                 if (!message) throw new Error('请先输入想和参谋聊的内容。');
                 if (busy) throw new Error('参谋还在回复上一条消息。');
                 const from = chatId;
-                logs[from] = [...logs[from], { role: 'user', text: message, cards: [], at: Date.now() }];
+                if (!retry) logs[from] = [...logs[from], { role: 'user', text: message, cards: [], at: Date.now() }];
                 busy = true;
                 emitState();
                 await delay(opts.advisor === 'slow' ? 60000 : 1200);
@@ -127,6 +127,16 @@ export async function createMockApi(opts) {
                 return entry;
             },
             summarize() { return this.send('请把我们到目前为止的讨论整理成方案卡。'); },
+            /** 同 index.js：删掉最后一条失败回复，用前面那条用户消息重新请求，不重复写入用户消息 */
+            async retry() {
+                const log = logs[chatId];
+                const last = log.at(-1);
+                const user = last?.role === 'assistant' && last.error ? log.at(-2) : null;
+                if (!user || user.role !== 'user') throw new Error('没有可以重试的消息。');
+                logs[chatId] = log.slice(0, -1);
+                emitState();
+                return this.send(user.text, { retry: true });
+            },
             async clear() {
                 if (busy) throw new Error('参谋正在回复，请稍后再清空。');
                 logs[chatId] = [];

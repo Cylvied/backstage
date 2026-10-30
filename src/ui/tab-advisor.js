@@ -2,7 +2,7 @@
 // 对话记录由 api.advisor 按聊天保存，切换聊天后自然显示另一份。
 
 import { h, confirmButton } from './dom.js';
-import { ADVISOR_EXAMPLES, retryText } from './format.js';
+import { ADVISOR_EXAMPLES } from './format.js';
 import { planCard } from './plan-card.js';
 
 /** @typedef {import('../types.js').AdvisorMessage} AdvisorMessage */
@@ -26,7 +26,7 @@ export function renderAdvisor(ctx) {
             h('p', { class: 'bs-empty-title' }, '和参谋聊聊接下来的剧情'),
             h('p', null, '它读过现在的人物和暗线。可以随便问，也可以让它把想法排成几个阶段；满意的方案点「采纳」就会成为引导。'),
             h('div', { class: 'bs-examples' }, ADVISOR_EXAMPLES.map(q =>
-                h('button', { type: 'button', class: 'bs-btn bs-example', onclick: () => send(ctx, q) }, q)))));
+                h('button', { type: 'button', class: 'bs-btn bs-example', onclick: () => run(ctx, () => ctx.api.advisor.send(q)) }, q)))));
     }
     history.forEach((m, i) => list.append(message(ctx, m, i, history, busy)));
     if (busy) {
@@ -41,12 +41,13 @@ export function renderAdvisor(ctx) {
 function message(ctx, m, i, history, busy) {
     if (m.role === 'user') return h('div', { class: 'bs-msg is-user' }, h('div', { class: 'bs-bubble' }, m.text));
     if (m.error) {
-        const again = retryText(history, i);
+        // api.advisor.retry 只重试最后一条失败回复，所以只有它带「重试」
+        const isLast = i === history.length - 1;
         return h('div', { class: 'bs-msg is-assistant is-error', role: 'alert' },
             h('p', { class: 'bs-msg-error-title' }, '参谋没能回复'),
             h('p', { class: 'bs-msg-text' }, m.error),
-            again ? h('div', { class: 'bs-actions' },
-                h('button', { type: 'button', class: 'bs-btn', disabled: busy, onclick: () => send(ctx, again) }, '重试')) : null);
+            isLast ? h('div', { class: 'bs-actions' },
+                h('button', { type: 'button', class: 'bs-btn', disabled: busy, onclick: () => run(ctx, () => ctx.api.advisor.retry()) }, '重试')) : null);
     }
     const cards = Array.isArray(m.cards) ? m.cards : [];
     return h('div', { class: 'bs-msg is-assistant' },
@@ -76,7 +77,12 @@ function composer(ctx, history, busy) {
             sendBtn.click();
         }
     });
-    sendBtn.addEventListener('click', () => send(ctx, ui.advisorDraft, true));
+    sendBtn.addEventListener('click', () => {
+        const text = ui.advisorDraft;
+        if (!text.trim()) return;
+        ui.advisorDraft = '';
+        run(ctx, () => ctx.api.advisor.send(text), text);
+    });
 
     return h('div', { class: 'bs-composer' },
         h('div', { class: 'bs-composer-tools' },
@@ -85,7 +91,7 @@ function composer(ctx, history, busy) {
                 class: 'bs-btn bs-btn-quiet bs-btn-small',
                 disabled: busy || !history.length,
                 title: '让参谋把目前的讨论整理成可以采纳的方案卡',
-                onclick: () => send(ctx, null),
+                onclick: () => run(ctx, () => ctx.api.advisor.summarize()),
             }, '整理成方案'),
             history.length && !busy
                 ? confirmButton('清空对话', '确认清空', () => ctx.call(() => ctx.api.advisor.clear(), '对话已清空'))
@@ -94,28 +100,25 @@ function composer(ctx, history, busy) {
 }
 
 /**
- * 发送一条消息（text 为 null 时是「整理成方案」）。
+ * 执行一次参谋请求（发送 / 整理成方案 / 重试）。
  * 模型失败时 api 会把带 error 的回复写进记录，界面里直接看得到；其他错误（如正忙）用提示条说明。
  * @param {any} ctx
- * @param {string|null} text
- * @param {boolean} [fromDraft]
+ * @param {() => Promise<any>} request
+ * @param {string} [draft]  从输入框发出的原文：没发出去时还给输入框
  */
-async function send(ctx, text, fromDraft = false) {
+async function run(ctx, request, draft) {
     const { api, ui } = ctx;
     if (api.advisor.busy()) return;
-    if (text !== null && !String(text).trim()) return;
-    const draft = ui.advisorDraft;
-    if (fromDraft) ui.advisorDraft = '';
-    const before = (api.advisor.history() ?? []).length;
+    const before = api.advisor.history() ?? [];
     try {
-        await (text === null ? api.advisor.summarize() : api.advisor.send(String(text)));
+        await request();
     } catch (error) {
         const after = api.advisor.history() ?? [];
-        const logged = after.length > before && after.at(-1)?.role === 'assistant' && after.at(-1)?.error;
-        if (!logged) {
-            ctx.notify(String(error?.message ?? error), 'error');
-            if (fromDraft && after.length === before) ui.advisorDraft = draft; // 没发出去：把输入还给用户
-        }
+        const last = after.at(-1);
+        const changed = after.length !== before.length || last?.at !== before.at(-1)?.at;
+        // 新写入了一条失败回复：对话里已经显示了原因，不再弹提示条
+        if (!(changed && last?.role === 'assistant' && last.error)) ctx.notify(String(error?.message ?? error), 'error');
+        if (draft !== undefined && !changed) ui.advisorDraft = draft;
     }
     ctx.render();
 }

@@ -1,5 +1,5 @@
 import { test, assert } from '../harness.js';
-import { beatProgress, adoptView, retryText, adjustBeatsPrompt, BEAT_MARK } from '../../src/ui/format.js';
+import { beatProgress, adoptView, adjustBeatsPrompt, BEAT_MARK } from '../../src/ui/format.js';
 
 const beats = statuses => statuses.map((status, i) => ({ title: `拍${i + 1}`, goal: 'g', firstSigns: 'f', status }));
 
@@ -37,18 +37,6 @@ test('adoptView：无引导 / 同一条线 / 替换剩余拍 / 替换别的线',
     assert.equal(v.label, '替换并采纳');
     assert.match(v.note, /别的线/);
     assert.equal(adoptView({ ...card, threadId: null }, staged).label, '替换并采纳');
-});
-
-test('retryText 找失败回复前最近的用户消息', () => {
-    const h = [
-        { role: 'user', text: '第一问' },
-        { role: 'assistant', text: '答' },
-        { role: 'user', text: '第二问' },
-        { role: 'assistant', text: '', error: '超时' },
-    ];
-    assert.equal(retryText(h, 3), '第二问');
-    assert.equal(retryText(h, 1), '第一问');
-    assert.equal(retryText(h, 0), '');
 });
 
 test('adjustBeatsPrompt 与标记', () => {
