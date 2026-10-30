@@ -243,3 +243,8 @@
   2. 「测试连接」不会自动保存；但表单本身是边填边存的，所以测试用的值和保存的值一致
   3. 面板「去配置」依赖宿主的 #extensions-settings-button .drawer-toggle 和 #rm_extensions_block.openDrawer（取自 refs/TauriTavern/src/index.html），需要真机确认
   4. 开发期间用过 8765 端口（dev/serve.py），已关闭
+
+## 2026-10-30 [claude] [决定] 设置搬进面板（T4e）
+- 真机发现：主题扩展 Claude Web 2.0 会接管并重排所有扩展的设置抽屉，导致「API 地址」等动态输入框消失
+- 用户确认：设置放进面板，给一个设置按钮。完整设置（含模型 API）进面板设置页；扩展抽屉只留开关、API 状态和「打开幕后设置」按钮
+- 已交给面板会话（T4e）
