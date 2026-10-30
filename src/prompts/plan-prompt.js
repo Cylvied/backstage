@@ -54,6 +54,6 @@ export function buildPlanPrompt({ state, input, request }) {
 
     return [
         { role: 'system', content: `${ROLE}\n\n${RULES}` },
-        { role: 'user', content: `${materials(state, input)}\n\n【任务】\n${task}\n只输出 json 代码块。` },
+        { role: 'user', content: `${materials(state, input, { catalog: false })}\n\n【任务】\n${task}\n只输出 json 代码块。` },
     ];
 }

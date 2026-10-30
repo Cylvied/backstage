@@ -9,7 +9,9 @@ import * as inject from './src/host/inject.js';
 import { findBase, makeSnapshot, readSnapshot, isSnapshotValid } from './src/state/snapshot-store.js';
 import { createScheduler } from './src/state/scheduler.js';
 import { chooseWriteBase } from './src/state/write-guard.js';
-import { parseSimOutput, parsePlanOutput } from './src/sim/parse.js';
+import { parseSimOutput, parsePlanOutput, parseReviewOutput } from './src/sim/parse.js';
+import { checkPatch, extractReviewItems, applyVerdicts } from './src/sim/check.js';
+import { buildReviewPrompt } from './src/prompts/review-prompt.js';
 import * as applyOps from './src/sim/apply.js';
 const { applyPatch, adoptPlan, setGuideStatus, setGuideIntensity } = applyOps;
 import { buildSimPrompt } from './src/prompts/sim-prompt.js';
@@ -62,15 +64,26 @@ async function runJob(job, signal) {
     let usage = null;
     let error = null;
 
+    /** @type {import('./src/types.js').ReviewRecord|null} */
+    let review = null;
+    let loreUsed = [];
+
     try {
-        const input = await host.collectSimInput(job.floor, settings);
+        const input = await host.collectSimInput(job.floor, settings, base.state);
+        loreUsed = input.loreUsed;
         const messages = buildSimPrompt({ state: base.state, input, settings });
         const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens, signal });
         if (signal.aborted) return;
         usage = { model: res.model, ms: res.ms };
         const parsed = parseSimOutput(res.text);
-        if (parsed.ok) patch = parsed.patch;
-        else error = `模型输出无法解析：${parsed.error}`;
+        if (parsed.ok) {
+            const checked = await checkAndReview(base.state, parsed.patch, input, settings, signal);
+            if (signal.aborted) return;
+            patch = checked.patch;
+            review = checked.review;
+        } else {
+            error = `模型输出无法解析：${parsed.error}`;
+        }
     } catch (e) {
         if (signal.aborted) return;
         error = String(e?.message ?? e);
@@ -100,6 +113,8 @@ async function runJob(job, signal) {
         snapshot = makeSnapshot({ ...common, state: base.state, status: 'failed', error, usage });
     }
 
+    snapshot.review = review;
+    snapshot.loreUsed = loreUsed;
     const written = await host.writeSnapshot(job.floor, job.swipeId, snapshot);
     if (!written) {
         console.info(LOG_PREFIX, '推演结果已过期，丢弃', job);
@@ -112,6 +127,44 @@ async function runJob(job, signal) {
         globalThis.toastr?.warning(snapshot.error, `${EXT_NAME}：推演失败`);
     }
     refreshInjection();
+}
+
+/**
+ * 程序检查 → 挑出高风险条目 → 需要时请审核员把关 → 去掉被驳回的条目。
+ * 审核员调用或解析失败时放行，原因记在 review.error。
+ */
+async function checkAndReview(state, rawPatch, input, settings, signal) {
+    const checked = checkPatch(state, rawPatch);
+    let patch = checked.patch;
+    const rejected = [...checked.rejected];
+    const record = { rejected, reviewed: 0, approved: 0, error: null, usage: null };
+
+    const items = settings.review.enabled ? extractReviewItems(state, patch, { bigJumpDays: settings.review.bigJumpDays }) : [];
+    if (!items.length) return { patch, review: record };
+
+    record.reviewed = items.length;
+    try {
+        const clockAfter = patch.clock && Number.isInteger(patch.clock.day) ? { ...state.clock, ...patch.clock } : state.clock;
+        const messages = buildReviewPrompt({ state, items, input, clockBefore: state.clock, clockAfter });
+        const reviewSettings = settings.review.apiMode === 'direct'
+            ? { ...settings, api: { mode: 'direct', url: settings.review.url, key: settings.review.key, model: settings.review.model } }
+            : settings;
+        const res = await llm.call({ settings: reviewSettings, messages, maxTokens: 1500, signal });
+        if (signal?.aborted) return { patch, review: record };
+        record.usage = { model: res.model, ms: res.ms };
+        const parsed = parseReviewOutput(res.text);
+        if (!parsed.ok) throw new Error(`审核结果无法解析：${parsed.error}`);
+        const verdict = applyVerdicts(patch, items, parsed.verdicts);
+        patch = verdict.patch;
+        rejected.push(...verdict.rejected);
+        record.approved = items.length - verdict.rejected.length;
+    } catch (error) {
+        if (signal?.aborted) return { patch, review: record };
+        record.error = String(error?.message ?? error);
+        record.approved = items.length;
+        console.warn(LOG_PREFIX, '审核失败，已放行', error);
+    }
+    return { patch, review: record };
 }
 
 const scheduler = createScheduler({
@@ -203,7 +256,7 @@ async function editCurrentState(mutate) {
 async function plan(request) {
     const settings = host.getSettings();
     const { base } = currentBase();
-    const input = await host.collectSimInput(host.getChatView().length - 1, settings);
+    const input = await host.collectSimInput(host.getChatView().length - 1, settings, base.state);
     const messages = buildPlanPrompt({ state: base.state, input, request, settings });
     const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens });
     const parsed = parsePlanOutput(res.text);
@@ -244,7 +297,7 @@ async function advisorSend(text, options = {}) {
 
     try {
         const { base } = currentBase();
-        const input = await host.collectSimInput(host.getChatView().length - 1, settings);
+        const input = await host.collectSimInput(host.getChatView().length - 1, settings, base.state);
         const messages = buildAdvisorPrompt({ state: base.state, input, history, message });
         const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens });
         if (host.getChatId() !== chatId) return null; // 等回复期间切换了聊天：丢弃，不写进别的聊天
@@ -297,6 +350,8 @@ const api = {
             createdAt: snap.createdAt,
             usage: snap.usage,
             state: snap.state,   // 只读：角标据此计算"候选 N · 注入 M"
+            review: snap.review ?? null,
+            loreUsed: snap.loreUsed ?? [],
         };
     },
     advisor: {
@@ -329,6 +384,7 @@ const api = {
             return merged;
         },
         listProfiles: () => host.listProfiles(),
+        listLoreEntries: () => host.listLoreEntries(),
         /** 直填 API：拉取模型列表，参数缺省时用当前设置里的地址和密钥 */
         fetchModels: (api) => llm.fetchModels(api ?? host.getSettings().api),
         /** 发一条很短的请求，确认地址、密钥、模型都可用；patch 可以先带上界面里还没保存的值 */

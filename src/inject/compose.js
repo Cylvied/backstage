@@ -35,10 +35,11 @@ export function selectSignals(state, maxSignals) {
     const guideId = activeGuideThread(state)?.id ?? null;
     const threadIds = new Set(state.threads.map(t => t.id));
     const characterIds = new Set(state.characters.map(c => c.id));
+    const eventIds = new Set((state.chronicle ?? []).map(e => e.id));
     const candidates = (state.signals ?? [])
         .filter(s => s && String(s.text ?? '').trim())
-        // 只注入来路清楚的迹象：必须挂在现存的暗线或人物上
-        .filter(s => threadIds.has(s.threadId) || characterIds.has(s.characterId))
+        // 只注入来路清楚的迹象：必须挂在现存的事件、暗线或人物上
+        .filter(s => eventIds.has(s.eventId) || threadIds.has(s.threadId) || characterIds.has(s.characterId))
         .filter(s => state.protagonist.reachable || s.voice !== 'rumor')
         .map((s, index) => ({ s, index }))
         .sort((a, b) => {
@@ -61,15 +62,21 @@ export function selectSignals(state, maxSignals) {
     return picked;
 }
 
-/** @param {Signal[]} signals */
-function undercurrentBlock(signals) {
+/**
+ * @param {Signal[]} signals
+ * @param {SimState} state
+ */
+function undercurrentBlock(signals, state) {
     if (!signals.length) return '';
+    const unknownEvents = new Set((state.chronicle ?? []).filter(e => !e.known).map(e => e.id));
+    const anyFact = signals.some(s => unknownEvents.has(s.eventId));
     return [
         '〔幕后备注｜这不是主角的发言，故事里的角色也看不到这段话〕',
-        '以下是镜头之外正在发生的事，只用来把握世界的走向。可以在合适的时候让它们自然露出一点迹象，也可以这一段完全不写。不必兑现，不要直接点破，不要让角色凭空知道自己没有渠道得知的事。',
-        ...signals.map(s => `- 【${VOICE_LABEL[s.voice] ?? '暗流'}】${String(s.text).trim()}`),
+        '以下是镜头之外的动向，只用来把握世界的走向，以及镜头外的事可能怎样透进主角眼前。可以在合适的时候让它们自然露出一点迹象，也可以这一段完全不写。不必兑现，不要直接点破。',
+        anyFact ? '标着「已发生」的是镜头外已经发生的事，但主角还不知道：只能经由合理的渠道（有人提起、看到痕迹、收到消息）透出一点，不要让主角或在场的人凭空知道。' : '',
+        ...signals.map(s => `- 【${VOICE_LABEL[s.voice] ?? '暗流'}】${unknownEvents.has(s.eventId) ? '（已发生）' : ''}${String(s.text).trim()}`),
         '〔幕后备注结束〕',
-    ].join('\n');
+    ].filter(Boolean).join('\n');
 }
 
 /**
@@ -113,7 +120,7 @@ export function composeInjection(state, settings) {
     const signals = settings.injectUndercurrent ? selectSignals(state, settings.maxSignals) : [];
     const thread = activeGuideThread(state);
     return {
-        undercurrent: undercurrentBlock(signals),
+        undercurrent: undercurrentBlock(signals, state),
         guide: thread ? guideBlock(thread) : '',
         guidePush: thread?.guide?.intensity === 'push',
     };

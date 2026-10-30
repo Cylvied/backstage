@@ -87,7 +87,7 @@ export function buildAdvisorPrompt({ state, input, history, message }) {
 
     return [
         { role: 'system', content: `${ROLE}\n\n${RULES}` },
-        { role: 'user', content: `${materials(state, input)}\n\n以上是这个故事目前的资料。接下来我们讨论剧情。` },
+        { role: 'user', content: `${materials(state, input, { catalog: false })}\n\n以上是这个故事目前的资料。接下来我们讨论剧情。` },
         { role: 'assistant', content: '资料我读完了。你想聊什么？' },
         ...turns,
         { role: 'user', content: String(message ?? '').trim() },

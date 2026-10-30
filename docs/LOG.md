@@ -354,3 +354,10 @@
 - 用户确认：A 批真机验证通过；B 批加入"程序检查 + 按需审核"（不拆多 Agent）
 - 接口 v1.5：INTERFACES.md 第 7 节；类型 src/types.js 已更新
 - Codex → docs/tasks/B-codex.md；dsh → docs/tasks/B-dsh.md；面板会话 → B-UI；组长 → 世界书分层、提示词、注入、编排
+
+## 2026-10-30 [claude] [完成] B 批组长部分（尚未安装，等 Codex 的 check.js 与 parseReviewOutput）
+- 世界书分层：src/memory/lore.js（selectLore / fitBudget / keyMatches / backstageText，7 个测试）；host 读全部启用的世界书（全局、角色主书与附加书、聊天、人设），按 常驻→正文触发→幕后触发→按需调取 排序，按预算整条截断；listLoreEntries 供设置页选择
+- 提示词：资料区按层显示世界书并列目录；状态里行动带"始于何时、已过多久"，并展示事件记录；推演规则改为世界事实 / 人物认知 / 露出机会三层，可以写入已完成的事实，时间只进不退；新增审核员提示词 review-prompt.js
+- 注入：迹象可以挂在事件上；来自主角尚不知道的事件的迹象标「已发生」并提醒只能经合理渠道透出
+- 编排：index.js 推演后依次 checkPatch → extractReviewItems → 审核员（可单独选模型，失败放行）→ applyVerdicts → applyPatch；快照记录 review 与 loreUsed
+- index.js 已静态引用 src/sim/check.js 与 parseReviewOutput：Codex 交付前插件无法加载，所以暂不安装

@@ -29,6 +29,8 @@ export function getSettings() {
         ...saved,
         memory: { ...DEFAULT_SETTINGS.memory, ...(saved.memory ?? {}) },
         api: { ...DEFAULT_SETTINGS.api, ...(saved.api ?? {}) },
+        lore: { ...DEFAULT_SETTINGS.lore, ...(saved.lore ?? {}), pinned: [...(saved.lore?.pinned ?? DEFAULT_SETTINGS.lore.pinned)] },
+        review: { ...DEFAULT_SETTINGS.review, ...(saved.review ?? {}) },
     };
     all[STORE_KEY] = merged;
     return merged;
@@ -39,6 +41,8 @@ export function saveSettings(patch) {
     const merged = { ...getSettings(), ...patch };
     if (patch.memory) merged.memory = { ...getSettings().memory, ...patch.memory };
     if (patch.api) merged.api = { ...getSettings().api, ...patch.api };
+    if (patch.lore) merged.lore = { ...getSettings().lore, ...patch.lore };
+    if (patch.review) merged.review = { ...getSettings().review, ...patch.review };
     ctx().extensionSettings[STORE_KEY] = merged;
     ctx().saveSettingsDebounced();
     return merged;
@@ -151,7 +155,13 @@ let lastActivatedWorldInfo = [];
  * @param {Settings} settings
  * @returns {Promise<SimInput>}
  */
-export async function collectSimInput(uptoFloor, settings) {
+/**
+ * @param {number} uptoFloor  包含此楼
+ * @param {Settings} settings
+ * @param {import('../types.js').SimState} state  当前基底状态（用于"幕后触发"和"按需调取"）
+ * @returns {Promise<SimInput & { loreUsed: import('../types.js').LoreUsed[] }>}
+ */
+export async function collectSimInput(uptoFloor, settings, state) {
     const c = ctx();
     const chat = c.chat ?? [];
     const fields = c.getCharacterCardFields?.() ?? {};
@@ -165,6 +175,7 @@ export async function collectSimInput(uptoFloor, settings) {
     }
 
     const memos = settings.memory.enabled ? await readDatabaseMemos(settings, recent) : [];
+    const lore = await collectLore(state, settings);
 
     return {
         userName: String(c.name1 ?? ''),
@@ -175,10 +186,101 @@ export async function collectSimInput(uptoFloor, settings) {
             personality: sub(fields.personality),
             scenario: sub(fields.scenario),
         },
-        worldInfo: lastActivatedWorldInfo.map(e => String(e.content ?? '').trim()).filter(Boolean),
+        worldInfo: lore.worldInfo,
+        loreCatalog: lore.catalog,
+        loreUsed: lore.loreUsed,
         recent,
         memos,
     };
+}
+
+// ---------- 世界书（v1.5 分层） ----------
+
+/** 当前聊天启用的世界书：全局选中、角色主书与附加书、聊天绑定、人设绑定 */
+async function activeBookNames() {
+    const c = ctx();
+    const names = new Set();
+    try {
+        const wi = await import('/scripts/world-info.js');
+        for (const n of wi.selected_world_info ?? []) names.add(n);
+        const character = c.characters?.[c.characterId];
+        const fileName = String(character?.avatar ?? '').replace(/\.[^.]+$/, '');
+        const extra = wi.world_info?.charLore?.find(e => e.name === fileName);
+        for (const n of extra?.extraBooks ?? []) names.add(n);
+    } catch (error) {
+        console.warn(LOG_PREFIX, '读取全局世界书列表失败，只使用角色与聊天绑定的世界书', error);
+    }
+    const primary = primaryWorldbookName();
+    if (primary) names.add(primary);
+    const chatBook = c.chatMetadata?.world_info;
+    if (chatBook) names.add(String(chatBook));
+    const personaBook = c.powerUserSettings?.persona_description_lorebook;
+    if (personaBook) names.add(String(personaBook));
+    return [...names].filter(Boolean);
+}
+
+/** @returns {Promise<import('../memory/lore.js').LoreEntry[]>} */
+async function loadAllEntries() {
+    const c = ctx();
+    const out = [];
+    for (const world of await activeBookNames()) {
+        try {
+            const data = await c.loadWorldInfo(world);
+            for (const e of Object.values(data?.entries ?? {})) {
+                out.push({
+                    world,
+                    uid: e.uid,
+                    title: String(e.comment || (Array.isArray(e.key) ? e.key[0] : '') || `条目 ${e.uid}`),
+                    content: String(e.content ?? ''),
+                    keys: Array.isArray(e.key) ? e.key.map(String) : [],
+                    disabled: !!e.disable,
+                });
+            }
+        } catch (error) {
+            console.warn(LOG_PREFIX, `读取世界书「${world}」失败`, error);
+        }
+    }
+    return out;
+}
+
+async function countTokens(text) {
+    const c = ctx();
+    try {
+        if (typeof c.getTokenCountAsync === 'function') return await c.getTokenCountAsync(text);
+    } catch { /* 退回估算 */ }
+    return Math.ceil(String(text).length / 1.6);
+}
+
+/**
+ * @param {import('../types.js').SimState} state
+ * @param {Settings} settings
+ */
+async function collectLore(state, settings) {
+    const { selectLore, fitBudget, entryKey } = await import('../memory/lore.js');
+    const entries = await loadAllEntries();
+    const triggered = new Set(lastActivatedWorldInfo.map(e => entryKey(e.world, e.uid)));
+    const { candidates, catalog } = selectLore({
+        entries,
+        triggered,
+        pinned: settings.lore.pinned,
+        state,
+        catalog: settings.lore.catalog,
+    });
+    const measured = [];
+    for (const cand of candidates) measured.push({ ...cand, tokens: await countTokens(cand.entry.content) });
+    const { kept } = fitBudget(measured, settings.lore.budget);
+    return {
+        worldInfo: kept.map(k => ({ title: k.entry.title, content: k.entry.content.trim(), layer: k.layer })),
+        catalog,
+        loreUsed: kept.map(k => ({ world: k.entry.world, uid: k.entry.uid, title: k.entry.title, layer: k.layer, tokens: k.tokens })),
+    };
+}
+
+/** 设置页选择"推演专用常驻条目"用：列出可用条目（token 为估算值） */
+export async function listLoreEntries() {
+    return (await loadAllEntries())
+        .filter(e => !e.disabled && e.content.trim() && !/^TavernDB-ACU-/i.test(e.title))
+        .map(e => ({ world: e.world, uid: e.uid, title: e.title, tokens: Math.ceil(e.content.length / 1.6) }));
 }
 
 /** 读数据库导出到世界书的纪要。打分挑选由 Codex 的 pickMemos 负责。 */

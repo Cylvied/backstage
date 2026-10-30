@@ -124,3 +124,12 @@ test('没有挂在暗线或人物上的迹象不注入', () => {
     ], { characters: [person] });
     assert.deepEqual(selectSignals(s, 3).map(x => x.text), ['来自人物', '来自暗线']);
 });
+
+test('来自主角尚不知道的事件的迹象标为「已发生」并附渠道提醒', () => {
+    const s = stateWith([{ voice: 'rumor', text: '相府的人在茶馆提起核账', eventId: 'e_x', threadId: null, characterId: null, relevance: 3 }], {
+        chronicle: [{ id: 'e_x', at: { day: 2, slot: '' }, text: '核账完成', characterIds: [], threadIds: [], known: false, knownAt: null }],
+    });
+    const out = composeInjection(s, settings);
+    assert.match(out.undercurrent, /【风闻】（已发生）相府的人在茶馆提起核账/);
+    assert.match(out.undercurrent, /主角还不知道/);
+});
