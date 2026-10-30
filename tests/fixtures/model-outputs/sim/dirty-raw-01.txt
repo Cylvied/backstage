@@ -1,0 +1,36 @@
+{
+  "clock": {
+    "day": 13,
+    "slot": "深夜",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_mys001",
+      "knows": [
+        "知道：失踪者最后一次出现是往灯塔方向（监控）",
+        "知道：守夜人那晚的班表被人改过（刚查到）"
+      ],
+      "name": "徐渭"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_mys002",
+      "stage": "ripe",
+      "title": "守夜人当晚不在岗，因为他去见了不该见的人"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若回派出所，可让那盘监控自己跳回同一段",
+      "threadId": "t_mys001",
+      "characterId": "c_mys001",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}

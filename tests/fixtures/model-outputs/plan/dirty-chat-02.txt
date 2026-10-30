@@ -1,0 +1,18 @@
+好，我先把现在能想到的整理成卡片给你。
+
+```json
+{
+  "cards": [
+    {
+      "title": "太医院旧脉案",
+      "goal": "孙太医把先帝的旧脉案交出去，钱公公当场烧了",
+      "firstSigns": "太医院值房的灯忽然被吹灭",
+      "fit": "接药方那条线，visibility 还是 hidden",
+      "threadId": "t_pcw004",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```
+
+如果觉得太急，可以把强度调到只铺垫。

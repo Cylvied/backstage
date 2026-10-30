@@ -1,0 +1,182 @@
+[
+    {
+        "file": "dirty-chat-01.txt",
+        "basedOn": "states/school-guide.json",
+        "expectOk": true,
+        "notes": "代码块前后有闲聊"
+    },
+    {
+        "file": "dirty-chat-02.txt",
+        "basedOn": "states/palace-crowded.json",
+        "expectOk": true,
+        "notes": "前后闲聊，中间合法"
+    },
+    {
+        "file": "dirty-enum-01.txt",
+        "basedOn": "states/palace-crowded.json",
+        "expectOk": true,
+        "notes": "第一张卡 intensity 写中文，应丢弃该卡"
+    },
+    {
+        "file": "dirty-enum-02.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "suggestedIntensity 非法值"
+    },
+    {
+        "file": "dirty-extra-01.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "card 带 risk/expectedRounds 未知字段"
+    },
+    {
+        "file": "dirty-extra-02.txt",
+        "basedOn": "states/mystery-isolated.json",
+        "expectOk": true,
+        "notes": "顶层与 card 都有未知字段"
+    },
+    {
+        "file": "dirty-garbage-01.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "模型拒绝回答，不是 JSON"
+    },
+    {
+        "file": "dirty-garbage-02.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "纯议论，不是 JSON"
+    },
+    {
+        "file": "dirty-long-01.txt",
+        "basedOn": "states/apocalypse-dead.json",
+        "expectOk": true,
+        "notes": "goal 超长（不是硬性上限，但考验渲染）"
+    },
+    {
+        "file": "dirty-long-02.txt",
+        "basedOn": "states/wuxia-pinned.json",
+        "expectOk": true,
+        "notes": "firstSigns 超长"
+    },
+    {
+        "file": "dirty-nochange-01.txt",
+        "basedOn": "states/school.json",
+        "expectOk": true,
+        "notes": "cards 为空数组（模型认为没有值得出的方案）"
+    },
+    {
+        "file": "dirty-nochange-02.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "think + 闲聊 + 空 cards"
+    },
+    {
+        "file": "dirty-raw-01.txt",
+        "basedOn": "states/apocalypse-dead.json",
+        "expectOk": true,
+        "notes": "裸 JSON，无代码块"
+    },
+    {
+        "file": "dirty-raw-02.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "裸 JSON，无代码块"
+    },
+    {
+        "file": "dirty-think-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "带 think 标签，去掉后合法"
+    },
+    {
+        "file": "dirty-think-02.txt",
+        "basedOn": "states/western-faded.json",
+        "expectOk": true,
+        "notes": "thinking 标签，内容合法"
+    },
+    {
+        "file": "dirty-trailing-01.txt",
+        "basedOn": "states/mystery.json",
+        "expectOk": true,
+        "notes": "两处尾逗号，去掉后合法"
+    },
+    {
+        "file": "dirty-trailing-02.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "末项尾逗号，去掉后合法"
+    },
+    {
+        "file": "dirty-truncated-01.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "在第一张卡的 fit 中间截断"
+    },
+    {
+        "file": "dirty-truncated-02.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "在 firstSigns 中间截断"
+    },
+    {
+        "file": "ok-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "2 张卡，都挂在已有线上"
+    },
+    {
+        "file": "ok-02.txt",
+        "basedOn": "states/school-guide.json",
+        "expectOk": true,
+        "notes": "1 张卡，挂在 active guide 的线上"
+    },
+    {
+        "file": "ok-03.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "3 张卡（上限），三档强度齐全"
+    },
+    {
+        "file": "ok-04.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "1 张卡，无 push"
+    },
+    {
+        "file": "ok-05.txt",
+        "basedOn": "states/mystery.json",
+        "expectOk": true,
+        "notes": "2 张卡，seed 与 push 各一"
+    },
+    {
+        "file": "ok-06.txt",
+        "basedOn": "states/apocalypse-dead.json",
+        "expectOk": true,
+        "notes": "2 张卡，含 dead 人物的线"
+    },
+    {
+        "file": "ok-07.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "1 张卡，deadline 型线"
+    },
+    {
+        "file": "ok-08.txt",
+        "basedOn": "states/palace.json",
+        "expectOk": true,
+        "notes": "3 张卡，全部挂在已有线"
+    },
+    {
+        "file": "ok-09.txt",
+        "basedOn": "states/wuxia-pinned.json",
+        "expectOk": true,
+        "notes": "钉住人物的状态上出卡"
+    },
+    {
+        "file": "ok-10.txt",
+        "basedOn": "states/mystery-isolated.json",
+        "expectOk": true,
+        "notes": "主角与外界隔绝时仍可出卡"
+    }
+]

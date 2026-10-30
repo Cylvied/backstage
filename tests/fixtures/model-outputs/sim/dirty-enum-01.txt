@@ -1,0 +1,40 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch004",
+      "currentAction": {
+        "text": "把笔放下，抬头看门口",
+        "duration": "片刻"
+      },
+      "name": "高小满"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch001",
+      "stage": "进行中",
+      "title": "三年前的退学名单上被划掉的名字，其实还活着"
+    },
+    {
+      "id": "t_sch002",
+      "stage": "ripe",
+      "visibility": "半公开",
+      "title": "保送名额只有一个，周牧和陈老师之间有笔没说完的交易"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若回教室，可让纸条掉在地上被旁人捡到",
+      "threadId": "t_sch003",
+      "characterId": "c_sch004",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

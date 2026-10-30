@@ -1,0 +1,55 @@
+```json
+{
+  "clock": {
+    "day": 9,
+    "slot": "黎明前",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes001",
+      "currentAction": {
+        "text": "把长明灯的灯芯剪短，让火更稳",
+        "duration": "一刻"
+      },
+      "knows": [
+        "知道：城北的封印裂了一道缝（亲见）",
+        "知道：教会今夜在查房（听见钟楼下的脚步）"
+      ],
+      "name": "奥尔登"
+    },
+    {
+      "id": "c_wes006",
+      "location": "灰港城·下城区旅店二楼",
+      "name": "艾薇"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wes001",
+      "stage": "ripe",
+      "trigger": "第七次鸣响就在明夜",
+      "title": "钟楼的封印在第七次鸣响时会裂开，城北会漏进不该进来的东西"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若上楼，可让二楼走廊尽头那扇门开了一条缝",
+      "threadId": "t_wes002",
+      "characterId": "c_wes002",
+      "relevance": 3
+    },
+    {
+      "voice": "undercurrent",
+      "text": "钟一乱，全城的狗会先叫，之后才轮到人心",
+      "threadId": "t_wes001",
+      "characterId": "c_wes007",
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

@@ -1,0 +1,19 @@
+<think>
+先读这一轮的正文，分清哪些是已经发生的事实、哪些只是推断。
+镜头外的事按动机、资源和这段时间的可行性往前推，不替主角行动。
+「可能发生」不写成「已经发生」。
+</think>
+
+好，我按格式输出。
+
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [],
+  "noChange": true
+}
+```

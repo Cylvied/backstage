@@ -1,0 +1,180 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 4,
+        "slot": "凌晨",
+        "precision": "unknown"
+    },
+    "protagonist": {
+        "location": "临海镇·旧灯塔",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_mys001",
+            "name": "徐渭",
+            "aliases": [
+                "老徐"
+            ],
+            "location": "临海镇·派出所",
+            "currentAction": {
+                "text": "反复看一段三分钟的监控",
+                "duration": "到天亮"
+            },
+            "longAction": {
+                "text": "想在自己退休前把这案子结掉",
+                "duration": "约三月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：失踪者最后一次出现是往灯塔方向（监控）",
+                "不知道：灯塔守夜人当晚不在岗"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 4
+        },
+        {
+            "id": "c_mys002",
+            "name": "林小满",
+            "aliases": [],
+            "location": "临海镇·旧灯塔",
+            "currentAction": {
+                "text": "在灯塔顶层把一本航海日志翻到最后一页",
+                "duration": "一整夜"
+            },
+            "longAction": {
+                "text": "想找到父亲出海的记录",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：日志最后一页被人撕过（亲见）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 4
+        },
+        {
+            "id": "c_mys003",
+            "name": "王守义",
+            "aliases": [
+                "守夜人"
+            ],
+            "location": "临海镇·渔港",
+            "currentAction": {
+                "text": "修一张破网，手抖得厉害",
+                "duration": "到中午"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：已经有人注意到他当晚不在岗"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_mys004",
+            "name": "赵玫",
+            "aliases": [],
+            "location": "临海镇·民宿",
+            "currentAction": {
+                "text": "在登记本上把某个名字涂掉",
+                "duration": "几分钟"
+            },
+            "longAction": {
+                "text": "把民宿撑过这个冬天",
+                "duration": "到开春",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：失踪者住过三号房（登记本）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_mys005",
+            "name": "陈默",
+            "aliases": [],
+            "location": "未知",
+            "currentAction": null,
+            "longAction": null,
+            "knows": [],
+            "life": "missing",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_mys001",
+            "title": "失踪者没有离开临海镇，他在灯塔里待过一夜",
+            "characterIds": [
+                "c_mys002",
+                "c_mys001"
+            ],
+            "stage": "growing",
+            "trigger": "有人把航海日志最后一页找出来",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_mys002",
+            "title": "守夜人当晚不在岗，因为他去见了不该见的人",
+            "characterIds": [
+                "c_mys003",
+                "c_mys004"
+            ],
+            "stage": "ripe",
+            "trigger": "徐渭问起那晚的班表",
+            "deadline": {
+                "text": "三天内",
+                "missedOutcome": "王守义离开临海镇，线索断掉"
+            },
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_mys003",
+            "title": "被撕掉的那页日志，记着另一艘船的名字",
+            "characterIds": [
+                "c_mys002",
+                "c_mys005"
+            ],
+            "stage": "seeded",
+            "trigger": "有人找到撕页的人",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若在灯塔再待一会儿，可让海雾漫上来，把港口的灯全糊住",
+            "threadId": "t_mys001",
+            "characterId": "c_mys002",
+            "relevance": 3
+        },
+        {
+            "voice": "rumor",
+            "text": "渔港的人开始说那晚灯塔没亮，这话传得比警察问话快",
+            "threadId": "t_mys002",
+            "characterId": "c_mys003",
+            "relevance": 2
+        }
+    ],
+    "runCount": 4
+}

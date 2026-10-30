@@ -1,0 +1,26 @@
+我看了下现在的情况，主角刚上天台，孙悦那边应该要开口了。
+
+```json
+{
+  "cards": [
+    {
+      "title": "天台的第二个人",
+      "goal": "高小满在楼梯口没走，最后也上了天台",
+      "firstSigns": "楼梯间的声控灯亮了一下又灭",
+      "fit": "呼应孙悦那条引导线，也照顾到高小满的位置",
+      "threadId": "t_sgd002",
+      "suggestedIntensity": "normal"
+    },
+    {
+      "title": "保送的最后一天",
+      "goal": "陈老师在放学前把推荐表交上去，名字不是周牧",
+      "firstSigns": "教师办公室的灯比平时晚关了一个小时",
+      "fit": "接保送那条线，deadline 是本周五",
+      "threadId": "t_sgd003",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```
+
+以上就是我想到的两个走向，你看哪个更合适。

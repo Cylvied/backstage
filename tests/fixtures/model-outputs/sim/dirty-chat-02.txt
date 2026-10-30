@@ -1,0 +1,31 @@
+先说一下我的判断：主角这一楼没有走出场景，镜头外的人各有各的事，只挑最相关的一两条写下来。
+
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch005",
+      "knows": [
+        "知道：陈屿上天台了（亲见）",
+        "知道：那张纸条写的是什么（自己写的）"
+      ],
+      "name": "孙悦"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch003",
+      "stage": "growing",
+      "visibility": "known",
+      "title": "抽屉里那张纸条是孙悦写的，她想约人谈一件不能说的事"
+    }
+  ],
+  "signals": [],
+  "noChange": false
+}
+```
+
+以上就是这一轮的推演结果，有需要调整的地方告诉我。

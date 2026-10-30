@@ -1,0 +1,14 @@
+```json
+{
+  "cards": [
+    {
+      "title": "班表上的铅笔印",
+      "goal": "徐渭查到班表被谁改过，王守义当晚去见了赵玫",
+      "firstSigns": "民宿的登记本上，那页被撕掉了半张",
+      "fit": "接守夜人那条线，deadline 三天内",
+      "threadId": "t_mio002",
+      "suggestedIntensity": "push"
+    }
+  ]
+}
+```

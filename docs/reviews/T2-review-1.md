@@ -37,3 +37,13 @@
 ## 交付
 
 改完后跑 `sh tests/run.sh`，全部通过后在 LOG 追加 `## <时间> [codex] [完成] T2 审查修改`，写明改了什么和测试结果。不要改 `docs/`、`src/types.js` 和 fixtures。
+
+## 补充（dsh 交付样本库后追加）
+
+### 6. 规划卡的 `suggestedIntensity` 写错时不应整张丢弃
+- 样本 `model-outputs/plan/dirty-enum-02.txt`：唯一一张卡的 `suggestedIntensity` 是 "快速推进"，目前整张卡被丢弃，导致解析失败（cases.json 预期成功）。
+- 改法：`suggestedIntensity` 只是建议值，不合法时改成 `'normal'` 并 warning，卡片保留。
+- 回归测试里同样遍历 `model-outputs/plan/cases.json`。
+
+### 关于第 1 条的更正
+- dsh 交付前已给样本补上 name/title，ok-01 现在能正确更新 2 个人物、1 条线。第 1 条仍需修改（真实模型很可能只写 id），回归测试里请自己构造一个只写 id 的用例，不要依赖样本。

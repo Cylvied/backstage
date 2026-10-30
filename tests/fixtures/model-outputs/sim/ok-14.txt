@@ -1,0 +1,54 @@
+```json
+{
+  "clock": {
+    "day": 53,
+    "slot": "正午",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_apd007",
+      "knows": [
+        "知道：弟弟在往北的路上开始发烧（亲历）",
+        "知道：黑子没能回来（听老罗说）"
+      ],
+      "name": "舒宁"
+    },
+    {
+      "id": "c_apd004",
+      "currentAction": {
+        "text": "把体温计甩了又量，量了三遍",
+        "duration": "一刻钟"
+      },
+      "name": "顾医生"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_apd003",
+      "stage": "ripe",
+      "visibility": "known",
+      "title": "黑子去的那个取水点，其实是另一队人设的诱饵"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若清点黑子的背包，可让水壶滚出来，壶底刻着别人的名字",
+      "threadId": "t_apd003",
+      "characterId": "c_apd005",
+      "relevance": 3
+    },
+    {
+      "voice": "undercurrent",
+      "text": "东边的火一天不灭，这边的天就一天比一天黄",
+      "threadId": "t_apd002",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

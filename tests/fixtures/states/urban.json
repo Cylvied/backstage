@@ -1,0 +1,162 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 21,
+        "slot": "深夜",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "江城·南岸公寓 1204",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_urb001",
+            "name": "陆知远",
+            "aliases": [],
+            "location": "江城·南岸公寓 1204",
+            "currentAction": {
+                "text": "在阳台抽烟，看对面楼还亮着的一扇窗",
+                "duration": "到烟抽完"
+            },
+            "longAction": {
+                "text": "想把那笔钱还回去",
+                "duration": "月底前",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：对面那扇窗的主人是他前同事（亲见）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 21
+        },
+        {
+            "id": "c_urb002",
+            "name": "何蔓",
+            "aliases": [],
+            "location": "江城·恒信大厦 27 层",
+            "currentAction": {
+                "text": "在办公室把一份报表重做成另一个版本",
+                "duration": "通宵"
+            },
+            "longAction": {
+                "text": "把项目做上市",
+                "duration": "约半年",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：陆知远在查那笔钱的去向（对方说漏嘴）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_urb003",
+            "name": "马骏",
+            "aliases": [
+                "老马"
+            ],
+            "location": "江城·老城区面馆",
+            "currentAction": {
+                "text": "收摊，把一张名片压在醋瓶下",
+                "duration": "半小时"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：名片是谁放的"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_urb004",
+            "name": "秦朗",
+            "aliases": [],
+            "location": "江城·城东看守所",
+            "currentAction": null,
+            "longAction": {
+                "text": "等一个能替他说话的人",
+                "duration": "到开庭",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：那笔钱不是自己拿的（亲历）"
+            ],
+            "life": "missing",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_urb005",
+            "name": "周敏",
+            "aliases": [],
+            "location": "江城·南岸公寓楼下",
+            "currentAction": {
+                "text": "在车里等一个电话",
+                "duration": "到天亮"
+            },
+            "longAction": {
+                "text": "跟完这单就辞职",
+                "duration": "约一周",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：1204 的住户每晚十二点会去阳台（蹲守）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_urb001",
+            "title": "那笔被挪走的钱，签收人写的是秦朗，但笔迹不是他的",
+            "characterIds": [
+                "c_urb001",
+                "c_urb004"
+            ],
+            "stage": "growing",
+            "trigger": "有人去调原始签收单",
+            "deadline": {
+                "text": "开庭前一周",
+                "missedOutcome": "秦朗被定罪，真签收人彻底洗白"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_urb002",
+            "title": "面馆醋瓶下的那张名片，是何蔓让人放的",
+            "characterIds": [
+                "c_urb003",
+                "c_urb002"
+            ],
+            "stage": "seeded",
+            "trigger": "有人翻动面馆那张桌子",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "undercurrent",
+            "text": "开庭的日子一近，相关的人会开始互相试探，话说得比平时多",
+            "threadId": "t_urb001",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 21
+}

@@ -1,0 +1,22 @@
+```json
+{
+  "cards": [
+    {
+      "title": "地窖的门",
+      "goal": "染坊地窖的门在雨停后被打开，里面已经空了",
+      "firstSigns": "染坊学徒第二天没来上工",
+      "fit": "接染坊那条线，沈砚秋是钉住的人物，不会消失",
+      "threadId": "t_wpn001",
+      "suggestedIntensity": "normal"
+    },
+    {
+      "title": "子时的船",
+      "goal": "码头在子时放船，何九没有出现在货棚",
+      "firstSigns": "货棚的赌局散得比平时早",
+      "fit": "接漕帮分账那条线，deadline 就在子时",
+      "threadId": "t_wpn002",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

@@ -1,0 +1,62 @@
+```json
+{
+  "clock": {
+    "day": 4,
+    "slot": "深夜",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch001",
+      "currentAction": {
+        "text": "把校刊翻到缺页处，用手指量那道撕口",
+        "duration": "到闭馆"
+      },
+      "longAction": {
+        "text": "想找出退学名单上被划掉的那个名字",
+        "duration": "到毕业前",
+        "status": "ongoing",
+        "outcome": null
+      },
+      "name": "林知夏"
+    },
+    {
+      "name": "图书管理员",
+      "aliases": [
+        "管理员"
+      ],
+      "location": "启明高中·图书馆三楼",
+      "currentAction": {
+        "text": "推着还书车在书架间慢慢走",
+        "duration": "到闭馆"
+      },
+      "longAction": null,
+      "knows": [
+        "知道：那一期校刊被谁借走过（登记本）"
+      ],
+      "life": "alive",
+      "onStage": false,
+      "pinned": false
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch001",
+      "stage": "ripe",
+      "title": "三年前的退学名单上被划掉的名字，其实还活着"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若在闭馆前留下，可让管理员推车经过，随口提一句借书登记",
+      "threadId": "t_sch001",
+      "characterId": "c_sch001",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

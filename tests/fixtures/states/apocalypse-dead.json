@@ -1,0 +1,220 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 52,
+        "slot": "上午",
+        "precision": "approx"
+    },
+    "protagonist": {
+        "location": "环城高速·加油站",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_apd001",
+            "name": "罗盘",
+            "aliases": [
+                "老罗"
+            ],
+            "location": "环城高速·加油站",
+            "currentAction": {
+                "text": "在便利店货架后面数罐头",
+                "duration": "一小时"
+            },
+            "longAction": {
+                "text": "把这一车人带到北边的收容点",
+                "duration": "约半月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：往北的高速有三处塌方（探路回来）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 52
+        },
+        {
+            "id": "c_apd002",
+            "name": "严青",
+            "aliases": [],
+            "location": "加油站·天台",
+            "currentAction": {
+                "text": "用望远镜看东边的烟柱",
+                "duration": "到天黑"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：东边那片在烧，风向朝这边（亲见）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 52
+        },
+        {
+            "id": "c_apd003",
+            "name": "小满",
+            "aliases": [],
+            "location": "加油站·储物间",
+            "currentAction": {
+                "text": "把水按人头分成小份",
+                "duration": "半晌"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：储水只剩两天"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_apd004",
+            "name": "顾医生",
+            "aliases": [
+                "顾医生"
+            ],
+            "location": "环城高速·服务区",
+            "currentAction": {
+                "text": "给一个发烧的人量体温",
+                "duration": "一会儿"
+            },
+            "longAction": {
+                "text": "想弄明白这病怎么传的",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：发烧的人都在同一条路上待过（问诊）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_apd005",
+            "name": "黑子",
+            "aliases": [],
+            "location": "环城高速·塌方口",
+            "currentAction": null,
+            "longAction": {
+                "text": "独自去东边取水",
+                "duration": "约一日",
+                "status": "abandoned",
+                "outcome": "塌方时被埋在车里，没能出来"
+            },
+            "knows": [],
+            "life": "dead",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_apd006",
+            "name": "周婶",
+            "aliases": [],
+            "location": "未知",
+            "currentAction": null,
+            "longAction": {
+                "text": "想回城南找自己的猫",
+                "duration": "约半日",
+                "status": "done",
+                "outcome": "走了再没回来，水壶留在了路边"
+            },
+            "knows": [
+                "不知道：城南已经封了"
+            ],
+            "life": "missing",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_apd007",
+            "name": "舒宁",
+            "aliases": [],
+            "location": "加油站·里屋",
+            "currentAction": {
+                "text": "守着发烧的弟弟，一遍遍换毛巾",
+                "duration": "整夜"
+            },
+            "longAction": {
+                "text": "带弟弟走到收容点",
+                "duration": "约半月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：弟弟在往北的路上开始发烧（亲历）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_apd001",
+            "title": "往北的高速塌了三处，收容点可能已经不在了",
+            "characterIds": [
+                "c_apd001",
+                "c_apd002"
+            ],
+            "stage": "growing",
+            "trigger": "有人真的开上高速",
+            "deadline": {
+                "text": "两天后出发",
+                "missedOutcome": "车队困在塌方里，回不来"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_apd002",
+            "title": "发烧的人都在同一条路上待过，病可能是从北边来的",
+            "characterIds": [
+                "c_apd004",
+                "c_apd007"
+            ],
+            "stage": "ripe",
+            "trigger": "再出现一个同样症状的人",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_apd003",
+            "title": "黑子去的那个取水点，其实是另一队人设的诱饵",
+            "characterIds": [
+                "c_apd005",
+                "c_apd001"
+            ],
+            "stage": "resolving",
+            "trigger": "车队有人追查黑子的下落",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若清点黑子留下的背包，可让里面的水壶滚出来，壶底刻着别人的名字",
+            "threadId": "t_apd003",
+            "characterId": "c_apd005",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "东边的火一天不灭，这边的天就会一天比一天黄",
+            "threadId": "t_apd002",
+            "characterId": "c_apd002",
+            "relevance": 2
+        }
+    ],
+    "runCount": 52
+}

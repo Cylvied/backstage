@@ -1,0 +1,48 @@
+```json
+{
+  "clock": {
+    "day": 7,
+    "slot": "傍晚",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sgd004",
+      "currentAction": {
+        "text": "在楼梯口站住，没有继续往上",
+        "duration": "到放学后"
+      },
+      "knows": [
+        "知道：周牧家里出了事（听同学说）",
+        "知道：孙悦把事都说了（自己陪着去的）"
+      ],
+      "name": "高小满"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sgd002",
+      "guide": {
+        "intensity": "normal",
+        "goal": "孙悦在放学前把三年前那件事的经过说给主角听",
+        "firstSigns": "放学铃响时，孙悦没有立刻走，而是站在门口等",
+        "status": "done",
+        "adoptedAt": 1761812345678
+      },
+      "title": "主角答应陪孙悦去天台把那件事说完"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "保送的事一旦传开，班里的气氛会在几天内变得很紧",
+      "threadId": "t_sgd003",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

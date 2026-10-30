@@ -1,0 +1,32 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pcw001",
+      "knows": [
+        "知道：兵权已经不在自己手里（亲信回报）",
+        "知道：玄武门今夜换了人（眼线回报）",
+        "知道：那道旨没走中书省（自己拟的）",
+        "知道：沈家今夜没有动静（眼线回报）",
+        "知道：有人在查太医院的旧脉案（听见）",
+        "不知道：幼帝整夜没睡"
+      ],
+      "name": "萧太后"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "这道旨意一旦发出，中书省那边的官员会在三天之内陆续称病不出，而沈家的车队会在五日内离开京城，届时玄武门的守备归属将成为整个局势的关键变量",
+      "threadId": "t_pcw001",
+      "characterId": null,
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

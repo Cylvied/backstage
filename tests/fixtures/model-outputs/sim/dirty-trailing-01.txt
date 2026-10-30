@@ -1,0 +1,24 @@
+```json
+{
+  "clock": {
+    "day": 47,
+    "slot": "傍晚",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_apo003",
+      "knows": [
+        "知道：储水只剩两天（自己数的）",
+        "知道：有人在偷偷省下自己那份（看见）"
+      ],
+      "name": "小满"
+    },
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [],
+  "noChange": false
+}
+```

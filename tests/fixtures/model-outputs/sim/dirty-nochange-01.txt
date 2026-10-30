@@ -1,0 +1,11 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [],
+  "noChange": true
+}
+```

@@ -1,0 +1,12 @@
+{
+  "cards": [
+    {
+      "title": "火从东边来",
+      "goal": "东边的火在夜里烧到公路边，车队被迫提前出发",
+      "firstSigns": "天台的望远镜里，烟柱比昨天粗了一倍",
+      "fit": "接发烧来源那条线，也压着北上的 deadline",
+      "threadId": "t_apd002",
+      "suggestedIntensity": "push"
+    }
+  ]
+}

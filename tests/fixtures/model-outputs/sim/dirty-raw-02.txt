@@ -1,0 +1,26 @@
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pal002",
+      "currentAction": {
+        "text": "把炭盆里的灰拨平，确认没有字迹留下",
+        "duration": "一刻"
+      },
+      "name": "沈砚"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "旨意绕开中书省，百官几天内就会开始告病",
+      "threadId": "t_pal001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}

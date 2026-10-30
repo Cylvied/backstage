@@ -1,0 +1,242 @@
+[
+    {
+        "file": "dirty-chat-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "代码块前后都有闲聊"
+    },
+    {
+        "file": "dirty-chat-02.txt",
+        "basedOn": "states/school.json",
+        "expectOk": true,
+        "notes": "前后闲聊，中间合法"
+    },
+    {
+        "file": "dirty-enum-01.txt",
+        "basedOn": "states/school.json",
+        "expectOk": true,
+        "notes": "stage 与 visibility 写成中文，应丢弃这两条线、其余保留"
+    },
+    {
+        "file": "dirty-enum-02.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "life / longAction.status / voice 三个枚举都写错"
+    },
+    {
+        "file": "dirty-extra-01.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "带 mood / energy / priority 等未知字段，应被丢弃"
+    },
+    {
+        "file": "dirty-extra-02.txt",
+        "basedOn": "states/apocalypse-dead.json",
+        "expectOk": true,
+        "notes": "顶层与嵌套都有未知字段"
+    },
+    {
+        "file": "dirty-garbage-01.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "模型拒绝回答，不是 JSON"
+    },
+    {
+        "file": "dirty-garbage-02.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "胡言乱语，不是 JSON"
+    },
+    {
+        "file": "dirty-long-01.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "knows 写了 7 条，应截到 5 条"
+    },
+    {
+        "file": "dirty-long-02.txt",
+        "basedOn": "states/palace-crowded.json",
+        "expectOk": true,
+        "notes": "knows 6 条超限、signal.text 超过 80 字"
+    },
+    {
+        "file": "dirty-nochange-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "noChange 且列表全空（合法）"
+    },
+    {
+        "file": "dirty-nochange-02.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "think + 闲聊 + noChange 全空"
+    },
+    {
+        "file": "dirty-raw-01.txt",
+        "basedOn": "states/mystery.json",
+        "expectOk": true,
+        "notes": "没有代码块，直接输出 JSON"
+    },
+    {
+        "file": "dirty-raw-02.txt",
+        "basedOn": "states/palace.json",
+        "expectOk": true,
+        "notes": "裸 JSON，无代码块"
+    },
+    {
+        "file": "dirty-think-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "带 think 标签，去掉后是合法 JSON"
+    },
+    {
+        "file": "dirty-think-02.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "thinking 标签，内容合法"
+    },
+    {
+        "file": "dirty-trailing-01.txt",
+        "basedOn": "states/apocalypse.json",
+        "expectOk": true,
+        "notes": "数组末项后多一个逗号，去掉后合法"
+    },
+    {
+        "file": "dirty-trailing-02.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "对象末项后多一个逗号，去掉后合法"
+    },
+    {
+        "file": "dirty-truncated-01.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "在 upsertThreads 中间被截断，JSON 不完整"
+    },
+    {
+        "file": "dirty-truncated-02.txt",
+        "basedOn": null,
+        "expectOk": false,
+        "notes": "在人物动作中间被截断，JSON 不完整"
+    },
+    {
+        "file": "ok-01.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "更新 2 个人物、推进 1 条线、替换 2 条信号"
+    },
+    {
+        "file": "ok-02.txt",
+        "basedOn": "states/school.json",
+        "expectOk": true,
+        "notes": "只更新 1 个人物和 1 条线，信号 1 条"
+    },
+    {
+        "file": "ok-03.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "新建 1 个人物（不写 id），更新 1 个"
+    },
+    {
+        "file": "ok-04.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "noChange 为真，其余全空（合法）"
+    },
+    {
+        "file": "ok-05.txt",
+        "basedOn": "states/mystery.json",
+        "expectOk": true,
+        "notes": "推进 1 条线到 resolving，保留 rumor 语态"
+    },
+    {
+        "file": "ok-06.txt",
+        "basedOn": "states/palace.json",
+        "expectOk": true,
+        "notes": "longAction 归档为 done 并写 outcome"
+    },
+    {
+        "file": "ok-07.txt",
+        "basedOn": "states/apocalypse.json",
+        "expectOk": true,
+        "notes": "更新 2 个人物、推进储水线"
+    },
+    {
+        "file": "ok-08.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "认知整体重写（含知道与不知道混排）"
+    },
+    {
+        "file": "ok-09.txt",
+        "basedOn": "states/wuxia-pinned.json",
+        "expectOk": true,
+        "notes": "removeCharacterIds 指向未钉住的人物（阿鹞）"
+    },
+    {
+        "file": "ok-10.txt",
+        "basedOn": "states/school-guide.json",
+        "expectOk": true,
+        "notes": "引导线被标记为 done"
+    },
+    {
+        "file": "ok-11.txt",
+        "basedOn": "states/mystery-isolated.json",
+        "expectOk": true,
+        "notes": "reachable=false 时不含 rumor 语态"
+    },
+    {
+        "file": "ok-12.txt",
+        "basedOn": "states/western-faded.json",
+        "expectOk": true,
+        "notes": "继续推进 faded 计数（3 次后应被删除）"
+    },
+    {
+        "file": "ok-13.txt",
+        "basedOn": "states/palace-crowded.json",
+        "expectOk": true,
+        "notes": "14 人超上限，删除 1 人"
+    },
+    {
+        "file": "ok-14.txt",
+        "basedOn": "states/apocalypse-dead.json",
+        "expectOk": true,
+        "notes": "更新存活人物，引用 dead 人物的 id"
+    },
+    {
+        "file": "ok-15.txt",
+        "basedOn": "states/wuxia.json",
+        "expectOk": true,
+        "notes": "只改 protagonist 和 1 个人物"
+    },
+    {
+        "file": "ok-16.txt",
+        "basedOn": "states/western.json",
+        "expectOk": true,
+        "notes": "推进封印线到 ripe"
+    },
+    {
+        "file": "ok-17.txt",
+        "basedOn": "states/urban.json",
+        "expectOk": true,
+        "notes": "只更新人物，不动线"
+    },
+    {
+        "file": "ok-18.txt",
+        "basedOn": "states/xiuxian.json",
+        "expectOk": true,
+        "notes": "更新 deadline 文本"
+    },
+    {
+        "file": "ok-19.txt",
+        "basedOn": "states/school.json",
+        "expectOk": true,
+        "notes": "新建 1 个人物 + 更新 1 个"
+    },
+    {
+        "file": "ok-20.txt",
+        "basedOn": "states/palace-crowded.json",
+        "expectOk": true,
+        "notes": "删除 2 人，3 条信号（上限）"
+    }
+]

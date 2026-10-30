@@ -1,0 +1,22 @@
+```json
+{
+  "cards": [
+    {
+      "title": "灯塔那一夜",
+      "goal": "林小满在日志最后一页找到撕页残留的字迹",
+      "firstSigns": "塔顶的窗玻璃结了一层盐霜",
+      "fit": "接灯塔那条线，visibility 还是 hidden，适合只铺垫",
+      "threadId": "t_mys001",
+      "suggestedIntensity": "seed"
+    },
+    {
+      "title": "守夜人的班表",
+      "goal": "徐渭调出那晚的班表，发现被人改过",
+      "firstSigns": "派出所的打印机在凌晨响了一声",
+      "fit": "接守夜人那条线，deadline 三天内，要尽快",
+      "threadId": "t_mys002",
+      "suggestedIntensity": "push"
+    }
+  ]
+}
+```

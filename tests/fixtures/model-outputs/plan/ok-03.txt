@@ -1,0 +1,30 @@
+```json
+{
+  "cards": [
+    {
+      "title": "第七次鸣响",
+      "goal": "钟楼在第七次鸣响时没有响，封印裂开一道口子",
+      "firstSigns": "钟楼下的老盲丐提前捂住了耳朵",
+      "fit": "呼应封印线，deadline 就在明夜",
+      "threadId": "t_wes001",
+      "suggestedIntensity": "push"
+    },
+    {
+      "title": "名单上缺的那个人",
+      "goal": "塞维林在旅店查到米拉的名字，却没有上报",
+      "firstSigns": "大教堂的门缝里透出一线烛光，抄名单的笔停了",
+      "fit": "接名单那条线，visibility 已到 hinted",
+      "threadId": "t_wes002",
+      "suggestedIntensity": "normal"
+    },
+    {
+      "title": "断剑的缺口",
+      "goal": "格里姆把断剑送到钟楼，奥尔登认出了缺口",
+      "firstSigns": "铁匠铺的风箱在半夜响了一声",
+      "fit": "接断剑线，这条线还在 seeded，适合轻推",
+      "threadId": "t_wes003",
+      "suggestedIntensity": "seed"
+    }
+  ]
+}
+```

@@ -1,0 +1,42 @@
+<think>
+先读这一轮的正文，分清哪些是已经发生的事实、哪些只是推断。
+镜头外的事按动机、资源和这段时间的可行性往前推，不替主角行动。
+「可能发生」不写成「已经发生」。
+</think>
+
+好，我按格式输出。
+
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux001",
+      "knows": [
+        "知道：有人在客栈打听三年前的旧事（秦月娘递话）",
+        "不知道：地窖里还藏着人"
+      ],
+      "name": "沈砚秋"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wux002",
+      "stage": "resolving",
+      "title": "漕帮与盐商的分账谈崩了，码头三日内外地货船一律扣下"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去码头，可让货棚的灯被人提前熄掉",
+      "threadId": "t_wux002",
+      "characterId": "c_wux003",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

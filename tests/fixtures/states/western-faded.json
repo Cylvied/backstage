@@ -1,0 +1,184 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 15,
+        "slot": "夜里",
+        "precision": "approx"
+    },
+    "protagonist": {
+        "location": "灰港城·下城区旅店",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_wfd001",
+            "name": "奥尔登",
+            "aliases": [
+                "老奥尔登"
+            ],
+            "location": "灰港城·钟楼",
+            "currentAction": {
+                "text": "在钟楼里给一盏不灭的灯添油",
+                "duration": "一夜"
+            },
+            "longAction": {
+                "text": "守住钟楼的第七次鸣响",
+                "duration": "到月末",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：城北的封印裂了一道缝（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 15
+        },
+        {
+            "id": "c_wfd002",
+            "name": "米拉",
+            "aliases": [],
+            "location": "灰港城·下城区旅店",
+            "currentAction": {
+                "text": "在旅店灶间熬一锅味道不对的汤",
+                "duration": "到天亮"
+            },
+            "longAction": {
+                "text": "想凑够钱离开灰港",
+                "duration": "约两月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "不知道：主角身上有教会要找的东西"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 15
+        },
+        {
+            "id": "c_wfd003",
+            "name": "塞维林",
+            "aliases": [
+                "执事塞维林"
+            ],
+            "location": "灰港城·大教堂",
+            "currentAction": {
+                "text": "在烛台下抄一份名单",
+                "duration": "整夜"
+            },
+            "longAction": {
+                "text": "清点城内的异端",
+                "duration": "直到封印补好",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：名单上少了一个人（自己发现）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_wfd004",
+            "name": "格里姆",
+            "aliases": [
+                "铁匠格里姆"
+            ],
+            "location": "灰港城·铁匠铺",
+            "currentAction": {
+                "text": "把一柄断剑重新淬火",
+                "duration": "两日"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：断剑的缺口和钟楼那把对得上（比对过）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_wfd001",
+            "title": "钟楼的封印在第七次鸣响时会裂开，城北会漏进不该进来的东西",
+            "characterIds": [
+                "c_wfd001",
+                "c_wfd003"
+            ],
+            "stage": "growing",
+            "trigger": "第七次鸣响之前没人补上那道缝",
+            "deadline": {
+                "text": "三日后的第七次鸣响",
+                "missedOutcome": "封印彻底裂开，城北出现不该有的东西"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_wfd002",
+            "title": "塞维林的名单上少的那个人，是米拉",
+            "characterIds": [
+                "c_wfd003",
+                "c_wfd002"
+            ],
+            "stage": "ripe",
+            "trigger": "塞维林核对到旅店这一栏",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_wfd003",
+            "title": "格里姆淬的那柄断剑，是钟楼那把的一部分",
+            "characterIds": [
+                "c_wfd004",
+                "c_wfd001"
+            ],
+            "stage": "faded",
+            "trigger": "有人把断剑和钟楼联系起来",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null,
+            "fadedRuns": 1
+        },
+        {
+            "id": "t_wfd004",
+            "title": "米拉那锅汤原本是熬给谁的",
+            "characterIds": [
+                "c_wfd002"
+            ],
+            "stage": "faded",
+            "trigger": "米拉自己提起这锅汤的来历",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null,
+            "fadedRuns": 2
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若在旅店多留一夜，可让教会的人敲门查房，先查米拉的灶间",
+            "threadId": "t_wfd002",
+            "characterId": "c_wfd003",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "钟声一旦乱，全城的狗会先叫起来，之后人心才乱",
+            "threadId": "t_wfd001",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 15
+}

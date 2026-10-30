@@ -1,0 +1,42 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_xiu001",
+      "currentAction": {
+        "text": "把炉火压小，坐在炉边数呼吸",
+        "duration": "一整夜"
+      },
+      "knows": [
+        "知道：外门有个杂役身上带着药味（闻到）",
+        "知道：山脚的药铺已经断货（听秋娘说）"
+      ],
+      "name": "云栖"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_xiu001",
+      "stage": "ripe",
+      "deadline": {
+        "text": "明日炉成",
+        "missedOutcome": "丹废，云栖得在下一次大比前另寻他法"
+      },
+      "title": "云栖熬的那炉丹，缺的那味药在山脚镇已经绝了"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "山脚的药一断，内门那几位的脸色会比天气先变",
+      "threadId": "t_xiu001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

@@ -1,0 +1,50 @@
+{
+    "note": "查询词 → 认为最相关的 3 条纪要名字。相关性按剧情事实与关键词重合判断，供 pickMemos 打分对照。",
+    "cases": [
+        {
+            "query": "苏晚在临江府客栈打听城西染坊封门的事",
+            "top3": [
+                "TavernDB-ACU-CustomExport-纪要-1",
+                "TavernDB-ACU-CustomExport-纪要-13",
+                "TavernDB-ACU-CustomExport-纪要-25"
+            ],
+            "why": "第一条是入住当晚的打听，第十三条是染坊地窖被发现，第二十五条是地窖已空——覆盖问题的起、中、终。"
+        },
+        {
+            "query": "三年前的案卷被谁调走了",
+            "top3": [
+                "TavernDB-ACU-CustomExport-纪要-18",
+                "TavernDB-ACU-CustomExport-纪要-20",
+                "TavernDB-ACU-CustomExport-纪要-17"
+            ],
+            "why": "第十八条查档发现借出未还且借条被涂，第二十条揭示案卷被调换，第十七条交代案卷被调走的说法。"
+        },
+        {
+            "query": "码头漕帮和盐商的分账",
+            "top3": [
+                "TavernDB-ACU-CustomExport-纪要-8",
+                "TavernDB-ACU-CustomExport-纪要-22",
+                "TavernDB-ACU-CustomExport-纪要-23"
+            ],
+            "why": "第八条谈崩，第二十二条给出放船条件，第二十三条子时前货棚的灯被熄、白家管事出现。"
+        },
+        {
+            "query": "左手少半截指头的人",
+            "top3": [
+                "TavernDB-ACU-CustomExport-纪要-5",
+                "TavernDB-ACU-CustomExport-纪要-12",
+                "TavernDB-ACU-CustomExport-纪要-30"
+            ],
+            "why": "第五条首次出现断指细节，第十二条对质时被否认，第三十条半年后的目击。"
+        },
+        {
+            "query": "城南渡口那辆没有灯的马车",
+            "top3": [
+                "TavernDB-ACU-CustomExport-纪要-4",
+                "TavernDB-ACU-CustomExport-纪要-5",
+                "TavernDB-ACU-CustomExport-纪要-22"
+            ],
+            "why": "第四条柳三更目击马车，第五条渡口老人确认箱子与断指，第二十二条提到渡口抽头。"
+        }
+    ]
+}

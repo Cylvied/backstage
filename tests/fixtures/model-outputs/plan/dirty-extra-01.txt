@@ -1,0 +1,16 @@
+```json
+{
+  "cards": [
+    {
+      "title": "断剑的缺口",
+      "goal": "格里姆把断剑送到钟楼，奥尔登认出了缺口",
+      "firstSigns": "铁匠铺的风箱在半夜响了一声",
+      "fit": "接断剑线，这条线还在 seeded",
+      "threadId": "t_wes003",
+      "suggestedIntensity": "seed",
+      "risk": "low",
+      "expectedRounds": 3
+    }
+  ]
+}
+```

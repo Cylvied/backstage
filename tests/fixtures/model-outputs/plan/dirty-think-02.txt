@@ -1,0 +1,18 @@
+<thinking>
+主角还在旅店，米拉那边可以动一下，但别太快。
+</thinking>
+
+```json
+{
+  "cards": [
+    {
+      "title": "灶间那锅汤",
+      "goal": "米拉等的人今夜来了，看见锅里的东西后转身就走",
+      "firstSigns": "旅店后门的门闩被人从外面拨开",
+      "fit": "接米拉那条线，visibility 还是 hidden",
+      "threadId": "t_wfd002",
+      "suggestedIntensity": "seed"
+    }
+  ]
+}
+```

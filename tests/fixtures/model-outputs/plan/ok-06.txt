@@ -1,0 +1,22 @@
+```json
+{
+  "cards": [
+    {
+      "title": "东边的火",
+      "goal": "东边的火在夜里烧到公路边，车队被迫提前出发",
+      "firstSigns": "天台的望远镜里，烟柱比昨天粗了一倍",
+      "fit": "接发烧来源那条线，也压着北上的 deadline",
+      "threadId": "t_apd002",
+      "suggestedIntensity": "push"
+    },
+    {
+      "title": "黑子的水壶",
+      "goal": "车队在塌方口找到黑子的水壶，壶底刻着别人的名字",
+      "firstSigns": "加油站的灰在正午忽然落了一层",
+      "fit": "接黑子那条线，已经到 resolving，适合收口",
+      "threadId": "t_apd003",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

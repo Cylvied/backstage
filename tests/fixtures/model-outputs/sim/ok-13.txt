@@ -1,0 +1,49 @@
+```json
+{
+  "clock": {
+    "day": 31,
+    "slot": "凌晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pcw009",
+      "currentAction": {
+        "text": "把药方折起来塞进袖子里",
+        "duration": "片刻"
+      },
+      "knows": [
+        "知道：先帝最后那副药不是自己开的（脉案）",
+        "知道：有人在查旧脉案（听见动静）"
+      ],
+      "name": "孙太医"
+    },
+    {
+      "id": "c_pcw013",
+      "location": "大内·东华门内",
+      "name": "许书生"
+    }
+  ],
+  "removeCharacterIds": [
+    "c_pcw014"
+  ],
+  "upsertThreads": [
+    {
+      "id": "t_pcw004",
+      "stage": "growing",
+      "title": "先帝最后那副药方，被换过一次"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若往太医院去，可让值房里的灯忽然被吹灭",
+      "threadId": "t_pcw004",
+      "characterId": "c_pcw009",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

@@ -1,0 +1,53 @@
+```json
+{
+  "clock": {
+    "day": 47,
+    "slot": "午后",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_apo003",
+      "knows": [
+        "知道：储水只剩两天（自己数的）"
+      ],
+      "name": "小满"
+    },
+    {
+      "id": "c_apo002",
+      "currentAction": {
+        "text": "把望远镜架在天台水箱上，盯着东边的烟",
+        "duration": "到天黑"
+      },
+      "name": "严青"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_apo003",
+      "stage": "growing",
+      "visibility": "known",
+      "title": "储水只剩两天，而最近的水源在东边着火的方向"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若打开后门，可让风把灰吹进来，压住罐头的气味",
+      "threadId": null,
+      "characterId": "c_apo001",
+      "relevance": 2
+    },
+    {
+      "voice": "undercurrent",
+      "text": "东边的火一天不灭，这边的天就一天比一天黄",
+      "threadId": "t_apo002",
+      "characterId": "c_apo002",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

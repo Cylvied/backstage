@@ -1,0 +1,33 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_xiu003",
+      "knows": [
+        "知道：那个蒲团不会再有人坐（自知）",
+        "知道：白鹞在大比前打听过后山的事（听见）",
+        "知道：云栖的丹缺一味药（听秋娘说）",
+        "知道：外门有个杂役身上带药味（云栖提过）",
+        "知道：山脚的药铺已经断货（账本）",
+        "不知道：墨长老等的人其实已经死了",
+        "不知道：石三桶里是什么"
+      ],
+      "name": "墨长老"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "山脚的药一断，内门那几位的脸色会比天气先变",
+      "threadId": "t_xiu001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

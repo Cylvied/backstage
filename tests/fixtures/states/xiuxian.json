@@ -1,0 +1,206 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 5,
+        "slot": "清晨",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "青芜山·外门杂役院",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_xiu001",
+            "name": "云栖",
+            "aliases": [
+                "云师姐"
+            ],
+            "location": "青芜山·内门药庐",
+            "currentAction": {
+                "text": "守着炉子熬一炉不知名的丹",
+                "duration": "三日"
+            },
+            "longAction": {
+                "text": "想凑齐结丹所需的最后一味药",
+                "duration": "约一年",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：外门有个杂役身上带着药味（闻到）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 5
+        },
+        {
+            "id": "c_xiu002",
+            "name": "石三",
+            "aliases": [],
+            "location": "青芜山·外门杂役院",
+            "currentAction": {
+                "text": "挑水上山，桶里藏了东西",
+                "duration": "一趟"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：桶里的东西被人换过"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 5
+        },
+        {
+            "id": "c_xiu003",
+            "name": "墨长老",
+            "aliases": [],
+            "location": "青芜山·后山禁地",
+            "currentAction": {
+                "text": "在洞府里对着一个空蒲团坐了七日",
+                "duration": "到明日"
+            },
+            "longAction": {
+                "text": "等一个人回来认错",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：那个蒲团不会再有人坐（自知）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_xiu004",
+            "name": "秋娘",
+            "aliases": [],
+            "location": "青芜山·山脚镇",
+            "currentAction": {
+                "text": "在药铺后堂称一味缺货的药材",
+                "duration": "半晌"
+            },
+            "longAction": {
+                "text": "把药铺留给女儿",
+                "duration": "约十年",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：有人替外门买过同样的药（账本）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_xiu005",
+            "name": "白鹞",
+            "aliases": [
+                "白师兄"
+            ],
+            "location": "青芜山·试剑坪",
+            "currentAction": {
+                "text": "一个人试剑，剑锋总差半分",
+                "duration": "到日出"
+            },
+            "longAction": {
+                "text": "在下一次大比上胜过云栖",
+                "duration": "约三月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：墨长老在等谁（听来的）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_xiu006",
+            "name": "顾七",
+            "aliases": [],
+            "location": "青芜山·外门杂役院",
+            "currentAction": {
+                "text": "靠在墙根睡觉，耳朵却没松",
+                "duration": "一整天"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：石三的桶里是什么"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_xiu001",
+            "title": "云栖熬的那炉丹，缺的那味药在山脚镇已经绝了",
+            "characterIds": [
+                "c_xiu001",
+                "c_xiu004"
+            ],
+            "stage": "growing",
+            "trigger": "药庐的炉子开到第二日",
+            "deadline": {
+                "text": "三日炉成",
+                "missedOutcome": "丹废，云栖要在下一次大比前另寻他法"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_xiu002",
+            "title": "墨长老等的那个空蒲团，其实是留给一个已经死掉的人",
+            "characterIds": [
+                "c_xiu003",
+                "c_xiu005"
+            ],
+            "stage": "ripe",
+            "trigger": "有人问起后山那位弟子",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_xiu003",
+            "title": "石三桶里的东西，是替人从山下带上来的",
+            "characterIds": [
+                "c_xiu002",
+                "c_xiu006"
+            ],
+            "stage": "seeded",
+            "trigger": "桶里的东西被人翻出来",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若去挑水，可让石三的桶绳忽然断开，把桶底的东西露出来",
+            "threadId": "t_xiu003",
+            "characterId": "c_xiu002",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "山脚的药一断，内门那几位的脸色会比天气先变",
+            "threadId": "t_xiu001",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 5
+}

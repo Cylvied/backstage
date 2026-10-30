@@ -1,0 +1,32 @@
+```json
+{
+  "clock": null,
+  "protagonist": {
+    "location": "临江府·城西染坊后院",
+    "reachable": true
+  },
+  "upsertCharacters": [
+    {
+      "id": "c_wux004",
+      "location": "临江府·悦来客栈",
+      "currentAction": {
+        "text": "把柜台的灯留一盏，自己坐在楼梯口",
+        "duration": "到天亮"
+      },
+      "name": "秦月娘"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若在染坊后院久留，可让屋顶的晾布被风卷下来盖住灯",
+      "threadId": "t_wux001",
+      "characterId": "c_wux006",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

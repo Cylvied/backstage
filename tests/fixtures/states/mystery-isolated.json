@@ -1,0 +1,153 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 11,
+        "slot": "深夜",
+        "precision": "unknown"
+    },
+    "protagonist": {
+        "location": "临海镇·旧灯塔·塔顶",
+        "reachable": false
+    },
+    "characters": [
+        {
+            "id": "c_mio001",
+            "name": "徐渭",
+            "aliases": [
+                "老徐"
+            ],
+            "location": "临海镇·派出所",
+            "currentAction": {
+                "text": "反复看一段三分钟的监控",
+                "duration": "到天亮"
+            },
+            "longAction": {
+                "text": "想在自己退休前把这案子结掉",
+                "duration": "约三月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：失踪者最后一次出现是往灯塔方向（监控）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 9
+        },
+        {
+            "id": "c_mio002",
+            "name": "林小满",
+            "aliases": [],
+            "location": "临海镇·旧灯塔",
+            "currentAction": {
+                "text": "在灯塔顶层把一本航海日志翻到最后一页",
+                "duration": "一整夜"
+            },
+            "longAction": {
+                "text": "想找到父亲出海的记录",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：日志最后一页被人撕过（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 9
+        },
+        {
+            "id": "c_mio003",
+            "name": "王守义",
+            "aliases": [
+                "守夜人"
+            ],
+            "location": "临海镇·渔港",
+            "currentAction": {
+                "text": "修一张破网，手抖得厉害",
+                "duration": "到中午"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：已经有人注意到他当晚不在岗"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_mio004",
+            "name": "赵玫",
+            "aliases": [],
+            "location": "临海镇·民宿",
+            "currentAction": {
+                "text": "在登记本上把某个名字涂掉",
+                "duration": "几分钟"
+            },
+            "longAction": {
+                "text": "把民宿撑过这个冬天",
+                "duration": "到开春",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：失踪者住过三号房（登记本）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_mio001",
+            "title": "失踪者没有离开临海镇，他在灯塔里待过一夜",
+            "characterIds": [
+                "c_mio002",
+                "c_mio001"
+            ],
+            "stage": "growing",
+            "trigger": "有人把航海日志最后一页找出来",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_mio002",
+            "title": "守夜人当晚不在岗，因为他去见了不该见的人",
+            "characterIds": [
+                "c_mio003",
+                "c_mio004"
+            ],
+            "stage": "ripe",
+            "trigger": "徐渭问起那晚的班表",
+            "deadline": {
+                "text": "三天内",
+                "missedOutcome": "王守义离开临海镇，线索断掉"
+            },
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "塔顶的窗玻璃结了一层盐霜，擦开也看不清港口的灯",
+            "threadId": "t_mio001",
+            "characterId": "c_mio002",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "灯塔里的钟摆每半小时停一次，像是在等谁上来看",
+            "threadId": null,
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 9
+}

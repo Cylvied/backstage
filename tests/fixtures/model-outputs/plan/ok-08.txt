@@ -1,0 +1,30 @@
+```json
+{
+  "cards": [
+    {
+      "title": "子时那道旨",
+      "goal": "太后在子时发出那道不经中书省的旨，沈家连夜被调出京城",
+      "firstSigns": "长秋宫的灯比平时多亮了一盏",
+      "fit": "接那道旨的线，deadline 五日后",
+      "threadId": "t_pal001",
+      "suggestedIntensity": "push"
+    },
+    {
+      "title": "浣衣局那件袍子",
+      "goal": "云娘藏起的那件袍子被人认出来，幼帝听见了这件事",
+      "firstSigns": "浣衣局的衣堆在夜里塌了一角",
+      "fit": "接袍子那条线，visibility 已到 hinted",
+      "threadId": "t_pal002",
+      "suggestedIntensity": "normal"
+    },
+    {
+      "title": "调令到不到",
+      "goal": "胡校尉在子时前没等到调令，玄武门换了守备",
+      "firstSigns": "门洞里的刀擦得比平时久",
+      "fit": "接调令那条线，deadline 就在子时",
+      "threadId": "t_pal003",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

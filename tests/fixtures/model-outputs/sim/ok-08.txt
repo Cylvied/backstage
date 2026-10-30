@@ -1,0 +1,43 @@
+```json
+{
+  "clock": {
+    "day": 6,
+    "slot": "上午",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_xiu002",
+      "currentAction": {
+        "text": "把水桶放在墙角，蹲下去系鞋带，手在桶底摸了一下",
+        "duration": "片刻"
+      },
+      "knows": [
+        "知道：桶里的东西被人换过（手感不对）"
+      ],
+      "name": "石三"
+    },
+    {
+      "id": "c_xiu006",
+      "knows": [
+        "不知道：石三的桶里是什么",
+        "知道：石三今天挑水的趟数多了一趟（听着数的）"
+      ],
+      "name": "顾七"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若跟着去挑水，可让桶绳忽然断开，把桶底的东西露出来",
+      "threadId": "t_xiu003",
+      "characterId": "c_xiu002",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

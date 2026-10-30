@@ -1,0 +1,48 @@
+```json
+{
+  "clock": {
+    "day": 16,
+    "slot": "夜里",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wfd004",
+      "currentAction": {
+        "text": "把断剑浸进水桶，听见裂纹在响",
+        "duration": "到天亮"
+      },
+      "knows": [
+        "知道：断剑的缺口和钟楼那把对得上（比对过）"
+      ],
+      "name": "格里姆"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wfd003",
+      "stage": "faded",
+      "fadedRuns": 2,
+      "title": "格里姆淬的那柄断剑，是钟楼那把的一部分"
+    },
+    {
+      "id": "t_wfd004",
+      "stage": "faded",
+      "fadedRuns": 3,
+      "title": "米拉那锅汤原本是熬给谁的"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "钟声一旦乱，全城的狗会先叫起来，之后人心才乱",
+      "threadId": "t_wfd001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

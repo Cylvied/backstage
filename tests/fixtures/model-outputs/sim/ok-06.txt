@@ -1,0 +1,59 @@
+```json
+{
+  "clock": {
+    "day": 28,
+    "slot": "子时",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pal004",
+      "currentAction": {
+        "text": "把刀收回鞘里，站在门洞阴影下不动",
+        "duration": "到子时过后"
+      },
+      "longAction": {
+        "text": "等一道调令",
+        "duration": "约五日",
+        "status": "done",
+        "outcome": "调令没来，换班的人先到了"
+      },
+      "name": "胡校尉"
+    },
+    {
+      "id": "c_pal001",
+      "knows": [
+        "知道：兵权已经不在自己手里（亲信回报）",
+        "知道：玄武门今夜换了人（眼线回报）"
+      ],
+      "name": "萧太后"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_pal003",
+      "stage": "ripe",
+      "title": "胡校尉在等的那道调令，会决定今夜玄武门归谁"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若往玄武门去，可让换班的人提前出现，把门洞堵住",
+      "threadId": "t_pal003",
+      "characterId": "c_pal004",
+      "relevance": 3
+    },
+    {
+      "voice": "undercurrent",
+      "text": "旨意绕开中书省，百官几天内就会开始告病",
+      "threadId": "t_pal001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

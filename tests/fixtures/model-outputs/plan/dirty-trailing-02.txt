@@ -1,0 +1,14 @@
+```json
+{
+  "cards": [
+    {
+      "title": "开庭前一周",
+      "goal": "陆知远在开庭前拿到原始签收单，笔迹对不上",
+      "firstSigns": "何蔓把报表装进一个没有抬头的信封",
+      "fit": "接挪用公款那条线",
+      "threadId": "t_urb001",
+      "suggestedIntensity": "normal",
+    }
+  ]
+}
+```

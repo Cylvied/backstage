@@ -1,0 +1,14 @@
+```json
+{
+  "cards": [
+    {
+      "title": "灯塔那一夜",
+      "goal": "林小满在日志最后一页找到撕页残留的字迹",
+      "firstSigns": "塔顶的窗玻璃结了一层盐霜",
+      "fit": "接灯塔那条线，适合只铺垫",
+      "threadId": "t_mys001",
+      "suggestedIntensity": "seed",
+    },
+  ],
+}
+```

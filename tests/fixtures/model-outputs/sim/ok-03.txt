@@ -1,0 +1,55 @@
+```json
+{
+  "clock": {
+    "day": 8,
+    "slot": "深夜",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes003",
+      "knows": [
+        "知道：名单上少的那个人住在下城区旅店（核对到）",
+        "不知道：米拉今夜要等的人是谁"
+      ],
+      "name": "塞维林"
+    },
+    {
+      "name": "钟楼的学徒",
+      "aliases": [],
+      "location": "灰港城·钟楼",
+      "currentAction": {
+        "text": "抱着灯油罐在塔梯上打盹",
+        "duration": "到换班"
+      },
+      "longAction": null,
+      "knows": [
+        "不知道：第七次鸣响会出什么事"
+      ],
+      "life": "alive",
+      "onStage": false,
+      "pinned": false
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若经过大教堂，可让门缝里透出一线烛光，有人在里面抄东西",
+      "threadId": "t_wes002",
+      "characterId": "c_wes003",
+      "relevance": 3
+    },
+    {
+      "voice": "undercurrent",
+      "text": "钟一乱，全城的狗会先叫，之后才轮到人心",
+      "threadId": "t_wes001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

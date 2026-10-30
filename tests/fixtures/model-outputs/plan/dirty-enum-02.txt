@@ -1,0 +1,14 @@
+```json
+{
+  "cards": [
+    {
+      "title": "码头的子时",
+      "goal": "何九在子时前放走货船，分账的事就此翻脸",
+      "firstSigns": "货棚里的灯被提前熄掉",
+      "fit": "接漕帮分账那条线",
+      "threadId": "t_wux002",
+      "suggestedIntensity": "快速推进"
+    }
+  ]
+}
+```

@@ -1,0 +1,40 @@
+```json
+{
+  "clock": {
+    "day": 22,
+    "slot": "凌晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_urb002",
+      "currentAction": {
+        "text": "把重做好的报表打印出来，装进一个没有抬头的信封",
+        "duration": "半小时"
+      },
+      "name": "何蔓"
+    },
+    {
+      "id": "c_urb005",
+      "knows": [
+        "知道：1204 的住户每晚十二点会去阳台（蹲守）",
+        "知道：今晚阳台的灯没亮（亲见）"
+      ],
+      "name": "周敏"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "开庭的日子一近，相关的人会开始互相试探，话说得比平时多",
+      "threadId": "t_urb001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

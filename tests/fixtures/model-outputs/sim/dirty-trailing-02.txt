@@ -1,0 +1,28 @@
+```json
+{
+  "clock": null,
+  "protagonist": {
+    "reachable": true
+  },
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_xiu002",
+      "stage": "resolving",
+      "trigger": "有人问起后山那位弟子",
+      "title": "墨长老等的那个空蒲团，其实是留给一个已经死掉的人",
+    }
+  ],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "后山一有动静，内门的脸色就会变",
+      "threadId": "t_xiu002",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

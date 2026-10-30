@@ -1,0 +1,48 @@
+```json
+{
+  "clock": {
+    "day": 5,
+    "slot": "后半夜",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_mys002",
+      "currentAction": {
+        "text": "把航海日志合上，坐在塔顶等天亮",
+        "duration": "到日出"
+      },
+      "knows": [
+        "知道：日志最后一页被人撕过（亲见）",
+        "知道：那个人在塔里待过一夜（自己推的）"
+      ],
+      "name": "林小满"
+    },
+    {
+      "id": "c_mys003",
+      "location": "临海镇·渔港码头",
+      "name": "王守义"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_mys002",
+      "stage": "resolving",
+      "trigger": "徐渭明日调出那晚的班表",
+      "title": "守夜人当晚不在岗，因为他去见了不该见的人"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "rumor",
+      "text": "渔港的人开始说那晚灯塔没亮，这话传得比警察问话快",
+      "threadId": "t_mys002",
+      "characterId": "c_mys003",
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

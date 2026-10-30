@@ -1,0 +1,41 @@
+```json
+{
+  "clock": {
+    "day": 53,
+    "slot": "正午",
+    "precision": "approx",
+    "timezone": "UTC+8"
+  },
+  "protagonist": {
+    "location": "环城高速·加油站",
+    "reachable": true,
+    "supply": "低"
+  },
+  "upsertCharacters": [
+    {
+      "id": "c_apd001",
+      "name": "罗盘",
+      "location": "环城高速·加油站便利店",
+      "currentAction": {
+        "text": "把罐头按保质期排成一排",
+        "duration": "一小时"
+      },
+      "trust": 0.7
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若打开后门，可让风把灰吹进来",
+      "threadId": null,
+      "characterId": "c_apd001",
+      "relevance": 2
+    }
+  ],
+  "noChange": false,
+  "confidence": "high",
+  "reasoning": "这一轮镜头外基本没有变化，只有老罗在清点物资。"
+}
+```

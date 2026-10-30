@@ -1,0 +1,22 @@
+```json
+{
+  "cards": [
+    {
+      "title": "太医院旧脉案",
+      "goal": "孙太医把先帝的旧脉案交出去，钱公公当场烧了",
+      "firstSigns": "太医院值房的灯忽然被吹灭",
+      "fit": "接药方那条线，visibility 还是 hidden",
+      "threadId": "t_pcw004",
+      "suggestedIntensity": "尽快引爆"
+    },
+    {
+      "title": "玄武门换班",
+      "goal": "胡校尉等不到调令，玄武门在子时换了人",
+      "firstSigns": "换班的人比平时早到了一刻",
+      "fit": "接调令那条线，deadline 就在子时",
+      "threadId": "t_pcw003",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

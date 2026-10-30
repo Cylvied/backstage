@@ -1,0 +1,43 @@
+```json
+{
+  "clock": {
+    "day": 11,
+    "slot": "后半夜",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_mio003",
+      "currentAction": {
+        "text": "把破网摊在膝上，一动不动坐到天亮",
+        "duration": "到天亮"
+      },
+      "knows": [
+        "不知道：已经有人注意到他当晚不在岗",
+        "知道：灯塔今夜有人上去了（远处看见灯）"
+      ],
+      "name": "王守义"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_mio001",
+      "stage": "ripe",
+      "visibility": "hinted",
+      "title": "失踪者没有离开临海镇，他在灯塔里待过一夜"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "塔顶的窗玻璃结了盐霜，擦开也看不清港口的灯",
+      "threadId": "t_mio001",
+      "characterId": "c_mio002",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

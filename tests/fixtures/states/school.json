@@ -1,0 +1,182 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 3,
+        "slot": "午后",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "私立启明高中·高三(2)班教室",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_sch001",
+            "name": "林知夏",
+            "aliases": [],
+            "location": "启明高中·图书馆三楼",
+            "currentAction": {
+                "text": "在图书馆角落翻三年前的校刊",
+                "duration": "整个下午"
+            },
+            "longAction": {
+                "text": "想找出退学名单上被划掉的那个名字",
+                "duration": "到毕业前",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：校刊那一期被抽走两页（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 3
+        },
+        {
+            "id": "c_sch002",
+            "name": "周牧",
+            "aliases": [],
+            "location": "启明高中·篮球馆",
+            "currentAction": {
+                "text": "一个人练罚球，投到天黑",
+                "duration": "到天黑"
+            },
+            "longAction": {
+                "text": "争取唯一的保送名额",
+                "duration": "约一学期",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "不知道：林知夏在查他哥哥的事"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_sch003",
+            "name": "陈老师",
+            "aliases": [
+                "老陈"
+            ],
+            "location": "启明高中·教师办公室",
+            "currentAction": {
+                "text": "批改周记，笔停在同一页很久",
+                "duration": "傍晚前"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：那届有个学生是转学不是退学（经手办理）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_sch004",
+            "name": "高小满",
+            "aliases": [],
+            "location": "启明高中·高三(2)班教室",
+            "currentAction": {
+                "text": "把一张折好的纸条塞进主角抽屉",
+                "duration": "几分钟"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：周牧家里出了事（听同学说）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 3
+        },
+        {
+            "id": "c_sch005",
+            "name": "孙悦",
+            "aliases": [],
+            "location": "启明高中·天台",
+            "currentAction": {
+                "text": "靠在天台栏杆上等一个人",
+                "duration": "到放学"
+            },
+            "longAction": {
+                "text": "想把这学期撑过去",
+                "duration": "到期末",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "不知道：纸条的事"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_sch001",
+            "title": "三年前的退学名单上被划掉的名字，其实还活着",
+            "characterIds": [
+                "c_sch001",
+                "c_sch003"
+            ],
+            "stage": "growing",
+            "trigger": "林知夏找到那两页被抽走的校刊",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_sch002",
+            "title": "保送名额只有一个，周牧和陈老师之间有笔没说完的交易",
+            "characterIds": [
+                "c_sch002",
+                "c_sch003"
+            ],
+            "stage": "ripe",
+            "trigger": "陈老师把推荐表交上去",
+            "deadline": {
+                "text": "本周五放学前",
+                "missedOutcome": "名额给了别人，周牧家里的事被翻出来"
+            },
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_sch003",
+            "title": "抽屉里那张纸条是孙悦写的，她想约人谈一件不能说的事",
+            "characterIds": [
+                "c_sch005",
+                "c_sch004"
+            ],
+            "stage": "seeded",
+            "trigger": "主角打开抽屉里的纸条",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若回教室，可让抽屉里的纸条滑出来掉在地上，被旁人先捡到",
+            "threadId": "t_sch003",
+            "characterId": "c_sch004",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "保送的事一旦传开，班里的气氛会在几天内变得很紧",
+            "threadId": "t_sch002",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 3
+}

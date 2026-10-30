@@ -9,8 +9,8 @@
 | 编号 | 任务 | 负责人 | 状态 | 认领的文件 |
 |---|---|---|---|---|
 | T1 | 宿主适配、模型调用、注入、入口装配，以及推演/规划提示词、注入文本 | Claude | 进行中 | manifest.json, index.js, src/types.js, src/constants.js, src/util.js, src/host/*, src/prompts/*, src/inject/*, tests/prompts/*, tests/inject/* |
-| T2 | 快照、调度、解析、合并、纪要筛选（docs/tasks/T2-codex.md） | Codex | 进行中 | src/state/*, src/sim/*, src/memory/*, tests/state/*, tests/sim/*, tests/memory/* |
-| T3 | 测试样本库（docs/tasks/T3-dsh.md） | dsh | 进行中 | tests/fixtures/** |
+| T2 | 快照、调度、解析、合并、纪要筛选（docs/tasks/T2-codex.md） | Codex | 审查修改中 | src/state/*, src/sim/*, src/memory/*, tests/state/*, tests/sim/*, tests/memory/* |
+| T3 | 测试样本库（docs/tasks/T3-dsh.md） | dsh | 已完成 | tests/fixtures/** |
 
 ## 第 2 批（待第 1 批完成后发布）
 

@@ -1,0 +1,9 @@
+```json
+{
+  "clock": { "day": 32, "slot": "五更", "precision": "exact" },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    { "id": "t_pcw001", "title": "那道不经中书省的旨，是要把沈家满门调出京城", "stage": "ripe", "visibility": "hinted" },
+    { "id": "t_pcw003", "title": "胡校尉在等的那道调令，会决定今夜玄武门归谁", "stage": "resolving", "trigger": "调令在子时前

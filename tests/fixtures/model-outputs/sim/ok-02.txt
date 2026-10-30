@@ -1,0 +1,39 @@
+```json
+{
+  "clock": {
+    "day": 3,
+    "slot": "放学",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch005",
+      "currentAction": {
+        "text": "在天台栏杆边来回走，把一张纸捏皱又展开",
+        "duration": "到天黑"
+      },
+      "name": "孙悦"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch003",
+      "stage": "growing",
+      "visibility": "hinted",
+      "title": "抽屉里那张纸条是孙悦写的，她想约人谈一件不能说的事"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若上天台，可让铁门在身后被风带上，发出很响的一声",
+      "threadId": "t_sch003",
+      "characterId": "c_sch005",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

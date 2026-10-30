@@ -1,0 +1,201 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 27,
+        "slot": "深夜",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "大内·西偏殿",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_pal001",
+            "name": "萧太后",
+            "aliases": [
+                "太后"
+            ],
+            "location": "大内·长秋宫",
+            "currentAction": {
+                "text": "在灯下批一道没人敢驳的旨",
+                "duration": "整夜"
+            },
+            "longAction": {
+                "text": "扶幼帝坐稳这把椅子",
+                "duration": "三年为期",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：兵权已经不在自己手里（亲信回报）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 27
+        },
+        {
+            "id": "c_pal002",
+            "name": "沈砚",
+            "aliases": [
+                "沈尚书"
+            ],
+            "location": "大内·中书省",
+            "currentAction": {
+                "text": "把一封密信烧在炭盆里",
+                "duration": "一刻"
+            },
+            "longAction": {
+                "text": "把女儿从宫里接出去",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：太后今夜会批那道旨（眼线）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal003",
+            "name": "李嬷嬷",
+            "aliases": [],
+            "location": "大内·西偏殿",
+            "currentAction": {
+                "text": "替主角换一壶不烫的茶",
+                "duration": "一盏茶工夫"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：那壶茶本来是给别人的"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 27
+        },
+        {
+            "id": "c_pal004",
+            "name": "胡校尉",
+            "aliases": [],
+            "location": "大内·玄武门",
+            "currentAction": {
+                "text": "在门洞里擦刀，等人换班",
+                "duration": "到子时"
+            },
+            "longAction": {
+                "text": "等一道调令",
+                "duration": "约五日",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：今夜宫里有第二道旨没走中书省（同僚透露）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal005",
+            "name": "云娘",
+            "aliases": [],
+            "location": "大内·浣衣局",
+            "currentAction": {
+                "text": "把一件不该出现的袍子藏进衣堆",
+                "duration": "片刻"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：那件袍子的主人没死（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal006",
+            "name": "幼帝",
+            "aliases": [],
+            "location": "大内·长秋宫",
+            "currentAction": {
+                "text": "假装睡着，听太后与谁说话",
+                "duration": "整夜"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：自己不是先帝唯一的孩子"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_pal001",
+            "title": "那道不经中书省的旨，是要把沈家满门调出京城",
+            "characterIds": [
+                "c_pal001",
+                "c_pal002"
+            ],
+            "stage": "growing",
+            "trigger": "旨意送到中书省之外的人手里",
+            "deadline": {
+                "text": "五日后",
+                "missedOutcome": "沈家来不及走，密信落到太后手里"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_pal002",
+            "title": "浣衣局里那件袍子的主人还活着",
+            "characterIds": [
+                "c_pal005",
+                "c_pal006"
+            ],
+            "stage": "ripe",
+            "trigger": "有人认出那件袍子的绣纹",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_pal003",
+            "title": "胡校尉在等的那道调令，会决定今夜玄武门归谁",
+            "characterIds": [
+                "c_pal004",
+                "c_pal001"
+            ],
+            "stage": "seeded",
+            "trigger": "调令在子时前送到",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若往偏殿外走，可让换班的脚步声提前响起，逼人退回廊下",
+            "threadId": "t_pal003",
+            "characterId": "c_pal004",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "宫里的旨意一旦绕开中书省，百官几天内就会开始告病",
+            "threadId": "t_pal001",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 27
+}

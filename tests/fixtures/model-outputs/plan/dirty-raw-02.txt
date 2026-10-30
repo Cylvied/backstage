@@ -1,0 +1,12 @@
+{
+  "cards": [
+    {
+      "title": "炉成之前",
+      "goal": "云栖在炉成前找到替代的药，丹成但成色不对",
+      "firstSigns": "药庐的烟在清晨变成青色",
+      "fit": "接丹材那条线，deadline 是三日炉成",
+      "threadId": "t_xiu001",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}

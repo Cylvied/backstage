@@ -1,0 +1,24 @@
+<thinking>
+这一轮镜头外变化很小，只需要动一两个人。
+</thinking>
+
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes002",
+      "currentAction": {
+        "text": "把锅从灶上端下来，倒掉一半",
+        "duration": "片刻"
+      },
+      "name": "米拉"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [],
+  "noChange": false
+}
+```

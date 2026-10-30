@@ -1,0 +1,53 @@
+```json
+{
+  "clock": {
+    "day": 32,
+    "slot": "五更",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pcw003",
+      "currentAction": {
+        "text": "把西偏殿的灯一盏盏灭掉，只留门口那盏",
+        "duration": "一刻"
+      },
+      "knows": [
+        "不知道：那壶茶本来是给别人的",
+        "知道：今夜有人往长秋宫送信（亲见）"
+      ],
+      "name": "李嬷嬷"
+    }
+  ],
+  "removeCharacterIds": [
+    "c_pcw011",
+    "c_pcw012"
+  ],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若走到廊下，可让换班的人从拐角转出来，正撞个照面",
+      "threadId": "t_pcw003",
+      "characterId": "c_pcw004",
+      "relevance": 3
+    },
+    {
+      "voice": "undercurrent",
+      "text": "旨意绕开中书省，百官几天内就会开始告病",
+      "threadId": "t_pcw001",
+      "characterId": null,
+      "relevance": 2
+    },
+    {
+      "voice": "undercurrent",
+      "text": "太医院那边一有动静，宫里的风向就要变",
+      "threadId": "t_pcw004",
+      "characterId": null,
+      "relevance": 1
+    }
+  ],
+  "noChange": false
+}
+```

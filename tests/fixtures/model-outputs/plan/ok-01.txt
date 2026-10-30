@@ -1,0 +1,22 @@
+```json
+{
+  "cards": [
+    {
+      "title": "地窖里那口气",
+      "goal": "沈砚秋今夜把地窖里的人转移出城，被阿鹞看见",
+      "firstSigns": "染坊后院的晾布被风卷下来，盖住了灯",
+      "fit": "呼应染坊地窖那条线，阿鹞正在屋顶望风",
+      "threadId": "t_wux001",
+      "suggestedIntensity": "push"
+    },
+    {
+      "title": "分账的最后一日",
+      "goal": "码头在子时前放船，何九当场撕了那封信",
+      "firstSigns": "货棚里的灯被人提前熄掉",
+      "fit": "接着漕帮分账那条线，deadline 就压在子时",
+      "threadId": "t_wux002",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

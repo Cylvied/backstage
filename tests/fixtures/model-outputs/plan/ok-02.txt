@@ -1,0 +1,14 @@
+```json
+{
+  "cards": [
+    {
+      "title": "天台上那句话",
+      "goal": "孙悦在天台把三年前那件事说完，陈屿答应不写进校刊",
+      "firstSigns": "放学铃响后，天台铁门没有关严",
+      "fit": "直接接正在引导的那条线",
+      "threadId": "t_sgd002",
+      "suggestedIntensity": "normal"
+    }
+  ]
+}
+```

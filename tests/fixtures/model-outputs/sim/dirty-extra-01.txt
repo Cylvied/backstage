@@ -1,0 +1,37 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_urb001",
+      "mood": "疲惫",
+      "energy": 0.4,
+      "knows": [
+        "知道：对面那扇窗的主人是他前同事（亲见）",
+        "知道：有人在楼下蹲守（感觉到）"
+      ],
+      "name": "陆知远"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_urb001",
+      "stage": "ripe",
+      "priority": 9,
+      "title": "那笔被挪走的钱，签收人写的是秦朗，但笔迹不是他的"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "开庭的日子一近，相关的人会开始互相试探",
+      "threadId": "t_urb001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

@@ -1,0 +1,39 @@
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes002",
+      "life": "活著",
+      "currentAction": {
+        "text": "把锅盖盖上，站在灶前不动",
+        "duration": "半晌"
+      },
+      "name": "米拉"
+    },
+    {
+      "id": "c_wes004",
+      "longAction": {
+        "text": "把断剑重新淬火",
+        "duration": "两日",
+        "status": "已完成",
+        "outcome": "剑没断，但也没接上"
+      },
+      "name": "格里姆"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "此地此刻",
+      "text": "若在旅店多留一夜，可让教会的人敲门查房",
+      "threadId": "t_wes002",
+      "characterId": "c_wes003",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

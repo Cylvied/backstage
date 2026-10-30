@@ -67,3 +67,32 @@
 - 结论：整体质量好，需修改后通过。详见 docs/reviews/T2-review-1.md（5 条）
 - 用 dsh 的样本库实测发现：只写 id 的更新被整条丢弃。契约已放宽，INTERFACES.md 升到 v1.2（3.7 节），types.js 同步
 - tests/harness.js 新增 readFixture / readFixtureJson，用于读取样本库
+
+## 2026-10-30 11:05 [dsh] [完成] T3
+- 新建文件（共 93 个，全部在 tests/fixtures/ 下）：
+  - `states/` 14 个：wuxia, school, western, urban, mystery, palace, apocalypse, xiuxian（8 题材）+ wuxia-pinned, school-guide, mystery-isolated, western-faded, palace-crowded, apocalypse-dead（6 特殊情况）
+  - `inputs/` 5 个：wuxia, school, western, mystery, palace（与同名 state 同题材）
+  - `model-outputs/sim/` 40 个 .txt + cases.json（20 正常 / 20 脏，10 种脏类型各 2 个）
+  - `model-outputs/plan/` 30 个 .txt + cases.json（10 正常 / 20 脏，10 种脏类型各 2 个）
+  - `worldbook/database-memos.json`（30 条纪要 + 10 条干扰）+ database-memos.cases.json（5 个查询）
+- 自检（全部用脚本跑过，非目测）：
+  - 93 个文件里所有 .json 均能被 `json.load` 解析，无注释、无尾逗号
+  - 14 个 state 逐字段比对 src/types.js：顶层键集合完全相等；Character / Thread / Signal / Guide / Clock / Protagonist 的必填键与可选键（touchedRun、fadedRuns）无多无少；枚举值全部来自 src/constants.js；id 均匹配 `^(c|t)_[a-z0-9]{6}$`；threads[].characterIds 与 signals[].threadId/characterId 全部指向本文件真实存在的 id；knows ≤ 5；signal.text ≤ 80；同一文件 active guide ≤ 1；reachable=false 的文件不含 rumor 语态
+  - 6 种特殊情况逐个断言：pinned=true 存在 / origin=user 且 guide.status=active / reachable=false / stage=faded 且带 fadedRuns / 人物恰好 14 个 / 同时有 dead 与 missing
+  - inputs：recent 4–6 楼、用户与角色严格交替、每楼 50–300 字（实测 50–106）；worldInfo 2–4 条；memos 0–3 条；与同名 state 同题材
+  - model-outputs：按 T3 第 3 节的 expectOk 定义写了独立校验器——去 think、取代码块或第一个配平 {...}、修尾逗号后能否得到**形状正确**的完整对象。sim 40 个（36 true / 4 false）、plan 30 个（26 true / 4 false）全部与 cases.json 声明一致；cases.json 的文件列表与磁盘实际文件严格一致
+  - 脏样本里所有 id 引用都指向 basedOn 状态里真实存在的对象（如 removeCharacterIds 指向未钉住的阿鹞，不是钉住的三人）
+  - worldbook：MEMBER_NAME_PATTERN 能且只能匹配 30 条，编号 1–30 连续；每条纪要内容 87–104 字（在 80–200 内）；10 条干扰项各自是不同形态（人物/物品/地点前缀、缺前缀、编号非数字、带 -备份 后缀、无编号、超范围 -草稿、换前缀）
+- 不确定的地方（请组长/Codex 确认，我按最保守的解释实现）：
+  1. **`upsertCharacters` / `upsertThreads` 是否必须带 name/title**：types.js 写的是 `Array<Partial<Character> & { name: string }>`，即按 id 更新也要带 name。我全部样本都带了。如果解析器实际允许按 id 更新时省略 name，那这批样本仍然合法（只是比最小要求多一个字段），不影响测试。
+  2. **cases.json 里 `expectOk` 对「knows 超 5 条 / text 超 80 字 / 枚举错 / 多余字段」一律判 true**：这是按 T3 第 65 行的明文规定。这几种情况我在 cases.json 的 notes 里都写明了"应截断/丢弃"，方便 Codex 写成断言。
+  3. **`dirty-long-01.txt`（plan）的 goal 超长**：T3 没给 PlanCard.goal 的字数上限，所以这个样本只能测"超长文本不崩"，不能测截断。如果之后加了上限，请改它的 expectOk 或 notes。
+  4. **`palace-crowded.json` 里人物是 14 个**，超过默认 maxCharacters=12，用于测淘汰；但**钉住的人不计入淘汰**，这个文件里我故意没有钉住任何人，好让淘汰逻辑有得可淘汰。
+  5. **截断样本的判定口径**：`dirty-truncated-01/02` 的 expectOk=false，依据是"取第一个 `{` 起的完整对象"会失败（外层没闭合）。如果解析器改成"随便抓一个能解析的子对象"，这两个会被误判成成功——那说明解析器太松，属于被测出来的 bug，不该改样本。
+- 工作区约束：只写了 tests/fixtures/**；未改 TASKS.md / LOG 其他条目 / 任何 src 文件；未执行 git 写操作；未安装依赖；临时脚本都放在系统临时目录且已删除。
+
+## 2026-10-30 [claude] [审查意见] T3 样本库：通过
+- 93 个文件全部能被解析器和合并逻辑正确处理：sim 40/40、plan 29/30 与 cases.json 一致，14 个状态全部通过快照校验
+- 唯一不一致的 plan/dirty-enum-02 是解析器的问题，不是样本的问题，已作为第 6 条追加到 docs/reviews/T2-review-1.md（Codex 请看）
+- 纪要打分与 dsh 预期的前 3 条重合 9/15，关键词打分本身较粗，作为已知局限记录，不算缺陷
+- dsh 的自检报告写得很好，列出的 5 个不确定点判断都正确

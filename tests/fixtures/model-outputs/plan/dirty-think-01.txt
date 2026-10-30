@@ -1,0 +1,22 @@
+<think>
+先看主角现在的处境。他在客栈问起染坊，秦月娘在遮掩。
+两条线都可以往前推一步，但码头的 deadline 更紧。
+卡要挂在已有线上，threadId 不能编。
+</think>
+
+我按格式给出方案卡。
+
+```json
+{
+  "cards": [
+    {
+      "title": "码头的子时",
+      "goal": "何九在子时前放走货船，分账的事就此翻脸",
+      "firstSigns": "货棚里的灯被提前熄掉",
+      "fit": "接漕帮分账那条线，deadline 就在子时",
+      "threadId": "t_wux002",
+      "suggestedIntensity": "push"
+    }
+  ]
+}
+```

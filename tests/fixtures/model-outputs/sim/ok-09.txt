@@ -1,0 +1,42 @@
+```json
+{
+  "clock": {
+    "day": 13,
+    "slot": "夜里",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wpn003",
+      "location": "临江府·码头货棚",
+      "currentAction": {
+        "text": "把赌局散了，独自坐在棚下等一封信",
+        "duration": "到天亮"
+      },
+      "name": "何九"
+    }
+  ],
+  "removeCharacterIds": [
+    "c_wpn005"
+  ],
+  "upsertThreads": [
+    {
+      "id": "t_wpn002",
+      "stage": "resolving",
+      "deadline": null,
+      "title": "漕帮与盐商的分账谈崩了，码头三日内外地货船一律扣下"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去码头，可让货棚的灯忽然灭掉，只剩河上的雾",
+      "threadId": "t_wpn002",
+      "characterId": "c_wpn003",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

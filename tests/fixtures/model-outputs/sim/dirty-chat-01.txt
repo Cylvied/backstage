@@ -1,0 +1,31 @@
+先说一下我的判断：主角这一楼没有走出场景，镜头外的人各有各的事，只挑最相关的一两条写下来。
+
+```json
+{
+  "clock": null,
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux006",
+      "knows": [
+        "知道：有人在打听染坊的旧事（听老板娘说）"
+      ],
+      "name": "阿鹞"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若在染坊外多站一会儿，可让门轴响一声",
+      "threadId": "t_wux001",
+      "characterId": "c_wux006",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```
+
+以上就是这一轮的推演结果，有需要调整的地方告诉我。

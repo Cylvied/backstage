@@ -1,0 +1,6 @@
+```json
+{
+  "clock": { "day": 5, "slot": "清晨", "precision": "exact" },
+  "protagonist": { "location": "青芜山·外门杂役院", "reachable": true },
+  "upsertCharacters": [
+    { "id": "c_xiu002", "name": "石三", "currentAction": { "text": "把桶放

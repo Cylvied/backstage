@@ -1,0 +1,173 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 46,
+        "slot": "上午",
+        "precision": "approx"
+    },
+    "protagonist": {
+        "location": "环城高速·加油站立交",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_apo001",
+            "name": "罗盘",
+            "aliases": [
+                "老罗"
+            ],
+            "location": "环城高速·加油站",
+            "currentAction": {
+                "text": "在便利店货架后面数罐头",
+                "duration": "一小时"
+            },
+            "longAction": {
+                "text": "把这一车人带到北边的收容点",
+                "duration": "约半月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：往北的高速有三处塌方（探路回来）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 46
+        },
+        {
+            "id": "c_apo002",
+            "name": "严青",
+            "aliases": [],
+            "location": "加油站·天台",
+            "currentAction": {
+                "text": "用望远镜看东边的烟柱",
+                "duration": "到天黑"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：东边那片在烧，风向朝这边（亲见）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false
+        },
+        {
+            "id": "c_apo003",
+            "name": "小满",
+            "aliases": [],
+            "location": "加油站·储物间",
+            "currentAction": {
+                "text": "把水按人头分成小份",
+                "duration": "半晌"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：储水只剩两天"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false
+        },
+        {
+            "id": "c_apo004",
+            "name": "顾医生",
+            "aliases": [
+                "顾医生"
+            ],
+            "location": "环城高速·服务区",
+            "currentAction": {
+                "text": "给一个发烧的人量体温",
+                "duration": "一会儿"
+            },
+            "longAction": {
+                "text": "想弄明白这病怎么传的",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：发烧的人都在同一条路上待过（问诊）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_apo005",
+            "name": "黑子",
+            "aliases": [],
+            "location": "未知",
+            "currentAction": null,
+            "longAction": null,
+            "knows": [],
+            "life": "missing",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_apo001",
+            "title": "往北的高速塌了三处，收容点可能已经不在了",
+            "characterIds": [
+                "c_apo001",
+                "c_apo002"
+            ],
+            "stage": "growing",
+            "trigger": "有人真的开上高速",
+            "deadline": {
+                "text": "两天后出发",
+                "missedOutcome": "车队困在塌方里，回不来"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_apo002",
+            "title": "发烧的人都在同一条路上待过，病可能是从北边来的",
+            "characterIds": [
+                "c_apo004",
+                "c_apo002"
+            ],
+            "stage": "ripe",
+            "trigger": "再出现一个同样症状的人",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_apo003",
+            "title": "储水只剩两天，而最近的水源在东边着火的方向",
+            "characterIds": [
+                "c_apo003",
+                "c_apo001"
+            ],
+            "stage": "seeded",
+            "trigger": "有人提议去东边取水",
+            "deadline": null,
+            "visibility": "known",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若打开便利店的后门，可让风把外面的灰吹进来，压住罐头的气味",
+            "threadId": null,
+            "characterId": "c_apo001",
+            "relevance": 2
+        },
+        {
+            "voice": "undercurrent",
+            "text": "东边的火一天不灭，这边的天就会一天比一天黄",
+            "threadId": "t_apo002",
+            "characterId": "c_apo002",
+            "relevance": 3
+        }
+    ],
+    "runCount": 46
+}

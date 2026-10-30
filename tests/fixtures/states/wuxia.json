@@ -1,0 +1,210 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 12,
+        "slot": "傍晚",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "临江府·悦来客栈",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_wux001",
+            "name": "沈砚秋",
+            "aliases": [
+                "沈三娘"
+            ],
+            "location": "临江府·城西染坊",
+            "currentAction": {
+                "text": "在染坊后院清点一批来路不明的刀鞘",
+                "duration": "今夜之内"
+            },
+            "longAction": {
+                "text": "暗中查访三年前灭门案的活口",
+                "duration": "约半月",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：镖局的人昨夜来过城西（听染坊学徒说起）",
+                "不知道：主角身上带着那半块玉佩"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 12
+        },
+        {
+            "id": "c_wux002",
+            "name": "柳三更",
+            "aliases": [
+                "更夫老柳"
+            ],
+            "location": "临江府·东市",
+            "currentAction": {
+                "text": "敲更绕行东市，顺手记下哪家灯还亮着",
+                "duration": "今夜"
+            },
+            "longAction": {
+                "text": "替漕帮盯梢南下的粮船",
+                "duration": "约七日",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：南门今夜换了守备（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 11
+        },
+        {
+            "id": "c_wux003",
+            "name": "何九",
+            "aliases": [
+                "九爷"
+            ],
+            "location": "临江府·码头",
+            "currentAction": {
+                "text": "在码头棚下与人赌钱，实则等一封回信",
+                "duration": "一两个时辰"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：漕帮要与盐商分账（参与议定）",
+                "不知道：沈砚秋在查同一桩旧案"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_wux004",
+            "name": "秦月娘",
+            "aliases": [],
+            "location": "临江府·悦来客栈",
+            "currentAction": {
+                "text": "在柜台后拨算盘，留意客人行李",
+                "duration": "整个傍晚"
+            },
+            "longAction": {
+                "text": "替人看着这间客栈，等一个旧识回来",
+                "duration": "入冬前",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：主角订了上房三夜（亲办）"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 12
+        },
+        {
+            "id": "c_wux005",
+            "name": "白五",
+            "aliases": [
+                "白五爷"
+            ],
+            "location": "临江府·城北宅院",
+            "currentAction": null,
+            "longAction": {
+                "text": "称病闭门，暗中把家中账本誊抄一份",
+                "duration": "约三日",
+                "status": "ongoing",
+                "outcome": null
+            },
+            "knows": [
+                "知道：三年前那桩案子的案卷被调走过（经手人转述）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_wux006",
+            "name": "阿鹞",
+            "aliases": [],
+            "location": "临江府·城西染坊",
+            "currentAction": {
+                "text": "爬上屋顶晾布，实则望风",
+                "duration": "入夜前"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：染坊地窖里还藏着一个人"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_wux001",
+            "title": "染坊地窖里关着三年前灭门案唯一的活口",
+            "characterIds": [
+                "c_wux001",
+                "c_wux006"
+            ],
+            "stage": "growing",
+            "trigger": "沈砚秋若确认活口身份，会连夜把人转移出城",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_wux002",
+            "title": "漕帮与盐商的分账谈崩了，码头三日内外地货船一律扣下",
+            "characterIds": [
+                "c_wux003",
+                "c_wux002"
+            ],
+            "stage": "ripe",
+            "trigger": "何九收到那封回信，或盐商先动手",
+            "deadline": {
+                "text": "三日后的子时",
+                "missedOutcome": "货船照常放行，分账之争转入暗杀"
+            },
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_wux003",
+            "title": "秦月娘等的旧识，正是当年押送案卷的人",
+            "characterIds": [
+                "c_wux004",
+                "c_wux005"
+            ],
+            "stage": "seeded",
+            "trigger": "那位旧识真的踏进客栈",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若往城西走，可让染坊学徒失手打翻染缸，露出地窖木板下的新泥",
+            "threadId": "t_wux001",
+            "characterId": "c_wux006",
+            "relevance": 3
+        },
+        {
+            "voice": "undercurrent",
+            "text": "码头的货船一日不走，市面上的盐价就要往上抬一截",
+            "threadId": "t_wux002",
+            "characterId": null,
+            "relevance": 2
+        }
+    ],
+    "runCount": 12
+}
