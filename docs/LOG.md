@@ -96,3 +96,22 @@
 - 唯一不一致的 plan/dirty-enum-02 是解析器的问题，不是样本的问题，已作为第 6 条追加到 docs/reviews/T2-review-1.md（Codex 请看）
 - 纪要打分与 dsh 预期的前 3 条重合 9/15，关键词打分本身较粗，作为已知局限记录，不算缺陷
 - dsh 的自检报告写得很好，列出的 5 个不确定点判断都正确
+
+## 2026-10-30 [codex] [完成] T2 审查修改
+- 按 docs/reviews/T2-review-1.md 的 5 条意见及 INTERFACES.md v1.2 完成修改。
+- 改动文件：src/sim/parse.js、src/sim/apply.js、tests/sim/parse.test.mjs、tests/sim/apply.test.mjs；新增 tests/sim/fixtures.test.mjs；另追加本日志。未修改接口、类型、fixtures、其他成员文件或 TASKS.md，未执行 git 写操作。
+- 有 id 时允许省略 name/title；id=null（及空白 id）按未提供处理；未知 id 且无名称的更新在合并时丢弃，不能通过别名误更新他人。
+- pinned/origin/guide 在解析时静默剔除，合并层也不接收模型对这些字段的修改；新线仍默认 origin=sim。用户采纳与手动引导操作不受影响。
+- 引用清理前，先按精确 id、再按人物名称/别名或线标题解析引用；重复人物引用合并，无法解析者仍按悬空引用处理。另补充 thinking 标签过滤。
+- 样本回归仅读取 model-outputs/sim/ 和 states/：40 个 expectOk 断言全部通过，36 个成功且有 basedOn 的样本均能 applyPatch 后 makeSnapshot；ok-01 原样及在内存中删除 name/title 的版本都验证实际更新两个人物和一条线。当前磁盘 ok-01 已带 name/title，因此保留独立的 id-only 回归，未改样本。
+- 测试：sh tests/run.sh 全部通过，8 个测试文件、115 个用例（本轮新增 49 个）；git diff --check -- src/sim tests/sim 无报错。
+
+## 2026-10-30 [codex] [完成] T2 审查修改（补充第 6 条）
+- 交付核对时读到组长新追加的第 6 条，已一并完成：suggestedIntensity 非法或缺失时 warning 并回退 normal，不丢弃整张规划卡。
+- 本次追加改动：src/sim/parse.js、tests/sim/parse.test.mjs、tests/sim/fixtures.test.mjs；未改 fixtures 或其他成员文件。
+- 按第 6 条新增遍历 model-outputs/plan/cases.json，30 个规划样本全部与 expectOk 一致；dirty-enum-02 额外断言保留唯一卡片且强度为 normal。
+- 最终 sh tests/run.sh：8 个测试文件、146 个用例全部通过；本轮共新增 80 个用例。git diff --check -- src/sim tests/sim 无报错。此前 115 个通过为追加第 6 条之前的阶段结果，以本条最终结果为准。
+
+## 2026-10-30 [claude] [决定] T2 审查通过，第 1 批完成
+- T2 的 6 条审查意见全部落实；8 个测试文件、146 个用例全部通过；推演样本 40/40、规划样本 30/30 与预期一致
+- 第 1 批（T1/T2/T3）全部完成。下一步：第 2 批（面板）与真机测试

@@ -34,6 +34,8 @@ export function applyPatch(state, patch, { maxCharacters }) {
     if (patch.clock) mergeFields(next.clock, patch.clock, ['day', 'slot', 'precision']);
     if (patch.protagonist) mergeFields(next.protagonist, patch.protagonist, ['location', 'reachable']);
     for (const update of patch.upsertCharacters) {
+        const hasName = typeof update.name === 'string' && Boolean(update.name.trim());
+        if (!hasName && !next.characters.some(item => update.id && item.id === update.id)) continue;
         const names = new Set([update.name, ...(update.aliases ?? [])]);
         let character = next.characters.find(item => update.id && item.id === update.id)
             ?? next.characters.find(item => [item.name, ...item.aliases].some(name => names.has(name)));
@@ -41,10 +43,8 @@ export function applyPatch(state, patch, { maxCharacters }) {
             character = newCharacter(update.name);
             next.characters.push(character);
         }
-        const pinned = character.pinned;
         mergeFields(character, update, ['name', 'aliases', 'location', 'currentAction', 'longAction',
-            'knows', 'life', 'onStage', 'pinned']);
-        character.pinned = pinned || character.pinned;
+            'knows', 'life', 'onStage']);
         character.knows = character.knows.slice(0, LIMITS.knows);
         character.touchedRun = next.runCount;
     }
@@ -60,13 +60,15 @@ export function applyPatch(state, patch, { maxCharacters }) {
 
     const touched = new Set();
     for (const update of patch.upsertThreads) {
+        const hasTitle = typeof update.title === 'string' && Boolean(update.title.trim());
+        if (!hasTitle && !next.threads.some(item => update.id && item.id === update.id)) continue;
         let thread = next.threads.find(item => update.id && item.id === update.id)
             ?? next.threads.find(item => item.title === update.title);
         if (!thread) {
             thread = newThread(update.title);
             next.threads.push(thread);
         }
-        mergeFields(thread, update, ['title', 'characterIds', 'stage', 'trigger', 'deadline', 'visibility', 'origin', 'guide']);
+        mergeFields(thread, update, ['title', 'characterIds', 'stage', 'trigger', 'deadline', 'visibility']);
         thread.fadedRuns = 0;
         touched.add(thread.id);
     }
@@ -77,13 +79,17 @@ export function applyPatch(state, patch, { maxCharacters }) {
     next.threads = next.threads.filter(item => item.stage !== 'faded' || item.fadedRuns < LIMITS.fadedRunsBeforeDelete);
     keepOneGuide(next.threads);
     if (!patch.noChange || patch.signals.length) next.signals = structuredClone(patch.signals);
-    // 清除淘汰对象的悬空引用，保留仍有叙事意义的信号文本。
-    const characters = new Set(next.characters.map(item => item.id));
-    const threads = new Set(next.threads.map(item => item.id));
-    for (const thread of next.threads) thread.characterIds = thread.characterIds.filter(id => characters.has(id));
+    // 本轮新建对象尚无模型可知的 ID，先解析名称引用，再清理悬空项。
+    const resolveCharacter = ref => next.characters.find(item => item.id === ref)?.id
+        ?? next.characters.find(item => item.name === ref || item.aliases.includes(ref))?.id ?? null;
+    const resolveThread = ref => next.threads.find(item => item.id === ref)?.id
+        ?? next.threads.find(item => item.title === ref)?.id ?? null;
+    for (const thread of next.threads) {
+        thread.characterIds = [...new Set(thread.characterIds.map(resolveCharacter).filter(id => id !== null))];
+    }
     for (const signal of next.signals) {
-        if (!characters.has(signal.characterId)) signal.characterId = null;
-        if (!threads.has(signal.threadId)) signal.threadId = null;
+        signal.characterId = resolveCharacter(signal.characterId);
+        signal.threadId = resolveThread(signal.threadId);
     }
     return next;
 }

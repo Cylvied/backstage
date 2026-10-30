@@ -46,7 +46,7 @@ function firstObject(text) {
 /** @param {string} text @returns {unknown|null} */
 export function extractJsonBlock(text) {
     if (typeof text !== 'string') return null;
-    const clean = text.replace(/<think\b[^>]*>[\s\S]*?(?:<\/think\s*>|$)/gi, '');
+    const clean = text.replace(/<(think|thinking)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, '');
     const blocks = [...clean.matchAll(/```json\s*([\s\S]*?)```/gi)];
     if (blocks.length) {
         for (const block of blocks) {
@@ -84,21 +84,15 @@ function action(value, long = false) {
         : { text: value.text, duration: value.duration };
 }
 
-function guide(value) {
-    if (value === null) return null;
-    if (!object(value) || !INTENSITIES.includes(value.intensity)
-        || !['active', 'done', 'dropped'].includes(value.status)
-        || !string(value.goal) || !string(value.firstSigns)
-        || !Number.isFinite(value.adoptedAt) || value.adoptedAt < 0) throw new Error('引导格式错误');
-    return fields(value, { intensity: string, status: string, goal: string, firstSigns: string, adoptedAt: Number.isFinite });
-}
-
 function character(value) {
     const result = fields(value, {
-        id: string, name: string, aliases: strings, location: string, knows: strings,
-        life: enumeration(LIVES), onStage: boolean, pinned: boolean,
+        id: nullableString, name: string, aliases: strings, location: string, knows: strings,
+        life: enumeration(LIVES), onStage: boolean,
     });
-    if (!result.name?.trim()) throw new Error('缺少人物名称');
+    if (result.id == null || !result.id.trim()) delete result.id;
+    if ((!result.id && !result.name?.trim()) || (has(result, 'name') && !result.name.trim())) {
+        throw new Error('缺少人物名称');
+    }
     if (result.knows) result.knows = result.knows.slice(0, LIMITS.knows);
     if (has(value, 'currentAction')) result.currentAction = action(value.currentAction);
     if (has(value, 'longAction')) result.longAction = action(value.longAction, true);
@@ -107,10 +101,13 @@ function character(value) {
 
 function thread(value) {
     const result = fields(value, {
-        id: string, title: string, characterIds: strings, stage: enumeration(THREAD_STAGES),
-        trigger: string, visibility: enumeration(VISIBILITIES), origin: enumeration(['sim', 'user']),
+        id: nullableString, title: string, characterIds: strings, stage: enumeration(THREAD_STAGES),
+        trigger: string, visibility: enumeration(VISIBILITIES),
     });
-    if (!result.title?.trim()) throw new Error('缺少线索标题');
+    if (result.id == null || !result.id.trim()) delete result.id;
+    if ((!result.id && !result.title?.trim()) || (has(result, 'title') && !result.title.trim())) {
+        throw new Error('缺少线索标题');
+    }
     if (has(value, 'deadline')) {
         if (value.deadline === null) result.deadline = null;
         else {
@@ -120,7 +117,6 @@ function thread(value) {
             result.deadline = { text: value.deadline.text, missedOutcome: value.deadline.missedOutcome };
         }
     }
-    if (has(value, 'guide')) result.guide = guide(value.guide);
     return result;
 }
 
@@ -175,11 +171,14 @@ export function parsePlanOutput(text) {
     if (!object(value) || !Array.isArray(value.cards)) return { ok: false, error: '规划结果缺少 cards 数组' };
     const cards = rows(value.cards, card => {
         if (!object(card) || !['title', 'goal', 'firstSigns', 'fit'].every(key => string(card[key]) && card[key].trim())
-            || !nullableString(card.threadId) || !INTENSITIES.includes(card.suggestedIntensity)) {
+            || !nullableString(card.threadId)) {
             throw new Error('规划卡格式错误');
         }
-        return fields(card, { title: string, goal: string, firstSigns: string, fit: string,
-            threadId: nullableString, suggestedIntensity: string });
+        const result = fields(card, { title: string, goal: string, firstSigns: string, fit: string, threadId: nullableString });
+        const validIntensity = INTENSITIES.includes(card.suggestedIntensity);
+        if (!validIntensity) console.warn(`${LOG_PREFIX} 规划建议强度无效，采用 normal`);
+        result.suggestedIntensity = validIntensity ? card.suggestedIntensity : 'normal';
+        return result;
     }, '规划卡').slice(0, LIMITS.planCards);
     if (value.cards.length && !cards.length) return { ok: false, error: '没有通过校验的规划卡' };
     return { ok: true, cards };

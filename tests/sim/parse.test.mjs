@@ -53,7 +53,7 @@ test('坏枚举只丢弃对应数组项，已知字段与限长规则生效', ()
     assert.equal(result.patch.signals[0].unknown, undefined);
 });
 
-test('嵌套行动/期限/引导只保留契约字段，非法嵌套丢弃整条', () => {
+test('嵌套行动和期限只保留契约字段，用户引导被忽略', () => {
     const result = parseSimOutput(encode({
         upsertCharacters: [{ name: '甲', longAction: { text: '赶路', duration: '两日', status: 'ongoing', outcome: null, extra: 1 } },
             { name: '乙', currentAction: { text: '缺时长' } }],
@@ -64,7 +64,7 @@ test('嵌套行动/期限/引导只保留契约字段，非法嵌套丢弃整条
     assert.equal(result.patch.upsertCharacters.length, 1);
     assert.equal(result.patch.upsertCharacters[0].longAction.extra, undefined);
     assert.equal(result.patch.upsertThreads[0].deadline.extra, undefined);
-    assert.equal(result.patch.upsertThreads[0].guide.extra, undefined);
+    assert.equal(result.patch.upsertThreads[0].guide, undefined);
 });
 
 test('数组中的 null 和非对象条目安全丢弃', () => {
@@ -75,7 +75,7 @@ test('数组中的 null 和非对象条目安全丢弃', () => {
 });
 
 test('规划最多三张，非法卡不占名额，未知字段丢弃', () => {
-    const result = parsePlanOutput(encode({ cards: [{ ...card(), suggestedIntensity: 'wrong' },
+    const result = parsePlanOutput(encode({ cards: [{ ...card(), goal: null },
         ...Array.from({ length: 5 }, (_, index) => ({ ...card(), title: `方案${index}`, unknown: 1 }))] }));
     assert.ok(result.ok);
     assert.equal(result.cards.length, 3);
@@ -86,4 +86,55 @@ test('规划最多三张，非法卡不占名额，未知字段丢弃', () => {
 test('规划空数组合法，但缺字段或全部坏卡报告失败', () => {
     assert.deepEqual(parsePlanOutput('{"cards":[]}'), { ok: true, cards: [] });
     for (const text of ['', '{}', '{"cards":null}', '{"cards":[{}]}']) assert.equal(parsePlanOutput(text).ok, false);
+});
+
+test('v1.2 接受只有 id 的更新，null id 等同省略', () => {
+    const result = parseSimOutput(encode({
+        upsertCharacters: [{ id: 'c_a', location: '城外' }, { id: null, name: '老周' }, { id: null }],
+        upsertThreads: [{ id: 't_a', stage: 'ripe' }, { id: null, title: '来信' }, { id: null }],
+    }));
+    assert.ok(result.ok);
+    assert.deepEqual(result.patch.upsertCharacters, [{ id: 'c_a', location: '城外' }, { name: '老周' }]);
+    assert.deepEqual(result.patch.upsertThreads, [{ id: 't_a', stage: 'ripe' }, { title: '来信' }]);
+});
+
+test('用户字段无论取值是否合法均静默丢弃', () => {
+    const warnings = [];
+    const original = console.warn;
+    console.warn = (...args) => warnings.push(args);
+    try {
+        const result = parseSimOutput(encode({
+            upsertCharacters: [{ id: 'c_a', pinned: true }, { name: '老周', pinned: '非法值' }],
+            upsertThreads: [{ id: 't_a', guide: null, origin: 'user' }, { title: '来信', guide: 42, origin: '非法值' }],
+        }));
+        assert.ok(result.ok);
+        assert.deepEqual(result.patch.upsertCharacters, [{ id: 'c_a' }, { name: '老周' }]);
+        assert.deepEqual(result.patch.upsertThreads, [{ id: 't_a' }, { title: '来信' }]);
+        assert.equal(warnings.length, 0);
+    } finally {
+        console.warn = original;
+    }
+});
+
+test('thinking 思考段内的 JSON 不作为结果，未闭合不猜补', () => {
+    assert.deepEqual(extractJsonBlock('<thinking>{"错":1}</thinking>{"noChange":true}'), { noChange: true });
+    assert.equal(extractJsonBlock('<thinking>{"noChange":true}'), null);
+});
+
+test('规划建议强度非法时警告并回退 normal，保留卡片', () => {
+    const warnings = [];
+    const original = console.warn;
+    console.warn = (...args) => warnings.push(args);
+    try {
+        for (const intensity of ['快速推进', null, 42, undefined]) {
+            const result = parsePlanOutput(encode({ cards: [{ ...card(), suggestedIntensity: intensity }] }));
+            assert.ok(result.ok);
+            assert.equal(result.cards.length, 1);
+            assert.equal(result.cards[0].suggestedIntensity, 'normal');
+            assert.equal(result.cards[0].title, card().title);
+        }
+        assert.equal(warnings.length, 4);
+    } finally {
+        console.warn = original;
+    }
 });

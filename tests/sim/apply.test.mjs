@@ -148,3 +148,62 @@ test('引导状态和强度修改不触碰原对象，未知目标和非法枚�
 test('违反 applyPatch 类型契约属于编程错误', () => {
     assert.throws(() => applyPatch(emptyState(), null, { maxCharacters: 12 }));
 });
+
+test('只有 id 时更新现有对象，未知 id 且无名称时丢弃', () => {
+    const state = emptyState();
+    state.characters = [character('c_a', { name: '老周', aliases: ['周叔'] })];
+    state.threads = [thread('t_a', { title: '来信' })];
+    const next = apply(state, {
+        upsertCharacters: [{ id: 'c_a', location: '城外' }, { id: 'c_unknown', aliases: ['周叔'], location: '错误地点' }],
+        upsertThreads: [{ id: 't_a', stage: 'ripe' }, { id: 't_unknown', stage: 'faded' }],
+    });
+    assert.equal(next.characters.length, 1);
+    assert.equal(next.characters[0].name, '老周');
+    assert.equal(next.characters[0].location, '城外');
+    assert.equal(next.threads.length, 1);
+    assert.equal(next.threads[0].title, '来信');
+    assert.equal(next.threads[0].stage, 'ripe');
+    assert.equal(state.characters[0].location, '');
+});
+
+test('合并层也保护 pinned、origin、guide，默认新线为 sim', () => {
+    const state = adoptPlan(emptyState(), card(), 'push');
+    state.characters = [character('c_a')];
+    const originalGuide = structuredClone(state.threads[0].guide);
+    const next = apply(state, {
+        upsertCharacters: [{ id: 'c_a', pinned: true }, { name: '老周', pinned: true }],
+        upsertThreads: [{ id: state.threads[0].id, origin: 'sim', guide: null },
+            { title: '新线', origin: 'user', guide: originalGuide }],
+    });
+    assert.ok(next.characters.every(item => item.pinned === false));
+    assert.equal(next.threads[0].origin, 'user');
+    assert.deepEqual(next.threads[0].guide, originalGuide);
+    assert.equal(next.threads[1].origin, 'sim');
+    assert.equal(next.threads[1].guide, null);
+});
+
+test('同轮新建对象可通过名称、别名、标题建立引用，未知引用仍清理', () => {
+    const next = apply(emptyState(), {
+        upsertCharacters: [{ id: null, name: '老周', aliases: ['周叔'] }],
+        upsertThreads: [{ id: null, title: '夜半来信', characterIds: ['老周', '周叔', '不存在'] }],
+        signals: [signal({ characterId: '周叔', threadId: '夜半来信' }),
+            signal({ characterId: '不存在', threadId: '不存在线' })],
+    });
+    const person = next.characters[0];
+    const line = next.threads[0];
+    assert.match(person.id, /^c_/);
+    assert.deepEqual(line.characterIds, [person.id]);
+    assert.equal(next.signals[0].characterId, person.id);
+    assert.equal(next.signals[0].threadId, line.id);
+    assert.equal(next.signals[1].characterId, null);
+    assert.equal(next.signals[1].threadId, null);
+});
+
+test('引用解析优先精确 id，再匹配名称和标题', () => {
+    const state = emptyState();
+    state.characters = [character('c_a', { name: 'c_b' }), character('c_b')];
+    state.threads = [thread('t_a', { title: 't_b' }), thread('t_b')];
+    const next = apply(state, { signals: [signal({ characterId: 'c_b', threadId: 't_b' })] });
+    assert.equal(next.signals[0].characterId, 'c_b');
+    assert.equal(next.signals[0].threadId, 't_b');
+});
