@@ -73,7 +73,6 @@ export function getChatView() {
                 extra: m.extra ?? {},
             };
         },
-        fallbackSnapshot: c.chatMetadata?.[STORE_KEY]?.lastSnapshot ?? null,
     };
 }
 
@@ -109,10 +108,6 @@ export async function writeSnapshot(floor, swipeId, snapshot) {
     if (swipeInfo) {
         swipeInfo.extra ??= {};
         swipeInfo.extra[STORE_KEY] = structuredClone(snapshot);
-    }
-
-    if (floor === lastAiFloor()) {
-        c.chatMetadata[STORE_KEY] = { ...(c.chatMetadata[STORE_KEY] ?? {}), lastSnapshot: snapshot };
     }
 
     try {
@@ -217,6 +212,39 @@ function primaryWorldbookName() {
     return String(character?.data?.extensions?.world ?? '').trim();
 }
 
+// ---------- 等待正文定稿 ----------
+
+const SETTLE_INTERVAL_MS = 400;
+const SETTLE_TIMEOUT_MS = 120000;
+
+/** 宿主的停止按钮还在显示 = 这一轮生成（含工具续轮、流式输出）还没结束 */
+function generationRunning() {
+    const stop = document.getElementById('mes_stop');
+    return !!stop && getComputedStyle(stop).display !== 'none';
+}
+
+/**
+ * 等到生成结束、且这一楼的正文连续两次检查都没变，再读定稿。
+ * 宿主没有向扩展开放"等待生成空闲"的接口，所以用停止按钮的显隐加正文稳定来判断。
+ * @param {number} floor
+ * @returns {Promise<{ text: string, swipeId: number }|null>} 这一楼不再是有效的 AI 回复时返回 null
+ */
+async function waitForFinalText(floor) {
+    const started = Date.now();
+    let last = null;
+    while (Date.now() - started < SETTLE_TIMEOUT_MS) {
+        await new Promise(resolve => setTimeout(resolve, SETTLE_INTERVAL_MS));
+        const message = ctx().chat?.[floor];
+        if (!isAiMessage(message)) return null;
+        const now = { text: String(message.mes ?? ''), swipeId: Number(message.swipe_id ?? 0) };
+        const stable = last && last.text === now.text && last.swipeId === now.swipeId;
+        if (stable && !generationRunning()) return now.text.trim() ? now : null;
+        last = now;
+    }
+    console.warn(LOG_PREFIX, `第 ${floor} 楼的正文在 ${SETTLE_TIMEOUT_MS / 1000} 秒内没有定稿，跳过自动推演`);
+    return null;
+}
+
 // ---------- 事件 ----------
 
 /**
@@ -235,6 +263,7 @@ export function onHostEvents(handlers) {
     const c = ctx();
     const { eventSource, eventTypes } = c;
     let stoppedSinceStart = false;
+    const pendingFloors = new Set();
 
     const listeners = [
         [eventTypes.GENERATION_STARTED, (type, _options, dryRun) => {
@@ -243,20 +272,18 @@ export function onHostEvents(handlers) {
             handlers.onGenerationStarting({ type: String(type ?? 'normal'), lastFloor: (ctx().chat?.length ?? 0) - 1 });
         }],
         [eventTypes.GENERATION_STOPPED, () => { stoppedSinceStart = true; }],
-        [eventTypes.MESSAGE_RECEIVED, async (messageId, type) => {
+        [eventTypes.MESSAGE_RECEIVED, (messageId, type) => {
             if (type === 'impersonate' || type === 'quiet') return;
-            // 流式输出和工具调用期间可能触发多次；等整轮生成结束后再读定稿
-            await ctx().waitForGenerationIdle?.();
-            if (stoppedSinceStart) return;   // 用户中途停止：不自动推演，可在面板手动触发
             const floor = Number(messageId);
-            const message = ctx().chat?.[floor];
-            if (!isAiMessage(message) || !String(message.mes ?? '').trim()) return;
-            handlers.onReplyFinalized({
-                chatId: getChatId(),
-                floor,
-                swipeId: Number(message.swipe_id ?? 0),
-                text: String(message.mes),
-            });
+            if (!Number.isInteger(floor) || pendingFloors.has(floor)) return; // 工具续轮等会对同一楼多次触发，只跟一次
+            pendingFloors.add(floor);
+            waitForFinalText(floor)
+                .then(final => {
+                    if (!final || stoppedSinceStart) return; // 用户中途停止：不自动推演，可在面板手动触发
+                    handlers.onReplyFinalized({ chatId: getChatId(), floor, swipeId: final.swipeId, text: final.text });
+                })
+                .catch(error => console.warn(LOG_PREFIX, '等待正文定稿失败', error))
+                .finally(() => pendingFloors.delete(floor));
         }],
         [eventTypes.MESSAGE_SWIPED, () => handlers.onChanged()],
         [eventTypes.MESSAGE_EDITED, () => handlers.onChanged()],

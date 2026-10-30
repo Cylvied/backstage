@@ -8,6 +8,7 @@ import * as llm from './src/host/llm.js';
 import * as inject from './src/host/inject.js';
 import { findBase, makeSnapshot, readSnapshot, isSnapshotValid } from './src/state/snapshot-store.js';
 import { createScheduler } from './src/state/scheduler.js';
+import { chooseWriteBase } from './src/state/write-guard.js';
 import { parseSimOutput, parsePlanOutput } from './src/sim/parse.js';
 import * as applyOps from './src/sim/apply.js';
 const { applyPatch, adoptPlan, setGuideStatus, setGuideIntensity } = applyOps;
@@ -45,6 +46,7 @@ function notifyStatus() {
 async function runJob(job, signal) {
     const settings = host.getSettings();
     if (!settings.enabled) return;
+    const jobStartedAt = Date.now();
 
     const view = host.getChatView();
     const message = view.getMessage(job.floor);
@@ -55,21 +57,47 @@ async function runJob(job, signal) {
 
     const base = findBase(view, job.floor - 1);
     const common = { parent: base.snapshot, floor: job.floor, swipeId: job.swipeId, text: message.text };
-    let snapshot;
+    /** @type {import('./src/types.js').SimPatch|null} */
+    let patch = null;
+    let usage = null;
+    let error = null;
 
     try {
         const input = await host.collectSimInput(job.floor, settings);
         const messages = buildSimPrompt({ state: base.state, input, settings });
         const res = await llm.call({ settings, messages, maxTokens: settings.maxTokens, signal });
         if (signal.aborted) return;
-        const usage = { model: res.model, ms: res.ms };
+        usage = { model: res.model, ms: res.ms };
         const parsed = parseSimOutput(res.text);
-        snapshot = parsed.ok
-            ? makeSnapshot({ ...common, state: applyPatch(base.state, parsed.patch, { maxCharacters: settings.maxCharacters }), status: 'ok', error: null, usage })
-            : makeSnapshot({ ...common, state: base.state, status: 'failed', error: `模型输出无法解析：${parsed.error}`, usage });
-    } catch (error) {
+        if (parsed.ok) patch = parsed.patch;
+        else error = `模型输出无法解析：${parsed.error}`;
+    } catch (e) {
         if (signal.aborted) return;
-        snapshot = makeSnapshot({ ...common, state: base.state, status: 'failed', error: String(error?.message ?? error), usage: null });
+        error = String(e?.message ?? e);
+    }
+
+    // 写回保护：推演期间用户可能改过这一楼（钉住、采纳、换拍），不能被旧请求覆盖
+    const nowMessage = host.getChatView().getMessage(job.floor);
+    const nowSnap = nowMessage ? readSnapshot(nowMessage) : null;
+    const current = nowSnap && isSnapshotValid(nowSnap, nowMessage) ? nowSnap : null;
+    const decision = chooseWriteBase({ jobStartedAt, current, ok: !!patch });
+    const opts = { maxCharacters: settings.maxCharacters };
+
+    let snapshot;
+    if (decision.action === 'skip') {
+        status.lastError = error;
+        console.warn(LOG_PREFIX, decision.reason, error);
+        globalThis.toastr?.warning(`${error}（${decision.reason}）`, `${EXT_NAME}：推演失败`);
+        notifyStatus();
+        return;
+    } else if (decision.action === 'rebase') {
+        snapshot = makeSnapshot({ ...common, state: applyPatch(decision.snapshot.state, patch, opts), status: 'ok', error: null, usage });
+        snapshot.parentId = decision.snapshot.parentId;
+        snapshot.edited = decision.snapshot.edited;
+    } else if (patch) {
+        snapshot = makeSnapshot({ ...common, state: applyPatch(base.state, patch, opts), status: 'ok', error: null, usage });
+    } else {
+        snapshot = makeSnapshot({ ...common, state: base.state, status: 'failed', error, usage });
     }
 
     const written = await host.writeSnapshot(job.floor, job.swipeId, snapshot);

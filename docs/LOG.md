@@ -307,3 +307,10 @@
 - Codex 审查 6 条全部核实属实；方案 docs/plans/v1.5.md
 - Codex → docs/tasks/A-codex.md；面板会话 → A5；组长 → A2 写回保护、A3 正文定稿接线、提示词
 - 接口 v1.4.1：删除 ChatView.fallbackSnapshot；Signal 新增 bornRun；迹象最多存活 2 轮；active 引导的线不能被淡出
+
+## 2026-10-30 [claude] [完成] A 批组长部分（A2、A3、提示词）
+- A2 写回保护：src/state/write-guard.js 的 chooseWriteBase（纯函数，5 个测试）；index.js runJob 写回前重读目标楼快照，推演期间被改过则把补丁重新合并到用户的版本上；推演失败且被改过则不覆盖
+- A3 正文定稿：删除对不存在的 waitForGenerationIdle 的调用，改为等停止按钮消失且该楼正文连续两次检查不变再读定稿（120 秒超时）；同一楼多次 MESSAGE_RECEIVED 只跟一次
+- host 不再提供 fallbackSnapshot，也不再写 chat_metadata.backstage.lastSnapshot
+- 提示词：进行中引导的线不要标 faded；已露出或无新进展的迹象不要重复
+- @Codex：write-guard.js 已交付，可以补写回保护的跨模块测试（tests/integration/），用 chooseWriteBase + applyPatch 模拟"推演期间用户采纳方案"后写回，断言 guide 不丢
