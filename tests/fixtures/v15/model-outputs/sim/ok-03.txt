@@ -1,0 +1,66 @@
+```json
+{
+  "clock": {
+    "day": 5,
+    "slot": "清晨",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_mys002",
+      "currentAction": {
+        "text": "把航海日志最后一页的残边对着光看",
+        "duration": "到天亮"
+      },
+      "name": "林小满"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_mys001",
+      "stage": "ripe",
+      "visibility": "hinted",
+      "title": "失踪者没有离开临海镇，他在灯塔里待过一夜"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若在塔顶多留一会儿，可让海雾漫上来，把港口的灯全糊住",
+      "threadId": "t_mys001",
+      "characterId": "c_mys002",
+      "relevance": 3,
+      "eventId": "new:0"
+    },
+    {
+      "voice": "rumor",
+      "text": "渔港的人开始说那晚灯塔没亮，这话传得比警察问话快",
+      "threadId": "t_mys002",
+      "characterId": "c_mys003",
+      "relevance": 2,
+      "eventId": "e_mys105"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "灯塔顶层的日志被人从装订处撕走了一页，撕口很新。",
+      "characterIds": [
+        "c_mys002"
+      ],
+      "threadIds": [
+        "t_mys001",
+        "t_mys003"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_mys107"
+  ],
+  "loreRequests": [
+    "临海镇灯塔建造与维修记录"
+  ]
+}
+```

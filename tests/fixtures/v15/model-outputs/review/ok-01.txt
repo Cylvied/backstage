@@ -1,0 +1,21 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r3",
+      "ok": false,
+      "reason": "转移活口一事与正文里已经写出的时间对不上，本轮不该发生"
+    }
+  ]
+}
+```

@@ -1,0 +1,57 @@
+```json
+{
+  "clock": {
+    "day": 3,
+    "slot": "傍晚",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch005",
+      "knows": [
+        "知道：抽屉里的纸条是高小满塞的（她当面承认）",
+        "不知道：陈屿有没有看到纸条"
+      ],
+      "name": "孙悦"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch003",
+      "stage": "growing",
+      "visibility": "hinted",
+      "title": "抽屉里那张纸条是孙悦写的，她想约人谈一件不能说的事"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若回教室，可让那张纸条从抽屉缝里滑出来，被前排的人先看见",
+      "threadId": "t_sch003",
+      "characterId": "c_sch004",
+      "relevance": 3,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "孙悦在天台等了一整个课间，最后自己先下了楼。",
+      "characterIds": [
+        "c_sch005"
+      ],
+      "threadIds": [
+        "t_sch003"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_sch106"
+  ],
+  "loreRequests": [
+    "启明高中三年前的转学名单"
+  ]
+}
+```

@@ -1,0 +1,27 @@
+```json
+{
+  "clock": {
+    "day": 28,
+    "slot": "深夜",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若往廊下走，可让换班的人从拐角转出来",
+      "threadId": "t_pal003",
+      "characterId": "c_pal004",
+      "relevance": 3
+    }
+  ],
+  "noChange": false,
+  "markKnown": [
+    "e_pal888",
+    "e_pal777"
+  ]
+}
+```

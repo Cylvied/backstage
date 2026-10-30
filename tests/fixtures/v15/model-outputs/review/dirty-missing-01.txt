@@ -1,0 +1,16 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r2",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r4",
+      "ok": true,
+      "reason": ""
+    }
+  ]
+}
+```

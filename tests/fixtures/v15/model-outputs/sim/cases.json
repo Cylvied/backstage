@@ -1,0 +1,160 @@
+[
+    {
+        "file": "bad-clock-01.txt",
+        "basedOn": "v15/states/wuxia.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "clock"
+        ],
+        "notes": "clock.day 12→11 时间倒退，check 应丢弃整个 clock 修改"
+    },
+    {
+        "file": "bad-clock-02.txt",
+        "basedOn": "v15/states/school.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "clock"
+        ],
+        "notes": "clock.day 3→2 倒退；addEvents 本身合法应保留"
+    },
+    {
+        "file": "bad-knows-01.txt",
+        "basedOn": "v15/states/wuxia.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "knows"
+        ],
+        "notes": "第一条『知道：』没有括号写渠道（应丢弃该条），第二条合法应保留"
+    },
+    {
+        "file": "bad-knows-02.txt",
+        "basedOn": "v15/states/western.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "knows"
+        ],
+        "notes": "后两条缺渠道，应丢弃；第一条合法保留"
+    },
+    {
+        "file": "bad-markknown-01.txt",
+        "basedOn": "v15/states/mystery.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "mark_known",
+            "reference"
+        ],
+        "notes": "markKnown 里 e_mys999 不存在（check 应丢弃该项，保留 e_mys104）"
+    },
+    {
+        "file": "bad-markknown-02.txt",
+        "basedOn": "v15/states/palace.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "mark_known",
+            "reference"
+        ],
+        "notes": "markKnown 两项都不存在，应全部丢弃"
+    },
+    {
+        "file": "bad-newevent-01.txt",
+        "basedOn": "v15/states/mystery.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "reference"
+        ],
+        "notes": "eventId 写 new:5 但 addEvents 只有 2 条（下标越界，应置 null）"
+    },
+    {
+        "file": "bad-newevent-02.txt",
+        "basedOn": "v15/states/school.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [
+            "reference"
+        ],
+        "notes": "第一个 new:3 越界应置 null；第二个 new:0 合法应保留"
+    },
+    {
+        "file": "bad-programfield-01.txt",
+        "basedOn": "v15/states/wuxia.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "模型自己写了 since / touchedRun / at / known / bornRun（都是程序字段，应一律丢弃）"
+    },
+    {
+        "file": "bad-programfield-02.txt",
+        "basedOn": "v15/states/palace.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "since 与 bornRun=99（超过 runCount=27）都是程序字段，应丢弃"
+    },
+    {
+        "file": "ok-01.txt",
+        "basedOn": "v15/states/wuxia.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：addEvents 1 条、markKnown 1 条、loreRequests 2 条、迹象用 new:0 与已有事件 id"
+    },
+    {
+        "file": "ok-02.txt",
+        "basedOn": "v15/states/palace.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：addEvents 2 条、markKnown 2 条、两个 new:N 引用"
+    },
+    {
+        "file": "ok-03.txt",
+        "basedOn": "v15/states/mystery.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：precise=unknown 的时钟也能前进"
+    },
+    {
+        "file": "ok-04.txt",
+        "basedOn": "v15/states/school.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：单条 addEvents + 单条迹象"
+    },
+    {
+        "file": "ok-05.txt",
+        "basedOn": "v15/states/western.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：loreRequests 3 条（上限内）"
+    },
+    {
+        "file": "ok-06.txt",
+        "basedOn": "v15/states/wuxia.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：loreRequests 空数组（合法，表示本轮不需要点名）"
+    },
+    {
+        "file": "ok-07.txt",
+        "basedOn": "v15/states/palace.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：markKnown 为空数组"
+    },
+    {
+        "file": "ok-08.txt",
+        "basedOn": "v15/states/mystery.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：knows 3 条且都带渠道"
+    },
+    {
+        "file": "ok-09.txt",
+        "basedOn": "v15/states/school.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：addEvents 里有一条 characterIds 为空"
+    },
+    {
+        "file": "ok-10.txt",
+        "basedOn": "v15/states/western.json",
+        "expectParseOk": true,
+        "expectRejectedKinds": [],
+        "notes": "正常：longAction 由 ongoing 变 done（会进审核）、guideReached=false"
+    }
+]

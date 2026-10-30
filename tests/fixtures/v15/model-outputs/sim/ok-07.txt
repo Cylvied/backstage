@@ -1,0 +1,61 @@
+```json
+{
+  "clock": {
+    "day": 28,
+    "slot": "五更",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pal006",
+      "knows": [
+        "知道：太后与外间的人低声说话时提到了一个姓氏（自己听见）"
+      ],
+      "name": "幼帝"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_pal002",
+      "stage": "resolving",
+      "title": "浣衣局里那件袍子的主人还活着"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若往长秋宫去，可让守门的宫人拦下，说太后还未起身",
+      "threadId": "t_pal001",
+      "characterId": null,
+      "relevance": 2,
+      "eventId": "e_pal110"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "宫里的话一旦传开，百官几日内就会开始告病",
+      "threadId": "t_pal001",
+      "characterId": null,
+      "relevance": 1,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "幼帝在天亮前把那个姓氏默念了几遍，没有告诉任何人。",
+      "characterIds": [
+        "c_pal006"
+      ],
+      "threadIds": [
+        "t_pal002"
+      ]
+    }
+  ],
+  "markKnown": [],
+  "loreRequests": [
+    "先帝诸子的序齿"
+  ]
+}
+```

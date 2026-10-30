@@ -1,0 +1,31 @@
+```json
+{
+  "clock": {
+    "day": 11,
+    "slot": "傍晚",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux003",
+      "knows": [
+        "知道：那封回信今夜不会来（自己等的）"
+      ],
+      "name": "何九"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去码头，可让货棚的灯被人提前熄掉",
+      "threadId": "t_wux002",
+      "characterId": "c_wux003",
+      "relevance": 3
+    }
+  ],
+  "noChange": false
+}
+```

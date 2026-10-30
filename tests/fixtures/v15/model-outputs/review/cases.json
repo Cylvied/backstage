@@ -1,0 +1,72 @@
+[
+    {
+        "file": "dirty-chat-01.txt",
+        "expectOk": true,
+        "notes": "代码块前后有闲聊，可解析"
+    },
+    {
+        "file": "dirty-missing-01.txt",
+        "expectOk": true,
+        "notes": "送审 r1–r4 只回了 r2、r4：JSON 合法、形状正确，能解析（expectOk=true）；但缺裁决的 r1、r3 按 INTERFACES 7.5「缺少裁决的条目视为通过」处理，属于内容问题不是解析失败"
+    },
+    {
+        "file": "dirty-string-01.txt",
+        "expectOk": false,
+        "notes": "ok 写成字符串 \"true\" / \"false\"，违反 types.js 的 boolean 契约，应判解析失败（若解析器做了宽松强转，这条会失败——那属于被测出的宽松点，不应改样本）"
+    },
+    {
+        "file": "dirty-think-01.txt",
+        "expectOk": true,
+        "notes": "带 think 标签，去掉后是合法 JSON，可解析"
+    },
+    {
+        "file": "dirty-trailing-01.txt",
+        "expectOk": true,
+        "notes": "两处尾逗号（数组末项与对象末项），去掉后可解析"
+    },
+    {
+        "file": "dirty-truncated-01.txt",
+        "expectOk": false,
+        "notes": "在第二条裁决的 ok 值中间被截断，JSON 不完整"
+    },
+    {
+        "file": "dirty-unknownid-01.txt",
+        "expectOk": true,
+        "notes": "出现不存在的 id r9：JSON 合法、形状正确，能解析（expectOk=true）；applyVerdicts 按 id 匹配时找不到对应条目，应忽略该裁决"
+    },
+    {
+        "file": "ok-01.txt",
+        "expectOk": true,
+        "notes": "3 条裁决，其中 1 条驳回，reason 写清了原因"
+    },
+    {
+        "file": "ok-02.txt",
+        "expectOk": true,
+        "notes": "2 条全部通过，reason 为空串"
+    },
+    {
+        "file": "ok-03.txt",
+        "expectOk": true,
+        "notes": "5 条，前两条驳回"
+    },
+    {
+        "file": "ok-04.txt",
+        "expectOk": true,
+        "notes": "只有 1 条裁决（单条目送审）"
+    },
+    {
+        "file": "ok-05.txt",
+        "expectOk": true,
+        "notes": "6 条，驳回的是 clock 类条目"
+    },
+    {
+        "file": "ok-06.txt",
+        "expectOk": true,
+        "notes": "驳回 action_done 类条目"
+    },
+    {
+        "file": "ok-07.txt",
+        "expectOk": true,
+        "notes": "8 条，接近一轮送审上限，仅最后一条驳回"
+    }
+]

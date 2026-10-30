@@ -1,0 +1,16 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": false,
+      "reason": "longAction 标记为完成，但正文里这件事还在进行"
+    }
+  ]
+}
+```

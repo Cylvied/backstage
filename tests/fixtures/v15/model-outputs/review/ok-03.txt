@@ -1,0 +1,31 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": false,
+      "reason": "新增事件与已有事件重复，属于同一件事的复述"
+    },
+    {
+      "id": "r2",
+      "ok": false,
+      "reason": "认知『知道：调令没送到』缺少渠道，正文里没有任何依据"
+    },
+    {
+      "id": "r3",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r4",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r5",
+      "ok": true,
+      "reason": ""
+    }
+  ]
+}
+```

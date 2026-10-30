@@ -1,0 +1,86 @@
+```json
+{
+  "clock": {
+    "day": 9,
+    "slot": "黎明前",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes001",
+      "currentAction": {
+        "text": "把长明灯的灯芯剪短，让火更稳",
+        "duration": "一刻"
+      },
+      "knows": [
+        "知道：城北的封印裂了一道缝（亲见）",
+        "知道：教会今夜在查房（听见钟楼下的脚步）"
+      ],
+      "name": "奥尔登"
+    },
+    {
+      "id": "c_wes003",
+      "knows": [
+        "知道：名单上少的那个人住在下城区旅店（核对到）"
+      ],
+      "name": "塞维林"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wes001",
+      "stage": "ripe",
+      "title": "钟楼的封印在第七次鸣响时会裂开，城北会漏进不该进来的东西"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若在旅店多留一夜，可让教会的人敲门查房，先查米拉的灶间",
+      "threadId": "t_wes002",
+      "characterId": "c_wes003",
+      "relevance": 3,
+      "eventId": "new:1"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "钟声一旦乱，全城的狗会先叫起来，之后人心才乱",
+      "threadId": "t_wes001",
+      "characterId": "c_wes007",
+      "relevance": 2,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "钟楼的长明灯在黎明前又暗了一次，守夜人重新点上时火苗比之前矮。",
+      "characterIds": [
+        "c_wes001"
+      ],
+      "threadIds": [
+        "t_wes001"
+      ]
+    },
+    {
+      "text": "塞维林把名单上那个空缺的位置用墨涂掉，没有再补名字。",
+      "characterIds": [
+        "c_wes003"
+      ],
+      "threadIds": [
+        "t_wes002"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_wes103"
+  ],
+  "loreRequests": [
+    "灰港城封印的七次鸣响",
+    "教会异端名单的补录规矩",
+    "灰港城钟楼守夜人传承"
+  ]
+}
+```

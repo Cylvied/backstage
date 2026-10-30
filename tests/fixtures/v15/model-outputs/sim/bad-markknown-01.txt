@@ -1,0 +1,27 @@
+```json
+{
+  "clock": {
+    "day": 4,
+    "slot": "凌晨",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若再看监控，可让画面边缘的影子动一下",
+      "threadId": "t_mys001",
+      "characterId": "c_mys001",
+      "relevance": 3
+    }
+  ],
+  "noChange": false,
+  "markKnown": [
+    "e_mys999",
+    "e_mys104"
+  ]
+}
+```

@@ -1,0 +1,11 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": fa

@@ -1,0 +1,68 @@
+```json
+{
+  "clock": {
+    "day": 12,
+    "slot": "夜里",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux001",
+      "knows": [
+        "知道：阿鹞昨天在屋顶上看见了地窖口的新泥（阿鹞当面说的）",
+        "知道：府衙的案卷三年前被借走过（秦月娘透露）",
+        "不知道：客栈门外那个布包是谁留的"
+      ],
+      "name": "沈砚秋"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wux001",
+      "stage": "ripe",
+      "visibility": "hinted",
+      "title": "染坊地窖里关着三年前灭门案唯一的活口"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去城南渡口，可让废了的水路码头边多出一串新鲜的船桨印",
+      "threadId": "t_wux001",
+      "characterId": "c_wux006",
+      "relevance": 3,
+      "eventId": "new:0"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "码头的货船一夜不走，市面上的盐价就要往上抬一截",
+      "threadId": "t_wux002",
+      "characterId": null,
+      "relevance": 2,
+      "eventId": "e_wux103"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "沈砚秋把地窖里的人连夜转移出城，走的是城南那条废了的水路。",
+      "characterIds": [
+        "c_wux001",
+        "c_wux006"
+      ],
+      "threadIds": [
+        "t_wux001"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_wux107"
+  ],
+  "loreRequests": [
+    "临江府城南水路故道",
+    "染坊灭门案的验尸记录"
+  ]
+}
+```

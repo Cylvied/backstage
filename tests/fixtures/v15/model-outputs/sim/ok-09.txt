@@ -1,0 +1,69 @@
+```json
+{
+  "clock": {
+    "day": 4,
+    "slot": "清晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_sch003",
+      "currentAction": {
+        "text": "把两份推荐表并排放在桌上，看哪一份少了个名字",
+        "duration": "半个上午"
+      },
+      "name": "陈老师"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_sch002",
+      "stage": "resolving",
+      "title": "保送名额只有一个，周牧和陈老师之间有笔没说完的交易"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去看公告栏，可让胶带还留在墙上，字迹被人先撕走了",
+      "threadId": "t_sch002",
+      "characterId": null,
+      "relevance": 3,
+      "eventId": "new:1"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "保送的事一旦传开，班里的气氛会在几天内变得很紧",
+      "threadId": "t_sch002",
+      "characterId": null,
+      "relevance": 2,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "陈老师把没写名字的那份推荐表锁进了抽屉，另一份照常交了上去。",
+      "characterIds": [
+        "c_sch003"
+      ],
+      "threadIds": [
+        "t_sch002"
+      ]
+    },
+    {
+      "text": "年级组的公告栏在放学后贴出了保送名单，只贴了半个小时就被撕掉。",
+      "characterIds": [],
+      "threadIds": [
+        "t_sch002"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_sch103"
+  ],
+  "loreRequests": []
+}
+```

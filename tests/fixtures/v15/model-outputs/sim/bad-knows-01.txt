@@ -1,0 +1,32 @@
+```json
+{
+  "clock": {
+    "day": 12,
+    "slot": "夜里",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux002",
+      "knows": [
+        "知道：南门今夜换了守备",
+        "知道：码头的船三日不走（亲见）"
+      ],
+      "name": "柳三更"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "盐价一涨，街上的人会比平时话多",
+      "threadId": "t_wux002",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

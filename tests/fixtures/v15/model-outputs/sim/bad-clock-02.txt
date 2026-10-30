@@ -1,0 +1,34 @@
+```json
+{
+  "clock": {
+    "day": 2,
+    "slot": "午后",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若回教室，可让抽屉是开着的",
+      "threadId": "t_sch003",
+      "characterId": "c_sch004",
+      "relevance": 3
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "有人在放学后翻过教室的抽屉。",
+      "characterIds": [
+        "c_sch004"
+      ],
+      "threadIds": [
+        "t_sch003"
+      ]
+    }
+  ]
+}
+```

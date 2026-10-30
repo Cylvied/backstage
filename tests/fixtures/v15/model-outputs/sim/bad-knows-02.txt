@@ -1,0 +1,33 @@
+```json
+{
+  "clock": {
+    "day": 9,
+    "slot": "夜里",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes005",
+      "knows": [
+        "知道：巡逻换班提前了一刻（亲数）",
+        "知道：城墙缺口那边今夜没人守",
+        "知道：教会的人在下城区走动"
+      ],
+      "name": "凯特"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "undercurrent",
+      "text": "钟一乱，全城的人都会先看钟楼",
+      "threadId": "t_wes001",
+      "characterId": null,
+      "relevance": 2
+    }
+  ],
+  "noChange": false
+}
+```

@@ -1,0 +1,59 @@
+```json
+{
+  "clock": {
+    "day": 8,
+    "slot": "深夜",
+    "precision": "approx"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wes004",
+      "longAction": {
+        "text": "把断剑重新淬火",
+        "duration": "两日",
+        "status": "done",
+        "outcome": "剑没断，但缺口没能补上"
+      },
+      "name": "格里姆"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_wes003",
+      "stage": "growing",
+      "title": "格里姆淬的那柄断剑，是钟楼那把的一部分"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去铁匠铺，可让那只木匣没盖严，露出剑身上那道缺口",
+      "threadId": "t_wes003",
+      "characterId": "c_wes004",
+      "relevance": 3,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "格里姆把淬好的断剑收进木匣，匣底垫着一块旧布，布上绣着钟楼的纹样。",
+      "characterIds": [
+        "c_wes004"
+      ],
+      "threadIds": [
+        "t_wes003"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_wes104"
+  ],
+  "loreRequests": [
+    "灰港城钟楼纹样的来历"
+  ],
+  "guideReached": false
+}
+```

@@ -1,0 +1,408 @@
+{
+    "schemaVersion": 1,
+    "clock": {
+        "day": 27,
+        "slot": "深夜",
+        "precision": "exact"
+    },
+    "protagonist": {
+        "location": "大内·西偏殿",
+        "reachable": true
+    },
+    "characters": [
+        {
+            "id": "c_pal001",
+            "name": "萧太后",
+            "aliases": [
+                "太后"
+            ],
+            "location": "大内·长秋宫",
+            "currentAction": {
+                "text": "在灯下批一道没人敢驳的旨",
+                "duration": "整夜",
+                "since": {
+                    "day": 27,
+                    "slot": "入夜"
+                }
+            },
+            "longAction": {
+                "text": "扶幼帝坐稳这把椅子",
+                "duration": "三年为期",
+                "status": "ongoing",
+                "outcome": null,
+                "since": {
+                    "day": 27,
+                    "slot": "入夜"
+                }
+            },
+            "knows": [
+                "知道：兵权已经不在自己手里（亲信回报）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false,
+            "touchedRun": 27
+        },
+        {
+            "id": "c_pal002",
+            "name": "沈砚",
+            "aliases": [
+                "沈尚书"
+            ],
+            "location": "大内·中书省",
+            "currentAction": {
+                "text": "把一封密信烧在炭盆里",
+                "duration": "一刻",
+                "since": {
+                    "day": 27,
+                    "slot": "午后"
+                }
+            },
+            "longAction": {
+                "text": "把女儿从宫里接出去",
+                "duration": "无期限",
+                "status": "ongoing",
+                "outcome": null,
+                "since": {
+                    "day": 27,
+                    "slot": "午后"
+                }
+            },
+            "knows": [
+                "知道：太后今夜会批那道旨（眼线）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal003",
+            "name": "李嬷嬷",
+            "aliases": [],
+            "location": "大内·西偏殿",
+            "currentAction": {
+                "text": "替主角换一壶不烫的茶",
+                "duration": "一盏茶工夫"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：那壶茶本来是给别人的"
+            ],
+            "life": "alive",
+            "onStage": true,
+            "pinned": false,
+            "touchedRun": 27
+        },
+        {
+            "id": "c_pal004",
+            "name": "胡校尉",
+            "aliases": [],
+            "location": "大内·玄武门",
+            "currentAction": {
+                "text": "在门洞里擦刀，等人换班",
+                "duration": "到子时",
+                "since": {
+                    "day": 26,
+                    "slot": "深夜"
+                }
+            },
+            "longAction": {
+                "text": "等一道调令",
+                "duration": "约五日",
+                "status": "ongoing",
+                "outcome": null,
+                "since": {
+                    "day": 26,
+                    "slot": "深夜"
+                }
+            },
+            "knows": [
+                "知道：今夜宫里有第二道旨没走中书省（同僚透露）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal005",
+            "name": "云娘",
+            "aliases": [],
+            "location": "大内·浣衣局",
+            "currentAction": {
+                "text": "把一件不该出现的袍子藏进衣堆",
+                "duration": "片刻"
+            },
+            "longAction": null,
+            "knows": [
+                "知道：那件袍子的主人没死（亲见）"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        },
+        {
+            "id": "c_pal006",
+            "name": "幼帝",
+            "aliases": [],
+            "location": "大内·长秋宫",
+            "currentAction": {
+                "text": "假装睡着，听太后与谁说话",
+                "duration": "整夜"
+            },
+            "longAction": null,
+            "knows": [
+                "不知道：自己不是先帝唯一的孩子"
+            ],
+            "life": "alive",
+            "onStage": false,
+            "pinned": false
+        }
+    ],
+    "threads": [
+        {
+            "id": "t_pal001",
+            "title": "那道不经中书省的旨，是要把沈家满门调出京城",
+            "characterIds": [
+                "c_pal001",
+                "c_pal002"
+            ],
+            "stage": "growing",
+            "trigger": "旨意送到中书省之外的人手里",
+            "deadline": {
+                "text": "五日后",
+                "missedOutcome": "沈家来不及走，密信落到太后手里"
+            },
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_pal002",
+            "title": "浣衣局里那件袍子的主人还活着",
+            "characterIds": [
+                "c_pal005",
+                "c_pal006"
+            ],
+            "stage": "ripe",
+            "trigger": "有人认出那件袍子的绣纹",
+            "deadline": null,
+            "visibility": "hidden",
+            "origin": "sim",
+            "guide": null
+        },
+        {
+            "id": "t_pal003",
+            "title": "胡校尉在等的那道调令，会决定今夜玄武门归谁",
+            "characterIds": [
+                "c_pal004",
+                "c_pal001"
+            ],
+            "stage": "seeded",
+            "trigger": "调令在子时前送到",
+            "deadline": null,
+            "visibility": "hinted",
+            "origin": "sim",
+            "guide": null
+        }
+    ],
+    "signals": [
+        {
+            "voice": "here",
+            "text": "若往偏殿外走，可让换班的脚步声提前响起，逼人退回廊下",
+            "threadId": "t_pal003",
+            "characterId": "c_pal004",
+            "relevance": 3,
+            "eventId": "e_pal109",
+            "bornRun": 27
+        },
+        {
+            "voice": "undercurrent",
+            "text": "宫里的旨意一旦绕开中书省，百官几天内就会开始告病",
+            "threadId": "t_pal001",
+            "characterId": null,
+            "relevance": 2,
+            "eventId": "e_pal103",
+            "bornRun": 25
+        }
+    ],
+    "runCount": 27,
+    "chronicle": [
+        {
+            "id": "e_pal101",
+            "at": {
+                "day": 23,
+                "slot": "深夜"
+            },
+            "text": "沈砚在中书省值房里烧掉一封没有落款的密信。",
+            "characterIds": [
+                "c_pal002"
+            ],
+            "threadIds": [
+                "t_pal001"
+            ],
+            "known": true,
+            "knownAt": {
+                "day": 24,
+                "slot": "凌晨"
+            }
+        },
+        {
+            "id": "e_pal102",
+            "at": {
+                "day": 24,
+                "slot": "凌晨"
+            },
+            "text": "浣衣局的衣堆里多出一件不属于任何在册宫人的旧袍。",
+            "characterIds": [
+                "c_pal005"
+            ],
+            "threadIds": [
+                "t_pal002"
+            ],
+            "known": false,
+            "knownAt": null
+        },
+        {
+            "id": "e_pal103",
+            "at": {
+                "day": 25,
+                "slot": "夜里"
+            },
+            "text": "萧太后召见了一名不在名册上的内侍，谈了不到一刻。",
+            "characterIds": [
+                "c_pal001"
+            ],
+            "threadIds": [
+                "t_pal001"
+            ],
+            "known": false,
+            "knownAt": null
+        },
+        {
+            "id": "e_pal104",
+            "at": {
+                "day": 25,
+                "slot": "深夜"
+            },
+            "text": "胡校尉在玄武门换班时多留了半个时辰，没有交代原因。",
+            "characterIds": [
+                "c_pal004"
+            ],
+            "threadIds": [
+                "t_pal003"
+            ],
+            "known": false,
+            "knownAt": null
+        },
+        {
+            "id": "e_pal105",
+            "at": {
+                "day": 26,
+                "slot": "上午"
+            },
+            "text": "云娘把那件旧袍藏进自己箱底，又在上面压了两件冬衣。",
+            "characterIds": [
+                "c_pal005"
+            ],
+            "threadIds": [
+                "t_pal002"
+            ],
+            "known": true,
+            "knownAt": {
+                "day": 26,
+                "slot": "午后"
+            }
+        },
+        {
+            "id": "e_pal106",
+            "at": {
+                "day": 26,
+                "slot": "夜里"
+            },
+            "text": "幼帝假装睡着，听见太后与人在外间低声说话，只记住了一个姓氏。",
+            "characterIds": [
+                "c_pal006"
+            ],
+            "threadIds": [
+                "t_pal001",
+                "t_pal002"
+            ],
+            "known": true,
+            "knownAt": {
+                "day": 27,
+                "slot": "深夜"
+            }
+        },
+        {
+            "id": "e_pal107",
+            "at": {
+                "day": 27,
+                "slot": "午后"
+            },
+            "text": "中书省收到一道没有副署的旨意，沈砚看完没有上呈。",
+            "characterIds": [
+                "c_pal002"
+            ],
+            "threadIds": [
+                "t_pal001"
+            ],
+            "known": true,
+            "knownAt": {
+                "day": 27,
+                "slot": "傍晚"
+            }
+        },
+        {
+            "id": "e_pal108",
+            "at": {
+                "day": 27,
+                "slot": "深夜"
+            },
+            "text": "李嬷嬷把西偏殿的灯换成一壶不烫的茶，等人回来。",
+            "characterIds": [
+                "c_pal003"
+            ],
+            "threadIds": [],
+            "known": false,
+            "knownAt": null
+        },
+        {
+            "id": "e_pal109",
+            "at": {
+                "day": 27,
+                "slot": "深夜"
+            },
+            "text": "玄武门的调令没有按时送到，门洞里的火把换了一轮。",
+            "characterIds": [
+                "c_pal004"
+            ],
+            "threadIds": [
+                "t_pal003"
+            ],
+            "known": false,
+            "knownAt": null
+        },
+        {
+            "id": "e_pal110",
+            "at": {
+                "day": 27,
+                "slot": "深夜"
+            },
+            "text": "长秋宫的灯比平日多亮了一盏，值夜的宫人不敢去问。",
+            "characterIds": [
+                "c_pal001"
+            ],
+            "threadIds": [
+                "t_pal001"
+            ],
+            "known": false,
+            "knownAt": null
+        }
+    ],
+    "loreWanted": [
+        {
+            "title": "大内旨意副署旧例",
+            "sinceRun": 26
+        }
+    ]
+}

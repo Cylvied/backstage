@@ -1,0 +1,51 @@
+```json
+{
+  "clock": {
+    "day": 4,
+    "slot": "深夜",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_mys001",
+      "knows": [
+        "知道：失踪者最后一次出现是往灯塔方向（监控）",
+        "知道：守夜人那晚的班表被人改过（刚查到）",
+        "知道：灯塔的门锁有新近被撬过的痕迹（现场照片）"
+      ],
+      "name": "徐渭"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若再回灯塔，可让那扇被撬过的门自己开着，风从里面吹出来",
+      "threadId": "t_mys001",
+      "characterId": "c_mys002",
+      "relevance": 3,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "徐渭把那段监控的第七遍看完，在画面边缘标出了一个不属于任何人的影子。",
+      "characterIds": [
+        "c_mys001"
+      ],
+      "threadIds": [
+        "t_mys001"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_mys107"
+  ],
+  "loreRequests": [
+    "临海镇灯塔守夜人名录"
+  ]
+}
+```

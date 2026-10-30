@@ -1,0 +1,48 @@
+```json
+{
+  "clock": {
+    "day": 13,
+    "slot": "清晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux004",
+      "currentAction": {
+        "text": "把柜台的灯留一盏，自己坐在楼梯口",
+        "duration": "到天亮"
+      },
+      "name": "秦月娘"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若推开客栈后门，可让巷子里多出一辆刚走不久的独轮车印",
+      "threadId": "t_wux003",
+      "characterId": "c_wux004",
+      "relevance": 3,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "客栈门外那个没有署名的布包，天亮时不见了。",
+      "characterIds": [
+        "c_wux004"
+      ],
+      "threadIds": [
+        "t_wux003"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_wux102"
+  ],
+  "loreRequests": []
+}
+```

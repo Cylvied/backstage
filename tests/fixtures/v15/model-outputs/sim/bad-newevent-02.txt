@@ -1,0 +1,41 @@
+```json
+{
+  "clock": {
+    "day": 3,
+    "slot": "夜里",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若去天台，可让铁门锁着但没关严",
+      "threadId": "t_sch003",
+      "characterId": "c_sch005",
+      "relevance": 3,
+      "eventId": "new:3"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "保送名单一贴出来，班里就会分成两拨人",
+      "threadId": "t_sch002",
+      "characterId": null,
+      "relevance": 2,
+      "eventId": "new:0"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "天台的铁门在放学后被锁上了。",
+      "characterIds": [],
+      "threadIds": [
+        "t_sch003"
+      ]
+    }
+  ]
+}
+```

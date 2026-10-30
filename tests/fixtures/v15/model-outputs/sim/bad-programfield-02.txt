@@ -1,0 +1,38 @@
+```json
+{
+  "clock": {
+    "day": 28,
+    "slot": "凌晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pal001",
+      "currentAction": {
+        "text": "把批好的旨意压在镇纸下面",
+        "duration": "到天亮",
+        "since": {
+          "day": 28,
+          "slot": "子时"
+        }
+      },
+      "name": "萧太后"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若进长秋宫，可让镇纸下压着的纸角露出来",
+      "threadId": "t_pal001",
+      "characterId": "c_pal001",
+      "relevance": 3,
+      "eventId": "e_pal110",
+      "bornRun": 99
+    }
+  ],
+  "noChange": false
+}
+```

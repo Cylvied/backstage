@@ -1,0 +1,65 @@
+```json
+{
+  "clock": {
+    "day": 12,
+    "slot": "夜里",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_wux001",
+      "currentAction": {
+        "text": "在地窖口等转移的人回来",
+        "duration": "到后半夜",
+        "since": {
+          "day": 12,
+          "slot": "傍晚"
+        }
+      },
+      "longAction": {
+        "text": "暗中查访三年前灭门案的活口",
+        "duration": "约半月",
+        "status": "ongoing",
+        "outcome": null,
+        "since": {
+          "day": 11,
+          "slot": "清晨"
+        }
+      },
+      "touchedRun": 12,
+      "name": "沈砚秋"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若下地窖，可让新麻绳还带着水汽",
+      "threadId": "t_wux001",
+      "characterId": "c_wux006",
+      "relevance": 3,
+      "eventId": "e_wux107",
+      "bornRun": 12
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "地窖里的麻绳被换成了新的。",
+      "characterIds": [
+        "c_wux001"
+      ],
+      "threadIds": [
+        "t_wux001"
+      ],
+      "at": {
+        "day": 12,
+        "slot": "夜里"
+      },
+      "known": false
+    }
+  ]
+}
+```

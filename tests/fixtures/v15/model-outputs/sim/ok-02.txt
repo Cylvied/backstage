@@ -1,0 +1,82 @@
+```json
+{
+  "clock": {
+    "day": 28,
+    "slot": "凌晨",
+    "precision": "exact"
+  },
+  "protagonist": null,
+  "upsertCharacters": [
+    {
+      "id": "c_pal004",
+      "knows": [
+        "知道：调令今夜没有送到（自己守的门）",
+        "知道：宫里有第二道旨没走中书省（同僚透露）"
+      ],
+      "name": "胡校尉"
+    },
+    {
+      "id": "c_pal002",
+      "currentAction": {
+        "text": "把没有副署的旨意压在案卷最底下",
+        "duration": "到天亮"
+      },
+      "name": "沈砚"
+    }
+  ],
+  "removeCharacterIds": [],
+  "upsertThreads": [
+    {
+      "id": "t_pal003",
+      "stage": "ripe",
+      "title": "胡校尉在等的那道调令，会决定今夜玄武门归谁"
+    }
+  ],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若走到玄武门，可让新来的守备拦住问话，却不认得太后的印",
+      "threadId": "t_pal003",
+      "characterId": "c_pal004",
+      "relevance": 3,
+      "eventId": "new:0"
+    },
+    {
+      "voice": "undercurrent",
+      "text": "旨意绕开中书省，百官几天内就会开始告病",
+      "threadId": "t_pal001",
+      "characterId": null,
+      "relevance": 2,
+      "eventId": "new:1"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "玄武门在子时前换了守备，换班的人没有带来调令。",
+      "characterIds": [
+        "c_pal004"
+      ],
+      "threadIds": [
+        "t_pal003"
+      ]
+    },
+    {
+      "text": "沈砚把那份没有副署的旨意压进了中书省最底层的案卷里。",
+      "characterIds": [
+        "c_pal002"
+      ],
+      "threadIds": [
+        "t_pal001"
+      ]
+    }
+  ],
+  "markKnown": [
+    "e_pal109",
+    "e_pal103"
+  ],
+  "loreRequests": [
+    "大内玄武门守备更替旧例"
+  ]
+}
+```

@@ -1,0 +1,46 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r3",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r4",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r5",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r6",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r7",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r8",
+      "ok": false,
+      "reason": "这条认知来自世界书设定，不是本轮正文里得知的"
+    }
+  ]
+}
+```

@@ -1,0 +1,36 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r3",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r4",
+      "ok": false,
+      "reason": "时钟一次推进了 5 天，超过本轮正文能支撑的跨度"
+    },
+    {
+      "id": "r5",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r6",
+      "ok": true,
+      "reason": ""
+    }
+  ]
+}
+```

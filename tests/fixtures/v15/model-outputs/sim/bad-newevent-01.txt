@@ -1,0 +1,42 @@
+```json
+{
+  "clock": {
+    "day": 5,
+    "slot": "凌晨",
+    "precision": "unknown"
+  },
+  "protagonist": null,
+  "upsertCharacters": [],
+  "removeCharacterIds": [],
+  "upsertThreads": [],
+  "signals": [
+    {
+      "voice": "here",
+      "text": "若再去灯塔，可让门锁是新的",
+      "threadId": "t_mys001",
+      "characterId": "c_mys002",
+      "relevance": 3,
+      "eventId": "new:5"
+    }
+  ],
+  "noChange": false,
+  "addEvents": [
+    {
+      "text": "灯塔的门锁被人换过。",
+      "characterIds": [
+        "c_mys002"
+      ],
+      "threadIds": [
+        "t_mys001"
+      ]
+    },
+    {
+      "text": "渔港的船少了一条。",
+      "characterIds": [],
+      "threadIds": [
+        "t_mys002"
+      ]
+    }
+  ]
+}
+```

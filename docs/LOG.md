@@ -388,3 +388,31 @@
   1. 纸条页"本轮"按 getFloorInfo 从最后一楼往前找，没有用 findBase；若两者对不上（比如某层快照有效但不是基底），可考虑在 api 上直接提供当前基底的楼层号
   2. 世界书条目的唯一键是 world + String(uid)，数字和字符串 uid 视为同一条；请 host 侧的 pinned 匹配也这样处理
   3. 开发期间用过 8765 端口，已关闭
+
+## 2026-10-30 15:40 [dsh] [完成] B 批样本
+- 新建文件（共 42 个，全部在 `tests/fixtures/v15/` 下；未改动 `tests/fixtures/` 已有的任何文件）：
+  - `states/` 6 个：wuxia, palace, mystery, school, western（各带 chronicle / since / loreWanted / eventId）+ legacy.json（旧格式，用于兼容测试）
+  - `model-outputs/sim/` 20 个 .txt + cases.json（10 正常 / 10 有问题）
+  - `model-outputs/review/` 14 个 .txt + cases.json（7 正常 / 7 脏）
+- 自检（全部脚本跑过，非目测）：
+  - 8 个 .json 全部 `json.load` 通过；没有 .js/.mjs 文件
+  - **时间约束**：所有 `chronicle[].at`、`knownAt`、`currentAction/longAction.since`、`loreWanted.sinceRun`、`signals[].bornRun` 都不晚于该状态的 `clock`（同一天还比了时段先后，时段按 凌晨→…→五更 排序）；chronicle 严格按时间升序
+  - **chronicle**：每文件 6–10 条（要求 5–15）；`e_` + 6 位小写字母数字；`known:true` 占比 40%–67%（约一半）；known:true 必有 knownAt、known:false 的 knownAt 必为 null；characterIds/threadIds 全部指向本文件真实存在的对象
+  - **since**：人物 currentAction/longAction 的 since 都存在且合法；legacy.json 里一个新字段都没有（与 `states/wuxia.json` 逐字节 JSON 等价）
+  - **loreWanted**：每文件 0–3 条，sinceRun ≤ runCount
+  - **eventId**：5 个状态各有 2 条迹象带 eventId，且**全部指向 known:false 的事件**（这是任务书要求，第一版有 3 处指错到 known:true，已改）
+  - **sim 20 个**：正常 10 个用到了 addEvents / markKnown / loreRequests / 带 eventId 的迹象，其中 12 处用到 `"new:N"` 写法；有问题 10 个覆盖任务书 5 类（clock 倒退 ×2、markKnown 指向不存在事件 ×2、缺渠道的"知道：" ×2、new:N 越界 ×2、模型写程序字段 ×2）
+  - **review 14 个**：覆盖 7 类（思考过程、前后闲聊、尾逗号、截断、ok 写成字符串、缺少 id、不存在的 id）
+  - cases.json 的文件列表与磁盘实际文件严格一致；`expectRejectedKinds` 只用了 ReviewKind 里的合法值（clock / knows / mark_known / reference）
+- 不确定的地方（请组长/Codex 确认）：
+  1. **review 的 `expectOk` 口径**：任务书说"正常与脏的各一半"，但脏样本里 think/闲聊/尾逗号/缺 id/多余 id 这几类**JSON 是合法的、能解析**。我把 `expectOk` 定义成"能否解析成合法 verdicts"，所以 7 个脏样本里 5 个是 true、只有 `ok` 写成字符串和截断这 2 个是 false。如果你要的是"脏=失败"，请改这 5 条。
+  2. **`ok: "true"` 判 false 的依据**：types.js 写明 `ok: boolean`，字符串是类型违规。如果 `parseReviewOutput` 做了宽松强转，这条会暴露出来——那属于被测出的宽松点，建议不要改样本迁就。
+  3. **`dirty-missing-01`（缺 r1/r3 的裁决）判 true**：INTERFACES 7.5 明写"缺少裁决的条目视为通过"，所以缺 id 是内容问题不是解析失败。同理 `dirty-unknownid-01`（多出 r9）也判 true，applyVerdicts 按 id 匹配找不到就忽略。
+  4. **`bad-programfield-01/02` 的 `expectRejectedKinds` 我写了空数组**：因为 since/at/known/bornRun 是 parse 阶段就剥掉的程序字段，不属于 checkPatch 的 ReviewKind 范畴。如果你希望它们在 check 阶段也报一类，请告诉我加哪个 kind（现有枚举里没有合适的，可能需要 `other`）。
+  5. **`bad-clock-02` 同时有 clock 倒退和合法 addEvents**：我按"只丢弃出问题的那一项"处理，即 clock 被丢、addEvents 保留。如果实现是"clock 倒退就整包拒绝"，这条会暴露差异。
+- 工作区约束：只新建 `tests/fixtures/v15/**`；未改已有样本、未改 TASKS.md / LOG 其他条目、未碰 `src/`（`src/sim/parse.js` 与 `src/sim/check.js` 的改动是 Codex 的，我没有动）；未执行 git 写操作；未安装依赖；临时脚本放系统临时目录。
+
+## 2026-10-30 [claude] [审查意见] dsh B 批样本：通过
+- 组长脚本复核 0 个问题（JSON 合法、时间不晚于 clock、引用存在、known 与 knownAt 一致、eventId 指向存在的事件）
+- dsh 列出的 5 个不确定点均与接口一致，无需修改：review 的 expectOk 按"能否解析出合法 verdicts"；ok:"true" 判失败；缺裁决视为通过、多余 id 忽略；程序字段在 parse 剥掉、不进 ReviewKind；clock 倒退只丢 clock
+- @Codex：tests/fixtures/v15/ 已就绪，可用于 B 批回归测试

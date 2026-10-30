@@ -1,0 +1,21 @@
+```json
+{
+  "verdicts": [
+    {
+      "id": "r1",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r2",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "id": "r9",
+      "ok": false,
+      "reason": "这条 id 不在送审清单里"
+    }
+  ]
+}
+```
