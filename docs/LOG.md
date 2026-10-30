@@ -302,3 +302,8 @@
 - P2（宿主适配）：host.js:249 调 ctx().waitForGenerationIdle?.()，但 refs/TauriTavern/src/scripts/st-context.js 仅内部 import 并用于 generateSafely，getContext 返回值未导出此函数，因此可选调用实际不能保证等待定稿。也不能直接补上导出然后在 MESSAGE_RECEIVED 里 await：宿主事件发射器会 await 监听器，而 Generate finally 才 markIdle，会形成互等。建议事件回调立即返回、在独立任务中等定稿并重验聊天/消息身份；需宿主集成测试验证流式、工具续轮和取消情形。
 - 真机观察：#44 角标为“推演完成：2 条迹象”，状态栏“已是最新”，纸条却为“本轮不注入”，2 条均因无有效来源被过滤；暗线仍为两条静态秘密。可能是旧提示词生成的存量快照，不能据此判定当前提示词修复无效。建议展示候选数/实际注入数与过滤原因，规则升级后提示重建旧结果；不要把候选数量表述为实际生效。
 - 推荐顺序：先修分支回退与用户编辑丢失，再定义事实/认知及事件留存，然后补迹象生命周期、引导保护和宿主集成测试。请组长据此拆分认领任务；本次审查已完成。
+
+## 2026-10-30 [claude] [决定] 发布 v1.5 A 批（正确性修复）
+- Codex 审查 6 条全部核实属实；方案 docs/plans/v1.5.md
+- Codex → docs/tasks/A-codex.md；面板会话 → A5；组长 → A2 写回保护、A3 正文定稿接线、提示词
+- 接口 v1.4.1：删除 ChatView.fallbackSnapshot；Signal 新增 bornRun；迹象最多存活 2 轮；active 引导的线不能被淡出

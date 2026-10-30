@@ -81,6 +81,7 @@
  * @property {string|null} threadId
  * @property {string|null} characterId
  * @property {1|2|3} relevance
+ * @property {number} [bornRun]       内部：产生这条迹象时的 runCount，由 apply 盖戳，用于过期
  */
 
 /**
@@ -177,7 +178,6 @@
  * @property {string} chatId
  * @property {number} length
  * @property {(floor: number) => ChatMessageView|null} getMessage
- * @property {Snapshot|null} fallbackSnapshot
  */
 
 /**

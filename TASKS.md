@@ -22,6 +22,14 @@
 | T4b | 规划页改为参谋对话，暗线页支持分阶段（面板会话） | Claude（面板会话） | 已完成 |
 | T7 | 集成联调与真机测试 | Claude + 用户 | 进行中 |
 
+## v1.5 A 批：正确性修复（2026-10-30 发布，方案 docs/plans/v1.5.md）
+
+| 编号 | 任务 | 负责人 | 状态 | 认领的文件 |
+|---|---|---|---|---|
+| A-Codex | A1 删兜底快照、A4 迹象过期与引导保护、跨模块测试（docs/tasks/A-codex.md） | Codex | 进行中 | src/state/snapshot-store.js, src/sim/*, tests/state/*, tests/sim/*, tests/integration/* |
+| A-Claude | A2 写回保护、A3 正文定稿接线、提示词 | Claude | 进行中 | index.js, src/host/*, src/state/write-guard.js, src/prompts/*, src/types.js, src/constants.js, tests/state/write-guard.test.mjs |
+| A5 | 角标与纸条显示"候选 N · 注入 M" | Claude（面板会话） | 进行中 | src/ui/*, style.css, dev/*, tests/ui/* |
+
 ## 待办（用户真机试用期间，按反馈排序）
 
 | 编号 | 任务 | 说明 |

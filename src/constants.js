@@ -18,6 +18,7 @@ export const LIMITS = Object.freeze({
     signalText: 80,
     planCards: 3,
     fadedRunsBeforeDelete: 3,
+    signalMaxAgeRuns: 2,   // 迹象最多存活的推演次数（noChange 沿用时也计入）
     beatsMin: 2,
     beatsMax: 8,
 });

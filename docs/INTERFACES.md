@@ -1,6 +1,6 @@
 # 接口文档（仅组长可修改）
 
-> 版本 v1.4 · 2026-10-30（v1.4：插件内直填 API，见 3.8 节与 5.10 节；v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
+> 版本 v1.4.1 · 2026-10-30（v1.4.1：A 批正确性修复，见 docs/plans/v1.5.md 与本文 3.5、5.2、5.5 节的 A 批说明；v1.4：插件内直填 API，见 3.8 节与 5.10 节；v1.3：剧情参谋对话、分阶段引导，见 3.9 节、5.5 节、5.10 节；v1.1：提示词与注入文本改由 Claude 负责，dsh 改为测试样本库；v1.2：放宽 SimPatch 的 name/title 要求，见 3.7 节） · 产品决定见 `docs/brainstorm/SUMMARY.md`
 > 所有类型的权威定义在 `src/types.js`（JSDoc）。本文与 types.js 冲突时以 types.js 为准，并在 LOG 里报告。
 
 插件暂定名 **幕后（Backstage）**，内部 ID `backstage`。
@@ -146,7 +146,9 @@ Snapshot = {
 
 **有效性**：快照有效 ⇔ 所在消息是 AI 消息，且 `basis.textHash === hashText(当前正文)`。正文被编辑或续写后 hash 变化，快照失效。
 
-**基底查找**：从目标楼层往前，找第一个有效快照；找不到则视为初始状态 `emptyState()`。窗口化聊天中找不到时，回退读 `chat_metadata.backstage.lastSnapshot`（只作兜底，不保证分支正确）。
+**基底查找**：从目标楼层往前，找第一个有效快照；找不到则视为初始状态 `emptyState()`。**A 批起不再有兜底快照**（`ChatView.fallbackSnapshot` 已删除）：TauriTavern 的 `getContext().chat` 总是完整的，兜底反而会在重抽时读到正被重抽的旧结果（分支污染）。`stale` 恒为 false（保留字段以免调用方报错）。
+
+**写回保护（A 批）**：推演请求返回、写回目标楼之前，index.js 重新读取该楼当前 swipe 上的快照。若它在推演开始之后被写过（`createdAt` 晚于推演开始，或 `edited=true` 且晚于推演开始），说明用户在推演期间做了钉住、采纳、换拍等操作：此时把本次补丁重新 `applyPatch` 到**该快照的状态**上，结果保留 `edited=true` 与其 `parentId`。判断逻辑是纯函数 `src/state/write-guard.js` 的 `chooseWriteBase`（Claude）。
 
 ### 3.6 规划卡 `PlanCard`
 
@@ -277,7 +279,6 @@ ChatView = {
     chatId: string,
     length: number,
     getMessage(floor: number): { isUser: boolean, text: string, swipeId: number, extra: object } | null,
-    fallbackSnapshot: Snapshot | null,   // chat_metadata.backstage.lastSnapshot
 }
 
 export function isSnapshotValid(snapshot: Snapshot, message): boolean
@@ -325,7 +326,11 @@ export function skipBeat(state: SimState, threadId: string, index: number): SimS
 
 v1.3 对已有函数的要求：`adoptPlan` 支持带 `beats` 的卡与"替换剩余拍"；`applyPatch` 处理 `guideReached`；`setGuideIntensity` 清除 `reached`；snapshot-store 的状态校验要接受并校验新字段（旧快照没有这些字段也必须有效）；parse 解析卡片的 `beats`（每拍 title、goal 必填，firstSigns 缺省为空串；有效拍少于 2 个则当作单步卡，超过 8 个截断）和 `guideReached`（非布尔则忽略）。
 
-`patch.noChange=true` 且 `patch.signals` 为空时，**保留上一轮的 signals**（其余规则照常：runCount 递增、fadedRuns 累计）。
+`patch.noChange=true` 且 `patch.signals` 为空时，保留上一轮的 signals（其余规则照常：runCount 递增、fadedRuns 累计）。
+
+**A 批补充**：
+- **迹象过期**：apply 给新写入的每条 signal 盖 `bornRun = 本次的 runCount`。任何时候（包括 noChange 沿用时），`runCount - bornRun >= LIMITS.signalMaxAgeRuns`（2）的迹象被移除。没有 `bornRun` 的旧迹象视为已过期。
+- **引导保护**：带 `guide.status='active'` 的线，模型补丁不能把它的 stage 改成 `faded`（保持原 stage，warning），也不会因 fadedRuns 被删除。引导结束（done/dropped）后恢复普通规则。
 
 人物超过上限时，按"未钉住 → 不在场 → longAction 非 ongoing → 最久未出现在 patch 中"淘汰。`faded` 的线连续 3 次推演未被 upsert 则删除（在线对象上记 `fadedRuns`，这是 types.js 里允许的内部字段）。
 
