@@ -1,7 +1,7 @@
 import { test, assert, readFixtureJson } from '../harness.js';
 import {
     stampText, chronicleView, relatedEvents, reviewView, reviewLine, loreGroups, tokenText,
-    budgetText, normalizeBudget, filterLoreEntries, togglePinnedLore,
+    budgetText, normalizeBudget, filterLoreEntries, toggleLorePin, isLorePinned,
 } from '../../src/ui/world.js';
 import { updateCharacter } from '../../src/ui/state-edits.js';
 import { injectionSummary, eventText } from '../../src/ui/signal-sources.js';
@@ -84,7 +84,7 @@ test('loreGroups：按层分组、按层顺序、合计 token；旧数据为空'
         { world: 'w', uid: 3, title: '', layer: 'triggered', tokens: 500 },
         { world: 'w', uid: 4, title: '漕帮', layer: 'pinned', tokens: 800 },
     ]);
-    assert.deepEqual(g.groups.map(x => x.label), ['推演专用常驻', '正文触发', '幕后触发']);
+    assert.deepEqual(g.groups.map(x => x.label), ['推演常驻', '正文触发', '幕后触发']);
     assert.equal(g.groups[0].tokens, 2000);
     assert.equal(g.groups[1].items[0].title, '条目 3');
     assert.equal(g.total, 2800);
@@ -103,19 +103,35 @@ test('tokenText / budgetText / normalizeBudget', () => {
     assert.equal(normalizeBudget('abc', 50000), 50000);
 });
 
-test('filterLoreEntries / togglePinnedLore：数字与字符串 uid 一视同仁，已选排前', () => {
+test('filterLoreEntries：数字与字符串 uid 一视同仁，勾选中的排前（含默认勾选的世界书常驻条目）', () => {
     const entries = [
         { world: '江湖', uid: 1, title: '漕帮总览', tokens: 900 },
-        { world: '江湖', uid: 2, title: '城门地图', tokens: 400 },
+        { world: '江湖', uid: 2, title: '城门地图', tokens: 400, constant: true },
         { world: '宫廷', uid: 1, title: '六部', tokens: 300 },
     ];
-    const pinned = [{ world: '宫廷', uid: '1' }];
-    assert.deepEqual(filterLoreEntries(entries, pinned, '').items.map(e => e.title), ['六部', '漕帮总览', '城门地图']);
-    assert.deepEqual(filterLoreEntries(entries, pinned, '江湖').items.map(e => e.title), ['漕帮总览', '城门地图']);
-    assert.equal(filterLoreEntries(entries, pinned, '地图').total, 1);
-    const added = togglePinnedLore(pinned, entries[0]);
-    assert.deepEqual(added, [{ world: '宫廷', uid: '1' }, { world: '江湖', uid: 1 }]);
-    assert.deepEqual(togglePinnedLore(added, { world: '宫廷', uid: 1, title: '', tokens: 0 }), [{ world: '江湖', uid: 1 }]);
+    const lore = { pinned: [{ world: '宫廷', uid: '1' }], unpinned: [] };
+    assert.deepEqual(filterLoreEntries(entries, lore, '').items.map(e => e.title), ['城门地图', '六部', '漕帮总览']);
+    assert.deepEqual(filterLoreEntries(entries, lore, '江湖').items.map(e => e.title), ['城门地图', '漕帮总览']);
+    assert.equal(filterLoreEntries(entries, lore, '地图').total, 1);
+});
+
+test('toggleLorePin：常驻条目取消 → 进 unpinned、出 pinned；勾回 → 只出 unpinned；普通条目只改 pinned', () => {
+    const blue = { world: 'w', uid: 7, title: '总纲', tokens: 10, constant: true };
+    const plain = { world: 'w', uid: 8, title: '地图', tokens: 10 };
+    let lore = { pinned: [{ world: 'w', uid: '7' }], unpinned: [] };
+    assert.equal(isLorePinned(blue, lore), true);
+    lore = toggleLorePin(lore, blue);
+    assert.deepEqual(lore, { pinned: [], unpinned: [{ world: 'w', uid: 7 }] });
+    assert.equal(isLorePinned(blue, lore), false);
+    lore = toggleLorePin(lore, blue);
+    assert.deepEqual(lore, { pinned: [], unpinned: [] });
+    assert.equal(isLorePinned(blue, lore), true);
+    lore = toggleLorePin(lore, plain);
+    assert.deepEqual(lore, { pinned: [{ world: 'w', uid: 8 }], unpinned: [] });
+    lore = toggleLorePin(lore, plain);
+    assert.deepEqual(lore, { pinned: [], unpinned: [] });
+    // 旧设置没有 unpinned
+    assert.equal(isLorePinned(blue, { pinned: [] }), true);
 });
 
 test('人物编辑：行动文字没变沿用 since，换了内容按当前时钟盖戳', () => {
@@ -138,13 +154,15 @@ test('迹象挂在事件上也算有来源，并显示指向的事实', () => {
     assert.equal(eventText(entry), '指向事实：新事（主角尚不知道）');
 });
 
-test('loreGroups：蓝灯常驻排在推演专用常驻之后；不认识的层归为"其他"排最后', () => {
+test('loreGroups：v1.5.1 旧快照的 constant 层并进"推演常驻"；不认识的层归为"其他"排最后', () => {
     const g = loreGroups([
         { world: 'w', uid: 1, title: '正文', layer: 'triggered', tokens: 10 },
         { world: 'w', uid: 2, title: '蓝灯', layer: 'constant', tokens: 20 },
         { world: 'w', uid: 3, title: '常驻', layer: 'pinned', tokens: 30 },
         { world: 'w', uid: 4, title: '怪', layer: 'mystery', tokens: 40 },
     ]);
-    assert.deepEqual(g.groups.map(x => x.label), ['推演专用常驻', '蓝灯常驻', '正文触发', '其他']);
+    assert.deepEqual(g.groups.map(x => x.label), ['推演常驻', '正文触发', '其他']);
+    assert.deepEqual(g.groups[0].items.map(x => x.title), ['蓝灯', '常驻']);
+    assert.equal(g.groups[0].tokens, 50);
     assert.equal(g.total, 100);
 });

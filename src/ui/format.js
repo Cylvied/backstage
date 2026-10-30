@@ -149,7 +149,7 @@ function parseColor(color) {
 /** 设置里数字项的取值范围 */
 export const SETTING_RANGES = {
     maxTokens: [200, 32000],
-    recentFloors: [1, 20],
+    recentRounds: [1, 10],
     maxCharacters: [3, 40],
     maxSignals: [0, 3],
     injectDepth: [0, 10],

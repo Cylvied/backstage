@@ -1,10 +1,11 @@
-// 面板设置页 v1.5 新增的两节：世界书（预算、推演专用常驻条目、按需调取）与审核（开关、审核模型、时间跨度门槛）。
+// 面板设置页 v1.5 新增的两节：世界书（预算、推演常驻条目、按需调取）与审核（开关、审核模型、时间跨度门槛）。
+// v1.5.2：世界书里设为常驻的条目默认勾选为推演常驻，可以取消；勾选状态统一用 lore.js 的 isPinned 判断。
 
 import { DEFAULT_SETTINGS } from '../constants.js';
 import { h } from './dom.js';
 import { normalizeNumberSetting, SETTING_RANGES } from './format.js';
 import { debounceSave, directFields, saveMerged, settingSegment, testRow } from './settings-api.js';
-import { LORE_BUDGET, budgetText, normalizeBudget, filterLoreEntries, loreKey, togglePinnedLore, tokenText } from './world.js';
+import { LORE_BUDGET, budgetText, normalizeBudget, filterLoreEntries, loreKey, isLorePinned, toggleLorePin, tokenText } from './world.js';
 
 /** 旧设置里没有 lore / review 时用默认值补齐 */
 const loreOf = s => ({ ...DEFAULT_SETTINGS.lore, ...(s.lore ?? {}) });
@@ -41,7 +42,7 @@ export function buildLoreSection(api) {
     range.addEventListener('change', () => setBudget(Number(range.value), true));
     number.addEventListener('change', () => setBudget(normalizeBudget(number.value, lore.budget), true));
 
-    // ---- 推演专用常驻条目 ----
+    // ---- 推演常驻条目 ----
     /** @type {Array<{ world: string, uid: string|number, title: string, tokens: number }>|null} */
     let entries = null;
     let query = '';
@@ -50,23 +51,19 @@ export function buildLoreSection(api) {
     const status = h('small', { class: 'bs-set-note', role: 'status' });
     const list = h('div', { class: 'bs-lore-pick', role: 'group', 'aria-label': '世界书条目' });
     const pinnedNote = h('p', { class: 'bs-pinned-note' });
-    const constantHint = h('small', { class: 'bs-set-note bs-constant-hint', hidden: true }, '开启上面的开关时，蓝灯条目已自动带上，无需再勾选。');
     const missingBox = h('div', { class: 'bs-pinned-missing' });
 
-    function chosenKeys() {
-        return new Set((lore.pinned ?? []).map(loreKey));
-    }
-
     function syncPinnedNote() {
-        const keys = chosenKeys();
         if (!entries) {
-            pinnedNote.textContent = keys.size ? `已选 ${keys.size} 条` : '还没有选常驻条目';
+            // 世界书常驻条目要读到列表才知道，读到之前不报数
+            pinnedNote.textContent = '';
             pinnedNote.dataset.kind = '';
+            missingBox.replaceChildren();
             return;
         }
-        const chosen = entries.filter(e => keys.has(loreKey(e)));
+        const chosen = entries.filter(e => isLorePinned(e, lore));
         const tokens = chosen.reduce((n, e) => n + (Number(e.tokens) || 0), 0);
-        pinnedNote.textContent = keys.size ? `已选 ${keys.size} 条 · 约 ${tokenText(tokens)} token` : '还没有选常驻条目';
+        pinnedNote.textContent = chosen.length ? `已选 ${chosen.length} 条 · 约 ${tokenText(tokens)} token` : '还没有选常驻条目';
         const over = tokens > lore.budget;
         pinnedNote.dataset.kind = over ? 'warn' : '';
         if (over) pinnedNote.textContent += `，超过预算 ${budgetText(lore.budget)}，超出的条目会被整条截掉`;
@@ -83,20 +80,17 @@ export function buildLoreSection(api) {
     function renderEntries() {
         syncPinnedNote();
         if (!entries) return;
-        const keys = chosenKeys();
-        const { items, total } = filterLoreEntries(entries, lore.pinned, query);
+        const { items, total } = filterLoreEntries(entries, lore, query);
         list.replaceChildren(...items.map(e => {
-            const box = h('input', { type: 'checkbox', checked: keys.has(loreKey(e)) });
+            const box = h('input', { type: 'checkbox', checked: isLorePinned(e, lore) });
             box.addEventListener('change', () => {
-                save({ pinned: togglePinnedLore(lore.pinned, e) });
+                save(toggleLorePin(lore, e));
                 syncPinnedNote();
             });
             return h('label', { class: 'bs-lore-item' }, box,
-                h('span', { class: 'bs-lore-item-title' }, e.title || `条目 ${e.uid}`,
-                    e.constant ? h('span', { class: 'bs-lore-blue', title: '世界书里设为常驻（蓝灯）的条目' }, '蓝灯') : null),
+                h('span', { class: 'bs-lore-item-title' }, e.title || `条目 ${e.uid}`),
                 h('span', { class: 'bs-lore-item-meta' }, `${e.world} · ${tokenText(e.tokens)}`));
         }));
-        constantHint.hidden = !(lore.constant && entries.some(e => e.constant));
         if (!entries.length) list.append(h('small', { class: 'bs-set-empty' }, '当前角色和聊天没有可用的世界书条目。'));
         else if (!items.length) list.append(h('small', { class: 'bs-set-empty' }, '没有匹配的条目。'));
         status.textContent = entries.length && total > items.length ? `显示前 ${items.length} 条，共 ${total} 条匹配，可以搜索缩小范围` : '';
@@ -127,14 +121,11 @@ export function buildLoreSection(api) {
         h('div', { class: 'bs-set-field' },
             h('span', null, '推演读取预算'),
             h('div', { class: 'bs-budget' }, range, h('div', { class: 'bs-budget-num' }, number, h('span', { class: 'bs-muted' }, '万 token'))),
-            h('small', null, '每轮推演最多读这么多世界书内容（1 万–30 万）。超出时按 推演专用常驻 → 蓝灯常驻 → 正文触发 → 幕后触发 → 按需调取 的顺序保留，整条截断。当前：', readout)),
-        check('推演时带上蓝灯常驻条目', lore.constant !== false, v => { save({ constant: v }); renderEntries(); },
-            '世界书里设为常驻（蓝灯）的条目每轮推演都会读；条目很多、占预算时可以关掉。'),
+            h('small', null, '每轮推演最多读这么多世界书内容（1 万–30 万）。超出时按 推演常驻 → 正文触发 → 幕后触发 → 按需调取 的顺序保留，整条截断。当前：', readout)),
         h('div', { class: 'bs-set-field' },
-            h('span', null, '推演专用常驻条目'),
-            h('small', null, '每轮推演都会带上，不注入正文。适合势力总览、地图这类全局资料。'),
+            h('span', null, '推演常驻条目'),
+            h('small', null, '勾选的条目每轮推演都会带上，不注入正文。世界书里设为常驻的条目默认已勾选，不需要可以取消；也可以勾选势力总览、地图这类全局资料。'),
             h('div', { class: 'bs-set-inline' }, search, reload),
-            constantHint,
             pinnedNote,
             missingBox,
             list,

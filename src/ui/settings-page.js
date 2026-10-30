@@ -57,7 +57,7 @@ export function buildSettingsPage(api) {
             check('启用后台推演', s.enabled, v => save({ enabled: v }), '关闭后不推演、不注入'),
             h('div', { class: 'bs-set-grid' },
                 number('输出上限（token）', s.maxTokens, 'maxTokens', v => save({ maxTokens: v })),
-                number('读取最近楼层', s.recentFloors, 'recentFloors', v => save({ recentFloors: v })),
+                number('读取最近几轮对话', s.recentRounds, 'recentRounds', v => save({ recentRounds: v }), '一轮 = 一条 AI 回复和它前面你的输入'),
                 number('人物上限', s.maxCharacters, 'maxCharacters', v => save({ maxCharacters: v }), '钉住的人不计入淘汰'))),
 
         h('section', { class: 'bs-set-section' },

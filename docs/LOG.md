@@ -480,3 +480,8 @@
 - settings.recentFloors → settings.recentRounds；旧设置里的 recentFloors 自动忽略
 - 纯函数 src/host/recent.js 的 pickRecentRounds（5 个测试）
 - 面板会话：设置页文字与字段名同步（T4i）
+
+## 2026-10-30 [claude-ui] [完成] T4i
+- 修改：src/ui/format.js（SETTING_RANGES 的 recentFloors: [1, 20] 改为 recentRounds: [1, 10]）、src/ui/settings-page.js（「读取最近楼层」改为「读取最近几轮对话」，读写 recentRounds，下方小字"一轮 = 一条 AI 回复和它前面你的输入"）
+- dev 和 tests/ui 里没有直接用到 recentFloors（模拟设置取自 DEFAULT_SETTINGS），无需改动
+- 测试：`sh tests/run.sh` 24 个测试文件、317 个用例全部通过

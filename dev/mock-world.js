@@ -87,14 +87,17 @@ export function mockReview(mode) {
 }
 
 /** lore=fail 时 listLoreEntries 失败；lore=empty 时这一轮没读世界书 */
+/** lore=v151：模拟 v1.5.1 的旧快照，一条资料仍在 constant 层（应并进推演常驻显示） */
 export function mockLoreUsed(mode) {
+    const opts = { loreLayer: mode };
     if (mode === 'legacy') return undefined;
     if (mode === 'empty') return [];
     return [
         { world: '启明高中', uid: 1, title: '学校总览与年级分布', layer: 'pinned', tokens: 2380 },
         { world: '启明高中', uid: 2, title: '校园地图', layer: 'pinned', tokens: 1460 },
-        { world: '启明高中', uid: 30, title: '世界观总纲', layer: 'constant', tokens: 4100 },
-        { world: '人物设定', uid: 'rule', title: '写作风格约定', layer: 'constant', tokens: 650 },
+        // 世界书常驻条目（默认勾选为推演常驻），v1.5.2 起和手动勾选的同在 pinned 层
+        { world: '启明高中', uid: 30, title: '世界观总纲', layer: 'pinned', tokens: 4100 },
+        { world: '人物设定', uid: 'rule', title: '写作风格约定', layer: opts.loreLayer === 'v151' ? 'constant' : 'pinned', tokens: 650 },
         { world: '启明高中', uid: 7, title: '天台', layer: 'triggered', tokens: 520 },
         { world: '启明高中', uid: 9, title: '高三（2）班', layer: 'triggered', tokens: 880 },
         { world: '人物设定', uid: 'chen', title: '陈老师', layer: 'backstage', tokens: 940 },
@@ -104,7 +107,7 @@ export function mockLoreUsed(mode) {
     ];
 }
 
-/** 世界书条目列表（推演专用常驻的候选） */
+/** 世界书条目列表（推演常驻的候选；constant = 世界书里设为常驻，默认勾选） */
 export function mockLoreEntries() {
     const base = [
         ['启明高中', 1, '学校总览与年级分布', 2380], ['启明高中', 2, '校园地图', 1460], ['启明高中', 7, '天台', 520],

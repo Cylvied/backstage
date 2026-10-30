@@ -2,6 +2,7 @@
 // 所有新字段都可能缺省（旧数据）：缺省时按空处理，时间缺省显示"时间不明"。
 
 import { LORE_LAYERS } from '../constants.js';
+import { entryKey, isPinned } from '../memory/lore.js';
 
 /** @typedef {import('../types.js').SimState} SimState */
 /** @typedef {import('../types.js').ChronicleEntry} ChronicleEntry */
@@ -118,8 +119,7 @@ export function reviewLine(review) {
 
 // 层的顺序以 constants.js 的 LORE_LAYERS 为准；不认识的层归到最后的"其他"
 export const LORE_LAYER_LABEL = {
-    pinned: '推演专用常驻',
-    constant: '蓝灯常驻',
+    pinned: '推演常驻',
     triggered: '正文触发',
     backstage: '幕后触发',
     requested: '按需调取',
@@ -132,10 +132,12 @@ export const LORE_LAYER_LABEL = {
 export function loreGroups(loreUsed) {
     const list = Array.isArray(loreUsed) ? loreUsed.filter(Boolean) : [];
     const tokensOf = x => (Number.isFinite(Number(x?.tokens)) ? Math.max(0, Math.round(Number(x.tokens))) : 0);
+    // v1.5.1 的旧快照可能有 constant 层：并进"推演常驻"一组显示
+    const layerOf = x => (x.layer === 'constant' ? 'pinned' : x.layer);
     const known = new Set(LORE_LAYERS);
-    const layers = [...LORE_LAYERS, ...new Set(list.map(x => x.layer).filter(l => !known.has(l)))];
+    const layers = [...LORE_LAYERS.filter(l => l !== 'constant'), ...new Set(list.map(layerOf).filter(l => !known.has(l)))];
     const groups = layers.map(layer => {
-        const items = list.filter(x => x.layer === layer)
+        const items = list.filter(x => layerOf(x) === layer)
             .map(x => ({ title: String(x.title ?? '').trim() || `条目 ${x.uid}`, world: String(x.world ?? ''), tokens: tokensOf(x) }));
         return { layer, label: LORE_LAYER_LABEL[layer] ?? '其他', tokens: items.reduce((n, x) => n + x.tokens, 0), items };
     }).filter(g => g.items.length);
@@ -168,30 +170,57 @@ export function normalizeBudget(wan, fallback = LORE_BUDGET.fallback) {
 }
 
 /**
- * 世界书条目筛选：按标题或世界书名包含关键词；已选的排在前面。
- * @param {Array<{ world: string, uid: string|number, title: string, tokens: number }>} entries
- * @param {Array<{ world: string, uid: string|number }>} pinned
+ * 推演常驻的判断集合（v1.5.2）：勾选状态一律交给 lore.js 的 isPinned。
+ * @param {{ pinned?: Array<{ world: string, uid: string|number }>, unpinned?: Array<{ world: string, uid: string|number }> }} lore
+ */
+export function loreSets(lore) {
+    return {
+        pinnedSet: new Set((lore?.pinned ?? []).map(p => entryKey(p.world, p.uid))),
+        unpinnedSet: new Set((lore?.unpinned ?? []).map(p => entryKey(p.world, p.uid))),
+    };
+}
+
+/** 这条是否算推演常驻（世界书常驻条目默认算，除非用户取消过；其他条目要手动勾选） */
+export function isLorePinned(entry, lore) {
+    const { pinnedSet, unpinnedSet } = loreSets(lore);
+    return isPinned(entry, pinnedSet, unpinnedSet);
+}
+
+/**
+ * 世界书条目筛选：按标题或世界书名包含关键词；勾选中的排在前面。
+ * @param {Array<{ world: string, uid: string|number, title: string, tokens: number, constant?: boolean }>} entries
+ * @param {{ pinned?: any[], unpinned?: any[] }} lore
  * @param {string} query
  * @param {number} [limit]
  */
-export function filterLoreEntries(entries, pinned, query, limit = 150) {
-    const chosen = new Set((pinned ?? []).map(loreKey));
+export function filterLoreEntries(entries, lore, query, limit = 150) {
+    const { pinnedSet, unpinnedSet } = loreSets(lore);
+    const chosen = e => isPinned(e, pinnedSet, unpinnedSet);
     const q = String(query ?? '').trim().toLowerCase();
     const hits = (entries ?? []).filter(e => !q || String(e.title ?? '').toLowerCase().includes(q) || String(e.world ?? '').toLowerCase().includes(q));
-    const sorted = [...hits.filter(e => chosen.has(loreKey(e))), ...hits.filter(e => !chosen.has(loreKey(e)))];
+    const sorted = [...hits.filter(chosen), ...hits.filter(e => !chosen(e))];
     return { items: sorted.slice(0, limit), total: hits.length };
 }
 
-/** 条目的唯一键：世界书名 + uid（uid 可能是数字也可能是字符串） */
+/** 条目的唯一键：与 lore.js 的 entryKey 相同（uid 数字和字符串视为同一条） */
 export function loreKey(e) {
-    return `${e?.world ?? ''}\u0000${String(e?.uid ?? '')}`;
+    return entryKey(e?.world ?? '', e?.uid ?? '');
 }
 
-/** 切换某条目是否常驻，返回新数组 */
-export function togglePinnedLore(pinned, entry) {
+/**
+ * 切换某条目的推演常驻勾选，返回新的 { pinned, unpinned }。
+ * - 取消勾选：从 pinned 移除；若是世界书常驻条目，再记入 unpinned
+ * - 勾选：世界书常驻条目只从 unpinned 移除（不写进 pinned）；其他条目加入 pinned
+ * @param {{ pinned?: any[], unpinned?: any[] }} lore
+ * @param {{ world: string, uid: string|number, constant?: boolean }} entry
+ */
+export function toggleLorePin(lore, entry) {
     const key = loreKey(entry);
-    const list = Array.isArray(pinned) ? pinned : [];
-    return list.some(p => loreKey(p) === key)
-        ? list.filter(p => loreKey(p) !== key)
-        : [...list, { world: entry.world, uid: entry.uid }];
+    const pinned = (lore?.pinned ?? []).filter(p => loreKey(p) !== key);
+    const unpinned = (lore?.unpinned ?? []).filter(p => loreKey(p) !== key);
+    const ref = { world: entry.world, uid: entry.uid };
+    if (isLorePinned(entry, lore)) {
+        return { pinned, unpinned: entry.constant ? [...unpinned, ref] : unpinned };
+    }
+    return entry.constant ? { pinned, unpinned } : { pinned: [...pinned, ref], unpinned };
 }
