@@ -189,7 +189,7 @@
  *   推演与参谋用的模型。direct = 插件内直填（默认）；profile = 使用 profileId 指向的连接配置
  * @property {string} profileId
  * @property {number} maxTokens
- * @property {number} recentFloors
+ * @property {number} recentRounds   推演读取最近几轮对话（一轮 = 一条 AI 回复加它前面的用户输入），默认 3
  * @property {number} maxCharacters
  * @property {number} maxSignals
  * @property {boolean} injectUndercurrent

@@ -3,6 +3,7 @@
 
 import { DEFAULT_SETTINGS, LOG_PREFIX, STORE_KEY } from '../constants.js';
 import { hashText } from '../util.js';
+import { pickRecentRounds } from './recent.js';
 
 /** @typedef {import('../types.js').Snapshot} Snapshot */
 /** @typedef {import('../types.js').Settings} Settings */
@@ -24,9 +25,11 @@ function isAiMessage(message) {
 export function getSettings() {
     const all = ctx().extensionSettings;
     const saved = all[STORE_KEY] ?? {};
+    // v1.5.3：读取范围从"最近几楼"改为"最近几轮"，旧设置 recentFloors 不再使用
+    const { recentFloors: _legacyFloors, ...savedRest } = saved;
     const merged = {
         ...structuredClone(DEFAULT_SETTINGS),
-        ...saved,
+        ...savedRest,
         memory: { ...DEFAULT_SETTINGS.memory, ...(saved.memory ?? {}) },
         api: { ...DEFAULT_SETTINGS.api, ...(saved.api ?? {}) },
         lore: {
@@ -174,12 +177,7 @@ export async function collectSimInput(uptoFloor, settings, state) {
     const fields = c.getCharacterCardFields?.() ?? {};
     const sub = text => String(c.substituteParams?.(text ?? '') ?? text ?? '');
 
-    const recent = [];
-    for (let i = Math.min(uptoFloor, chat.length - 1); i >= 0 && recent.length < settings.recentFloors; i--) {
-        const m = chat[i];
-        if (!m || m.is_system) continue;
-        recent.unshift({ isUser: !!m.is_user, name: String(m.name ?? ''), text: String(m.mes ?? '') });
-    }
+    const recent = pickRecentRounds(chat, uptoFloor, settings.recentRounds);
 
     const memos = settings.memory.enabled ? await readDatabaseMemos(settings, recent) : [];
     const lore = await collectLore(state, settings);

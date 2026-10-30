@@ -463,3 +463,20 @@
 - "推演常驻" = 世界书常驻条目（默认勾选）＋ 手动勾选；取消勾选的常驻条目记入 settings.lore.unpinned；判断统一用 lore.js 的 isPinned
 - 删除 settings.lore.constant；新推演不再产生 constant 层（LORE_LAYERS 保留它只为兼容旧快照）
 - 面板会话：T4h 去掉蓝灯开关、标记与分组，选择列表改用 isPinned
+
+## 2026-10-30 [claude-ui] [完成] T4h
+- 修改：src/ui/world.js、src/ui/settings-lore.js、style.css、tests/ui/world.test.mjs、dev/mock-world.js、dev/preview.js
+- 设置页世界书一节：去掉"推演时带上蓝灯常驻条目"开关和说明、"蓝灯"标记、"已自动带上"提示及其样式。小标题改为"推演常驻条目"，说明改为"勾选的条目每轮推演都会带上……世界书里设为常驻的条目默认已勾选，不需要可以取消"；预算说明里的顺序改为 推演常驻 → 正文触发 → 幕后触发 → 按需调取
+- 勾选状态与"已选 N 条 · 约 X token"一律用 src/memory/lore.js 的 isPinned（集合用 entryKey），封装在 world.js 的 loreSets / isLorePinned；勾选中的（含默认勾选的世界书常驻条目）排在前面。条目列表读到之前不显示已选条数（常驻条目要读到列表才知道）
+- 切换规则（world.js toggleLorePin）：取消勾选 → 从 pinned 移除，若是世界书常驻条目再记入 unpinned；勾选 → 世界书常驻条目只从 unpinned 移除，不写进 pinned；普通条目照旧只改 pinned。旧设置没有 unpinned 时按空处理
+- 纸条页资料来源：标签"推演专用常驻"改为"推演常驻"；v1.5.1 旧快照里的 constant 层并进这一组显示，不再单独成组
+- dev：模拟资料里世界书常驻条目改在 pinned 层；lore=v151 模拟旧快照里仍有一条 constant 层
+- 已验证（预览页脚本）：常驻条目默认勾选并排前、取消写入 unpinned 且已选条数和 token 随之变化、勾回后 unpinned 清空、旧快照 constant 层并入推演常驻
+- 测试：`sh tests/run.sh` 23 个测试文件、312 个用例全部通过（UI 改 3 个用例、新增 1 个）
+- 开发期间用过 8765 端口，已关闭
+
+## 2026-10-30 [claude] [决定] v1.5.3：推演读取范围改为按轮计
+- 用户确认：一轮 = 一条 AI 回复加它前面的用户输入（连发多条算同一轮），默认 3 轮；单次最多 60 条消息
+- settings.recentFloors → settings.recentRounds；旧设置里的 recentFloors 自动忽略
+- 纯函数 src/host/recent.js 的 pickRecentRounds（5 个测试）
+- 面板会话：设置页文字与字段名同步（T4i）

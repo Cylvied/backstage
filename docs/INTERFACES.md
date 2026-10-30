@@ -197,7 +197,7 @@ SimPatch = {
 | api.url / api.key / api.model | '' | v1.4：直填模式的 OpenAI 兼容地址、密钥、模型。由宿主后端的 custom 源转发，无跨域问题。密钥明文存在扩展设置里（与故事神谕、数据库插件相同） |
 | profileId | '' | profile 模式下的连接配置 id |
 | maxTokens | 2000 | 推演请求的输出上限 |
-| recentFloors | 4 | 推演读取的最近楼层数 |
+| recentRounds | 3 | v1.5.3：推演读取最近几轮对话（一轮 = 一条 AI 回复加它前面的用户输入，连发多条算同一轮；单次最多 60 条消息）。取代原来的 recentFloors |
 | maxCharacters | 12 | 人物上限 |
 | maxSignals | 3 | 每层暗流上限，0–3 |
 | injectUndercurrent | true | 暗流注入开关 |

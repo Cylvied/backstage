@@ -48,7 +48,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     api: Object.freeze({ mode: 'direct', url: '', key: '', model: '' }),
     profileId: '',
     maxTokens: 2000,
-    recentFloors: 4,
+    recentRounds: 3,          // 推演读取最近几轮对话（一轮 = 一条 AI 回复加它前面的用户输入）
     maxCharacters: 12,
     maxSignals: 3,
     injectUndercurrent: true,
