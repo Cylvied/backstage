@@ -141,7 +141,7 @@ function rows(value, parse, label) {
 export function parseSimOutput(text) {
     const value = extractJsonBlock(text);
     if (!object(value)) return { ok: false, error: '未找到完整的推演 JSON 对象' };
-    const known = ['clock', 'protagonist', 'upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals', 'noChange'];
+    const known = ['clock', 'protagonist', 'upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals', 'noChange', 'guideReached'];
     if (!known.some(key => has(value, key))) return { ok: false, error: '推演结果不含有效字段' };
     try {
         for (const key of ['upsertCharacters', 'removeCharacterIds', 'upsertThreads', 'signals']) {
@@ -159,6 +159,7 @@ export function parseSimOutput(text) {
             upsertThreads: rows(value.upsertThreads ?? [], thread, '线索'),
             signals: rows(value.signals ?? [], signal, '迹象'),
             noChange: value.noChange ?? false,
+            ...(boolean(value.guideReached) ? { guideReached: value.guideReached } : {}),
         } };
     } catch (error) {
         return { ok: false, error: error.message };
@@ -178,6 +179,17 @@ export function parsePlanOutput(text) {
         const validIntensity = INTENSITIES.includes(card.suggestedIntensity);
         if (!validIntensity) console.warn(`${LOG_PREFIX} 规划建议强度无效，采用 normal`);
         result.suggestedIntensity = validIntensity ? card.suggestedIntensity : 'normal';
+        if (has(card, 'beats')) {
+            if (!Array.isArray(card.beats)) warn('分阶段拍列表');
+            else {
+                const beats = rows(card.beats, beat => {
+                    if (!object(beat) || !['title', 'goal'].every(key => string(beat[key]) && beat[key].trim())
+                        || (has(beat, 'firstSigns') && !string(beat.firstSigns))) throw new Error('拍格式错误');
+                    return { title: beat.title, goal: beat.goal, firstSigns: beat.firstSigns ?? '' };
+                }, '引导拍').slice(0, LIMITS.beatsMax);
+                if (beats.length >= LIMITS.beatsMin) result.beats = beats;
+            }
+        }
         return result;
     }, '规划卡').slice(0, LIMITS.planCards);
     if (value.cards.length && !cards.length) return { ok: false, error: '没有通过校验的规划卡' };

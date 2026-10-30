@@ -1,4 +1,4 @@
-import { CLOCK_PRECISIONS, INTENSITIES, LIVES, LONG_ACTION_STATUSES, LOG_PREFIX,
+import { BEAT_STATUSES, CLOCK_PRECISIONS, INTENSITIES, LIVES, LONG_ACTION_STATUSES, LOG_PREFIX,
     SCHEMA_VERSION, SNAPSHOT_VERSION, STORE_KEY, THREAD_STAGES, VISIBILITIES, VOICES } from '../constants.js';
 import { emptyState, hashText, shortId } from '../util.js';
 
@@ -16,8 +16,19 @@ function validAction(value, long = false) {
 }
 
 function validGuide(value) {
-    return value === null || (hasStrings(value, ['goal', 'firstSigns']) && INTENSITIES.includes(value.intensity)
-        && ['active', 'done', 'dropped'].includes(value.status) && Number.isFinite(value.adoptedAt) && value.adoptedAt >= 0);
+    if (value === null) return true;
+    if (!hasStrings(value, ['goal', 'firstSigns']) || !INTENSITIES.includes(value.intensity)
+        || !['active', 'done', 'dropped'].includes(value.status) || !Number.isFinite(value.adoptedAt) || value.adoptedAt < 0
+        || (value.reached !== undefined && !boolean(value.reached))
+        || (value.beatIndex !== undefined && !integer(value.beatIndex))) return false;
+    if (value.beats === undefined || value.beats === null) return true;
+    // 替换剩余拍会累积历史，快照不套用新卡的八拍上限。
+    return Array.isArray(value.beats) && integer(value.beatIndex) && value.beatIndex < value.beats.length
+        && value.beats.every(beat => hasStrings(beat, ['title', 'goal', 'firstSigns'])
+            && Boolean(beat.title.trim()) && Boolean(beat.goal.trim()) && BEAT_STATUSES.includes(beat.status))
+        && value.beats.filter(beat => beat.status === 'active').length <= 1
+        && value.beats.every((beat, index) => beat.status !== 'active' || index === value.beatIndex)
+        && value.firstSigns === value.beats[value.beatIndex].firstSigns;
 }
 
 function validState(state) {

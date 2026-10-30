@@ -78,6 +78,10 @@ export function applyPatch(state, patch, { maxCharacters }) {
     }
     next.threads = next.threads.filter(item => item.stage !== 'faded' || item.fadedRuns < LIMITS.fadedRunsBeforeDelete);
     keepOneGuide(next.threads);
+    if (patch.guideReached === true) {
+        const guide = next.threads.find(item => item.guide?.status === 'active')?.guide;
+        if (guide) guide.reached = true;
+    }
     if (!patch.noChange || patch.signals.length) next.signals = structuredClone(patch.signals);
     // 本轮新建对象尚无模型可知的 ID，先解析名称引用，再清理悬空项。
     const resolveCharacter = ref => next.characters.find(item => item.id === ref)?.id
@@ -105,7 +109,14 @@ export function adoptPlan(state, card, intensity) {
         thread.origin = 'user';
         next.threads.push(thread);
     }
-    thread.guide = { intensity, goal: card.goal, firstSigns: card.firstSigns, status: 'active', adoptedAt: Date.now() };
+    const staged = Array.isArray(card.beats) && card.beats.length >= LIMITS.beatsMin;
+    const history = staged && thread.guide?.status === 'active' && Array.isArray(thread.guide.beats)
+        ? thread.guide.beats.filter(beat => ['done', 'skipped'].includes(beat.status)) : [];
+    const beats = staged ? [...history, ...card.beats.slice(0, LIMITS.beatsMax).map((beat, index) => ({
+        title: beat.title, goal: beat.goal, firstSigns: beat.firstSigns ?? '', status: index === 0 ? 'active' : 'pending',
+    }))] : null;
+    thread.guide = { intensity, goal: card.goal, firstSigns: beats ? beats[history.length].firstSigns : card.firstSigns,
+        status: 'active', adoptedAt: Date.now(), beats, beatIndex: history.length, reached: false };
     if (thread.stage === 'faded') thread.stage = 'seeded';
     thread.fadedRuns = 0;
     keepOneGuide(next.threads, thread.id);
@@ -126,6 +137,47 @@ export function setGuideIntensity(state, threadId, intensity) {
     const next = structuredClone(state);
     if (!INTENSITIES.includes(intensity)) return next;
     const thread = next.threads.find(item => item.id === threadId);
-    if (thread?.guide) thread.guide.intensity = intensity;
+    if (thread?.guide) {
+        thread.guide.intensity = intensity;
+        thread.guide.reached = false;
+    }
+    return next;
+}
+
+function moveToNextBeat(guide) {
+    guide.reached = false;
+    const index = guide.beats.findIndex((beat, index) => index > guide.beatIndex && beat.status === 'pending');
+    if (index < 0) guide.status = 'done';
+    else {
+        guide.beatIndex = index;
+        guide.beats[index].status = 'active';
+    }
+    guide.firstSigns = guide.beats[guide.beatIndex].firstSigns;
+}
+
+/** @param {import('../types.js').SimState} state */
+export function advanceBeat(state, threadId) {
+    const next = structuredClone(state);
+    const guide = next.threads.find(item => item.id === threadId)?.guide;
+    if (guide?.status !== 'active') return next;
+    if (!guide.beats) {
+        guide.status = 'done';
+        guide.reached = false;
+    } else if (guide.beats[guide.beatIndex]?.status === 'active') {
+        guide.beats[guide.beatIndex].status = 'done';
+        moveToNextBeat(guide);
+    }
+    return next;
+}
+
+/** @param {import('../types.js').SimState} state */
+export function skipBeat(state, threadId, index) {
+    const next = structuredClone(state);
+    const guide = next.threads.find(item => item.id === threadId)?.guide;
+    if (guide?.status !== 'active' || !Array.isArray(guide.beats) || !Number.isInteger(index)) return next;
+    const beat = guide.beats[index];
+    if (!beat || !(beat.status === 'pending' || (index === guide.beatIndex && beat.status === 'active'))) return next;
+    beat.status = 'skipped';
+    if (index === guide.beatIndex) moveToNextBeat(guide);
     return next;
 }
