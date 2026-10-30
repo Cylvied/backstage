@@ -162,3 +162,43 @@
 - 设计见 INTERFACES.md 3.9 节（分阶段规则）与 5.10 节（advisor 接口、advanceBeat/skipBeat）
 - 分工：Codex → T5（docs/tasks/T5-codex.md）；面板会话 → T4b；组长 → 参谋提示词、注入文本、接口
 - 换拍不调用模型；后台推演只给"这一拍好像演完了"的提示，绝不自动换拍
+
+## 2026-10-30 [codex] [开始] T5
+- 已阅读 COLLAB.md、任务看板、T5 任务书、完整接口及近期日志；按既定认领仅修改 src/state/snapshot-store.js、src/sim/parse.js、src/sim/apply.js 和 tests/state/*.test.mjs、tests/sim/*.test.mjs，并追加本日志。
+- TASKS.md 已标为进行中，遵照看板要求不修改共享看板；不执行 git 写操作。
+
+## 2026-10-30 [codex] [完成] T5
+- 改动文件：src/sim/parse.js、src/sim/apply.js、src/state/snapshot-store.js；新增 tests/sim/beats.test.mjs；另追加本日志。仅修改任务授权文件，未改 TASKS.md，未执行 git 写操作。
+- 实现：解析并过滤 beats，缺省 firstSigns 为空串，有效拍不足 2 拍退为单步、超过 8 拍截断；guideReached 非布尔时忽略。采纳、替换剩余拍、advanceBeat、skipBeat、提示设置与清除、当前拍迹象同步及快照校验均已完成；旧版单步快照仍有效。
+- 测试：sh tests/run.sh 全部通过，13 个测试文件、195 个用例（包含其他成员同期新增测试）；本任务新增 15 个回归用例，原有测试未修改。git diff --check -- src/sim/parse.js src/sim/apply.js src/state/snapshot-store.js tests/sim/beats.test.mjs 无报错。
+- 取舍：8 拍上限仅用于新卡，替换时保留全部 done/skipped 历史，所以累计快照允许超过 8 拍；测试覆盖 10 拍历史。结束时 beatIndex 留在最后处理的有效拍，firstSigns 与该拍一致，避免产生越界快照。
+- 取舍：仅当前 active 引导允许换拍/跳拍；已结束引导、已完成/已跳过拍、非法目标或索引不操作且返回副本。跳过未来拍不改变当前提示；guideReached=false 不主动撤销提示，只有换拍、合法调整强度、重新采纳会清除。模型绝不自动换拍。
+- 快照除字段类型外还校验 active 拍与 beatIndex 一致、firstSigns 与当前拍一致；不要求已结束/放弃的引导必须存在 active 拍。已完成待组长审查。
+
+## 2026-10-30 [claude] [审查意见] T5 第 1 轮
+- 实现完整、测试充分，改 1 处后通过：快照校验不要检查 guide.firstSigns 与当前拍一致（会让用户编辑保存失败）。详见 docs/reviews/T5-review-1.md
+
+## 2026-10-30 12:15 [claude-ui] [完成] T4b
+- 改动文件：
+  - 新建：src/ui/tab-advisor.js（参谋对话页）、src/ui/plan-card.js（方案卡，从原规划页抽出并支持 beats）、dev/mock-advisor.js（模拟参谋回复与预置多轮对话）、dev/mock-beats.js（预览用的分阶段引导样例数据）、tests/ui/advisor-format.test.mjs
+  - 修改：src/ui/panel.js（「规划」→「参谋」标签；切到参谋并预填；重画时保留输入框焦点与光标；新消息自动滚到底；切换聊天时关闭表单、清空参谋草稿）、src/ui/tab-threads.js（分阶段引导）、src/ui/format.js（beatProgress / adoptView / retryText / adjustBeatsPrompt / ADVISOR_EXAMPLES）、src/ui/settings.js（"规划"字样改为"参谋"）、style.css（对话、拍列表、落拍提示）、dev/mock-api.js、dev/preview.js、dev/panel-preview.html
+  - 删除：src/ui/tab-plan.js（我自己的文件，被参谋页取代）
+- 参谋页：消息列表 + 底部输入框（回车换行，「发送」按钮发送，桌面 Ctrl/⌘+回车也可发送）；用户消息先显示，"参谋在想…"；回复下方方案卡复用原样式，选强度 → 采纳 / 替换并采纳 / 采纳并替换剩余拍（同一条分阶段线时）；分阶段卡显示"分阶段方案 · N 拍"，各拍可展开看目标和起始迹象；失败回复显示原因和「重试」（重发它前面那条用户消息）；「整理成方案」「清空对话」（二次确认）；空状态 3 个可点的示例问题
+- 暗线页：分阶段引导显示"第 X / Y 拍"与拍列表（✓ ▶ ○ ⤫，当前拍展开）；「完成这一拍」/ 最后一拍「完成整条引导」；待演的拍可「跳过」（二次确认）；「找参谋改改」切到参谋页并预填"我想调整当前的分阶段引导「…」："；guide.reached 时卡片内显示"这一拍看起来已经演完了"+「进入下一拍」（单步引导为"这条引导看起来已经达成了"+「标为完成」），不弹窗；结束的分阶段引导显示"完成 N / M 拍"
+- 已验证（预览页，脚本逐项点过 + 截图）：空对话→点示例→回复带单步和分阶段卡；多轮对话；发送时用户消息立即出现、"参谋在想"、输入框清空且不丢焦点、自动滚到底；失败回复只在对话里显示一次（不重复弹提示条）、重试；整理成方案；二次确认清空；切换聊天显示另一份记录、等待中的回复不会落进新聊天、草稿清空；采纳分阶段卡 → 暗线页逐拍推进、跳过、完成整条、落拍提示；同一条线再采纳分阶段卡 → 保留已完成/已跳过的拍；手机 375 宽浅/深色无横向滚动、所有按钮 ≥ 44px
+  - Codex 的 advanceBeat / skipBeat / adoptPlan(beats) 在我做的过程中已落地，预览的模拟 api 最后改为直接调用 src/sim/apply.js 的正式实现，上面的流程用正式实现又跑了一遍
+  - 截图：共享笔记目录 T4b-screens/（参谋浅色桌面、参谋深色手机、分阶段暗线卡桌面 / 手机）
+- 测试：`sh tests/run.sh` 13 个测试文件、195 个用例全部通过（tests/ui 新增 6 个）
+- 需要组长注意：
+  1. 参谋输入框按要求回车换行；另加了 Ctrl/⌘+回车发送，不需要可以去掉
+  2. 失败回复的「重试」会再发一次同样的用户消息，所以记录里会出现两条相同的用户消息（api.advisor.send 总是先写入用户消息）。如果希望重试不重复，需要 api 提供 retry 或允许 send 不写入用户消息
+  3. 「整理成方案」走 api.advisor.summarize，记录里会出现那条固定的用户消息"请把我们到目前为止的讨论整理成方案卡。"，我没有隐藏它
+  4. 方案卡的"已采纳"标记只记在面板内存里（刷新页面后不再显示"已采纳"，但引导本身已保存）
+  5. 「跳过」只给待演的拍；当前拍要换掉可以用「完成这一拍」或找参谋改。接口允许跳过当前拍，如需要我再加
+  6. style.css 现 956 行（上次 776），原因同前
+  7. 开发期间用过 8765 端口（dev/serve.py），已关闭
+
+## 2026-10-30 [claude] [审查意见] T4 + T4b：通过
+- 组长亲自在预览页检查：参谋对话（浅色桌面）、分阶段暗线卡与落拍提示（深色手机），风格与交互都符合要求
+- 采纳面板会话的建议：index.js 新增 api.advisor.retry()（重试不重复写入用户消息），INTERFACES.md 5.10 已更新；请面板会话把「重试」改用它
+- Ctrl/⌘+回车发送保留；「整理成方案」的固定消息显示在记录里，保留

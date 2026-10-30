@@ -8,7 +8,7 @@ import { registerThemed } from './theme.js';
 import { renderCharacters } from './tab-characters.js';
 import { renderThreads } from './tab-threads.js';
 import { renderNote } from './tab-note.js';
-import { renderPlan } from './tab-plan.js';
+import { renderAdvisor } from './tab-advisor.js';
 import { mountBadges } from './badges.js';
 import { renderSettingsDrawer } from './settings.js';
 
@@ -18,7 +18,7 @@ const TABS = [
     { id: 'characters', label: '人物', render: renderCharacters, count: s => s.characters.length },
     { id: 'threads', label: '暗线', render: renderThreads, count: s => s.threads.length },
     { id: 'note', label: '纸条', render: renderNote },
-    { id: 'plan', label: '规划', render: renderPlan },
+    { id: 'advisor', label: '参谋', render: renderAdvisor },
 ];
 
 /** @param {any} api */
@@ -30,13 +30,12 @@ export function mountPanel(api) {
         tab: 'characters',
         editing: /** @type {string|null} */ (null),
         dirty: false,
-        planRequest: '',
-        planToken: 0,
-        planLoading: false,
-        planError: '',
-        planCards: [],
-        planIntensity: {},
-        adopted: new Set(),
+        advisorDraft: '',
+        advisorSig: /** @type {string|null} */ (null),
+        scrollToEnd: false,
+        planIntensity: /** @type {Record<string, string>} */ ({}),
+        adopted: new Set(),   // 已采纳的方案卡（键：回复时间戳:序号）
+        openBeats: new Set(), // 方案卡里展开着的拍
     };
 
     const statusText = h('span', { class: 'bs-status-text' });
@@ -99,6 +98,19 @@ export function mountPanel(api) {
         },
         /** @param {(state: any) => any} mutate */
         edit(mutate, okText) { return ctx.call(() => api.editState(mutate), okText); },
+        /** 切到参谋页，并把文字放进输入框（光标在末尾） */
+        goAdvisor(prefill) {
+            ui.tab = 'advisor';
+            ui.editing = null;
+            if (prefill) ui.advisorDraft = prefill;
+            ui.advisorSig = null;
+            render();
+            const input = body.querySelector('[data-keep="advisor-input"]');
+            if (input) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+        },
         /** 表单提交：保存成功才关闭表单，失败时保留输入 */
         async submit(fn, okText) {
             if (await ctx.call(fn, okText)) ctx.stopEdit();
@@ -119,8 +131,9 @@ export function mountPanel(api) {
                     if (ui.tab === tab.id) return;
                     ui.tab = tab.id;
                     ui.editing = null;
-                    render();
+                    ui.advisorSig = null; // 进入参谋页时滚到最新一条
                     body.scrollTop = 0;
+                    render();
                 },
             }, tab.label, n ? h('span', { class: 'bs-tab-count' }, String(n)) : null, guided ? h('span', { class: 'bs-tab-dot', title: '有正在引导的线' }) : null);
         }));
@@ -133,6 +146,7 @@ export function mountPanel(api) {
         clock.textContent = clockText(state.clock);
         renderTabs();
         const tab = TABS.find(t => t.id === ui.tab) ?? TABS[0];
+        body.dataset.tab = tab.id;
         let content;
         try {
             content = tab.render(ctx);
@@ -140,7 +154,20 @@ export function mountPanel(api) {
             console.error(LOG_PREFIX, '面板渲染失败', error);
             content = h('div', { class: 'bs-error' }, h('p', { class: 'bs-empty-title' }, '这一页显示不出来'), h('p', null, String(error?.message ?? error)));
         }
+        // 重画会换掉输入框：记住焦点和光标，画完放回去（参谋输入框在推演完成时也不丢焦点）
+        const active = document.activeElement;
+        const keep = active instanceof HTMLElement && body.contains(active) ? active.dataset.keep : null;
+        const caret = keep ? [active.selectionStart, active.selectionEnd] : null;
         body.replaceChildren(content);
+        if (keep) {
+            const again = body.querySelector(`[data-keep="${keep}"]`);
+            again?.focus({ preventScroll: true });
+            if (caret && again?.setSelectionRange) again.setSelectionRange(caret[0], caret[1]);
+        }
+        if (ui.scrollToEnd) {
+            ui.scrollToEnd = false;
+            body.scrollTop = body.scrollHeight;
+        }
     }
 
     function renderStatus(status = api.status()) {
@@ -162,6 +189,7 @@ export function mountPanel(api) {
         root.hidden = !open;
         document.getElementById('backstage_wand_button')?.classList.toggle('is-active', open);
         if (open) {
+            ui.advisorSig = null;
             renderStatus();
             render();
             sheet.querySelector('.bs-tab[aria-selected="true"]')?.focus({ preventScroll: true });
@@ -182,13 +210,14 @@ export function mountPanel(api) {
         render();
     });
 
-    // 切换聊天：丢掉上一个聊天的方案卡和正在进行的编辑（方案卡不能拿到别的聊天里采纳）
+    // 切换聊天：关掉正在编辑的表单（不能把上一个聊天的编辑存到新聊天里）；参谋记录由 api 按聊天切换
     const st = globalThis.SillyTavern?.getContext?.();
     const chatChanged = st?.eventTypes?.CHAT_CHANGED;
     if (st?.eventSource && chatChanged) {
         st.eventSource.on(chatChanged, () => {
-            ui.planToken++;
-            Object.assign(ui, { editing: null, planLoading: false, planError: '', planCards: [], planIntensity: {}, adopted: new Set() });
+            ui.editing = null;
+            ui.advisorSig = null;
+            ui.advisorDraft = ''; // 草稿是写给上一个故事的
             render();
         });
     }

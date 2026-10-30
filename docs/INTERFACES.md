@@ -413,6 +413,7 @@ export function mountSettings(api): void   // 在扩展设置区挂载设置抽�
 | `advisor.busy()` | 参谋是否正在回复 |
 | `advisor.send(text)` | 发一条消息，`Promise<AdvisorMessage>`；用户消息会先写入记录，可立刻刷新显示；失败时记录里会有一条带 `error` 的回复，并 reject。等待期间切换聊天则 resolve 为 null |
 | `advisor.summarize()` | 让参谋把讨论整理成方案卡（等同于发一条固定的消息） |
+| `advisor.retry()` | 最后一条是失败回复时重试：删掉失败回复，用它前面那条用户消息重新请求，**不重复写入用户消息**；没有可重试的则 reject |
 | `advisor.clear()` | 清空当前聊天的参谋对话 |
 
 参谋回复里的 `cards` 可以直接传给 `adopt(card, intensity)`；带 `beats` 的卡采纳后是分阶段引导。原来的一次性 `plan(request)` 保留，但面板不再使用。

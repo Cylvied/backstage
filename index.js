@@ -194,16 +194,23 @@ function requireOp(name) {
 
 let advisorBusy = false;
 
-/** @param {string} text */
-async function advisorSend(text) {
+/**
+ * @param {string} text
+ * @param {{ history?: import('./src/types.js').AdvisorMessage[] }} [options]
+ *   传入 history 时表示重试：用户消息已经在记录里，不再重复写入
+ */
+async function advisorSend(text, options = {}) {
     const message = String(text ?? '').trim();
     if (!message) throw new Error('请先输入想和参谋聊的内容。');
     if (advisorBusy) throw new Error('参谋还在回复上一条消息。');
 
     const chatId = host.getChatId();
     const settings = host.getSettings();
-    const history = host.getAdvisorLog();
-    await host.saveAdvisorLog([...history, { role: 'user', text: message, cards: [], at: Date.now() }]);
+    const isRetry = Array.isArray(options.history);
+    const history = isRetry ? options.history : host.getAdvisorLog();
+    if (!isRetry) {
+        await host.saveAdvisorLog([...history, { role: 'user', text: message, cards: [], at: Date.now() }]);
+    }
     advisorBusy = true;
     notifyState();
 
@@ -268,6 +275,17 @@ const api = {
         busy: () => advisorBusy,
         send: advisorSend,
         summarize: () => advisorSend('请把我们到目前为止的讨论整理成方案卡。'),
+        /** 最后一条是失败回复时：删掉它，用它前面那条用户消息重新请求，不重复写入用户消息 */
+        async retry() {
+            const log = host.getAdvisorLog();
+            const last = log[log.length - 1];
+            const userIndex = last?.role === 'assistant' && last.error ? log.length - 2 : -1;
+            const userEntry = log[userIndex];
+            if (!userEntry || userEntry.role !== 'user') throw new Error('没有可以重试的消息。');
+            await host.saveAdvisorLog(log.slice(0, userIndex + 1));
+            notifyState();
+            return advisorSend(userEntry.text, { history: log.slice(0, userIndex) });
+        },
         async clear() {
             if (advisorBusy) throw new Error('参谋正在回复，请稍后再清空。');
             await host.saveAdvisorLog([]);

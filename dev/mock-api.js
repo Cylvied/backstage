@@ -4,19 +4,27 @@
 import { DEFAULT_SETTINGS } from '../src/constants.js';
 import { emptyState } from '../src/util.js';
 import { composeInjection } from '../src/inject/compose.js';
-import { adoptPlan, setGuideStatus, setGuideIntensity } from '../src/sim/apply.js';
+import { adoptPlan, setGuideStatus, setGuideIntensity, advanceBeat, skipBeat } from '../src/sim/apply.js';
+import { seedStagedGuide } from './mock-beats.js';
+import * as advisor from './mock-advisor.js';
 import { parsePlanOutput } from '../src/sim/parse.js';
 
 const FIXTURES = '../tests/fixtures';
 
 /**
- * @param {{ fixture: string, status: string, plan: string, saveFails: boolean }} opts
+ * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string }} opts
  */
 export async function createMockApi(opts) {
     let state = opts.fixture === 'empty'
         ? emptyState()
         : await (await fetch(`${FIXTURES}/states/${opts.fixture}.json`)).json();
+    if (opts.guide === 'staged' || opts.guide === 'reached') state = seedStagedGuide(state, opts.guide === 'reached');
     let settings = structuredClone(DEFAULT_SETTINGS);
+
+    // 参谋记录按聊天分开存，模拟"跟着聊天走"；预览页的 devSwitchChat() 在两个聊天间切换
+    let chatId = 'A';
+    const logs = { A: opts.advisor === 'multi' ? advisor.multiTurnHistory(state) : [], B: [] };
+    let busy = false;
     settings.profileId = opts.status === 'setup' ? '' : 'p_cheap';
     settings.enabled = opts.status !== 'off';
 
@@ -72,6 +80,8 @@ export async function createMockApi(opts) {
             return parsed.cards;
         },
         adopt: (card, intensity) => commit(adoptPlan(state, card, intensity)),
+        advanceBeat: id => commit(advanceBeat(state, id)),
+        skipBeat: (id, index) => commit(skipBeat(state, id, index)),
         setGuideStatus: (id, value) => commit(setGuideStatus(state, id, value)),
         setGuideIntensity: (id, value) => commit(setGuideIntensity(state, id, value)),
         async editState(mutate) {
@@ -89,6 +99,45 @@ export async function createMockApi(opts) {
                 case 7: return { ...base, status: 'ok', valid: false };
                 default: return null;
             }
+        },
+        advisor: {
+            history: () => logs[chatId],
+            busy: () => busy,
+            async send(text) {
+                const message = String(text ?? '').trim();
+                if (!message) throw new Error('请先输入想和参谋聊的内容。');
+                if (busy) throw new Error('参谋还在回复上一条消息。');
+                const from = chatId;
+                logs[from] = [...logs[from], { role: 'user', text: message, cards: [], at: Date.now() }];
+                busy = true;
+                emitState();
+                await delay(opts.advisor === 'slow' ? 60000 : 1200);
+                busy = false;
+                if (chatId !== from) { emitState(); return null; }
+                const r = advisor.reply(message, state, opts.advisor === 'fail');
+                if (!r) {
+                    const reason = '请求超时（30 秒内没有收到回复）';
+                    logs[from] = [...logs[from], { role: 'assistant', text: '', cards: [], at: Date.now(), error: reason }];
+                    emitState();
+                    throw new Error(reason);
+                }
+                const entry = { role: 'assistant', text: r.text, cards: r.cards, at: Date.now() };
+                logs[from] = [...logs[from], entry];
+                emitState();
+                return entry;
+            },
+            summarize() { return this.send('请把我们到目前为止的讨论整理成方案卡。'); },
+            async clear() {
+                if (busy) throw new Error('参谋正在回复，请稍后再清空。');
+                logs[chatId] = [];
+                emitState();
+            },
+        },
+        /** 仅预览用：切换到另一个聊天 */
+        devSwitchChat() {
+            chatId = chatId === 'A' ? 'B' : 'A';
+            emitState();
+            return chatId;
         },
         settings: {
             get: () => settings,

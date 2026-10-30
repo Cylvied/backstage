@@ -76,7 +76,7 @@ function build(api) {
             h('div', { class: 'bs-set-inline' },
                 profile,
                 h('div', { class: 'menu_button menu_button_icon fa-solid fa-rotate', title: '刷新连接列表', role: 'button', tabindex: 0, onclick: () => { fillProfiles(); syncWarning(); } })),
-            h('small', null, '规划方案也用这个连接。')),
+            h('small', null, '剧情参谋也用这个连接。')),
 
         h('h4', { class: 'bs-set-head' }, '推演'),
         h('div', { class: 'bs-set-grid' },
@@ -91,7 +91,7 @@ function build(api) {
             number('注入深度', s.injectDepth, 'injectDepth', v => save({ injectDepth: v }), '1 = 最新回复之后；"尽快引爆"固定为 0')),
 
         h('h4', { class: 'bs-set-head' }, '数据库纪要'),
-        check('读取数据库插件的纪要', s.memory.enabled, v => save({ memory: { enabled: v } }), '只作为推演和规划的参考，不注入正文'),
+        check('读取数据库插件的纪要', s.memory.enabled, v => save({ memory: { enabled: v } }), '只作为推演和参谋的参考，不注入正文'),
         h('div', { class: 'bs-set-grid' },
             (() => {
                 const input = h('input', { class: 'text_pole', type: 'text', value: s.memory.worldbook, placeholder: '留空 = 角色主世界书' });
