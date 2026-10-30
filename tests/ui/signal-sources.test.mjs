@@ -58,7 +58,7 @@ test('injectionSummary：候选数、注入数与 selectSignals 一致，每条�
     assert.ok(r.undercurrent.length === 1);
     assert.ok(r.limit.length >= 1);
     assert.equal(sum.skipped.find(g => g.reason === 'orphan').items[0].bornRun, 6);
-    assert.match(skippedText(sum), /没挂在暗线或人物上 1 条/);
+    assert.match(skippedText(sum), /没挂在暗线、人物或事件上 1 条/);
 });
 
 test('injectionSummary：主角隔绝时风闻单独归类；注入关闭时全部归为关闭', () => {

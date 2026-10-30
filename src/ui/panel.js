@@ -32,7 +32,8 @@ const GEAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" st
 
 const TABS = [
     { id: 'characters', label: '人物', render: renderCharacters, count: s => s.characters.length },
-    { id: 'threads', label: '暗线', render: renderThreads, count: s => s.threads.length },
+    // 窄屏只显示「暗线」，「与大事」靠样式隐藏
+    { id: 'threads', label: () => h('span', null, '暗线', h('span', { class: 'bs-tab-extra' }, '与大事')), render: renderThreads, count: s => s.threads.length },
     { id: 'note', label: '纸条', render: renderNote },
     { id: 'advisor', label: '参谋', render: renderAdvisor },
 ];
@@ -164,7 +165,7 @@ export function mountPanel(api) {
                     body.scrollTop = 0;
                     render();
                 },
-            }, tab.label, n ? h('span', { class: 'bs-tab-count' }, String(n)) : null, guided ? h('span', { class: 'bs-tab-dot', title: '有正在引导的线' }) : null);
+            }, typeof tab.label === 'function' ? tab.label() : tab.label, n ? h('span', { class: 'bs-tab-count' }, String(n)) : null, guided ? h('span', { class: 'bs-tab-dot', title: '有正在引导的线' }) : null);
         }));
     }
 

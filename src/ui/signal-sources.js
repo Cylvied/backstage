@@ -12,7 +12,7 @@ export const SKIP_REASONS = /** @type {const} */ (['disabled', 'orphan', 'isolat
 export function skipReasonLabel(reason, limit) {
     switch (reason) {
         case 'disabled': return '暗流注入已关闭';
-        case 'orphan': return '没挂在暗线或人物上';
+        case 'orphan': return '没挂在暗线、人物或事件上';
         case 'isolated': return '主角与外界隔绝，风闻传不进来';
         case 'undercurrent': return '暗流语态每层最多 1 条';
         default: return limit ? `超过每层上限（${limit} 条）` : '每层暗流上限设为 0';
@@ -28,6 +28,8 @@ export function skipReasonLabel(reason, limit) {
  * @property {string|null} character   人物名（人物存在时）
  * @property {string|null} threadId    现存暗线的 id
  * @property {number|null} bornRun     产生时的推演轮次
+ * @property {string|null} event       v1.5：指向的世界事实（事件记录里的一句话）
+ * @property {boolean} eventKnown      指向的事实主角是否已知
  */
 
 /**
@@ -44,6 +46,7 @@ export function skipReasonLabel(reason, limit) {
 export function injectionSummary(state, settings) {
     const threads = new Map((state?.threads ?? []).map(t => [t.id, t]));
     const characters = new Map((state?.characters ?? []).map(c => [c.id, c]));
+    const events = new Map((Array.isArray(state?.chronicle) ? state.chronicle : []).filter(Boolean).map(e => [e.id, e]));
     const candidates = (state?.signals ?? []).filter(s => s && String(s.text ?? '').trim());
     const disabled = !settings.injectUndercurrent;
     const limit = Math.max(0, Math.min(3, Math.floor(settings.maxSignals || 0)));
@@ -59,6 +62,8 @@ export function injectionSummary(state, settings) {
         character: characters.get(s.characterId)?.name ?? null,
         threadId: threads.has(s.threadId) ? s.threadId : null,
         bornRun: Number.isInteger(s.bornRun) ? s.bornRun : null,
+        event: s.eventId && events.has(s.eventId) ? String(events.get(s.eventId).text ?? '').trim() || null : null,
+        eventKnown: events.get(s.eventId)?.known === true,
     });
 
     /** @type {Record<string, SignalEntry[]>} */
@@ -67,7 +72,7 @@ export function injectionSummary(state, settings) {
         if (chosenSet.has(s)) continue;
         let reason;
         if (disabled) reason = 'disabled';
-        else if (!threads.has(s.threadId) && !characters.has(s.characterId)) reason = 'orphan';
+        else if (!threads.has(s.threadId) && !characters.has(s.characterId) && !events.has(s.eventId)) reason = 'orphan';
         else if (s.voice === 'rumor' && !state.protagonist?.reachable) reason = 'isolated';
         else if (s.voice === 'undercurrent' && pickedUndercurrent) reason = 'undercurrent';
         else reason = 'limit';
@@ -88,7 +93,7 @@ export function summaryText(sum) {
     return `候选 ${sum.total} · 注入 ${sum.injected}`;
 }
 
-/** "没挂在暗线或人物上 2 条；超过每层上限（3 条）1 条"；全部注入时为空 */
+/** "没挂在暗线、人物或事件上 2 条；超过每层上限（3 条）1 条"；全部注入时为空 */
 export function skippedText(sum) {
     return sum.skipped.map(g => `${g.label} ${g.items.length} 条`).join('；');
 }
@@ -102,8 +107,9 @@ export function signalSources(state, settings) {
     const sum = injectionSummary(state, settings);
     const threads = new Set((state?.threads ?? []).map(t => t.id));
     const characters = new Set((state?.characters ?? []).map(c => c.id));
+    const events = new Set((Array.isArray(state?.chronicle) ? state.chronicle : []).map(e => e?.id));
     const orphans = (state?.signals ?? []).filter(s => s && String(s.text ?? '').trim()
-        && !threads.has(s.threadId) && !characters.has(s.characterId));
+        && !threads.has(s.threadId) && !characters.has(s.characterId) && !events.has(s.eventId));
     return { picked: sum.picked, orphans, threadIds: new Set(sum.picked.map(p => p.threadId).filter(Boolean)) };
 }
 
@@ -111,4 +117,10 @@ export function signalSources(state, settings) {
 export function sourceText(entry) {
     return [entry.thread ? `来自暗线：${entry.thread}` : '', entry.character ? `来自：${entry.character}` : '']
         .filter(Boolean).join(' · ');
+}
+
+/** v1.5："指向事实：……（主角尚不知道）"；没有指向时为 '' */
+export function eventText(entry) {
+    if (!entry.event) return '';
+    return `指向事实：${entry.event}${entry.eventKnown ? '' : '（主角尚不知道）'}`;
 }

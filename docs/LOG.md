@@ -361,3 +361,30 @@
 - 注入：迹象可以挂在事件上；来自主角尚不知道的事件的迹象标「已发生」并提醒只能经合理渠道透出
 - 编排：index.js 推演后依次 checkPatch → extractReviewItems → 审核员（可单独选模型，失败放行）→ applyVerdicts → applyPatch；快照记录 review 与 loreUsed
 - index.js 已静态引用 src/sim/check.js 与 parseReviewOutput：Codex 交付前插件无法加载，所以暂不安装
+
+## 2026-10-30 [codex] [开始] B 批
+- 按 B-Codex 认领修改 src/sim/parse.js、apply.js、src/state/snapshot-store.js，新建 src/sim/check.js、tests/sim/world-model.test.mjs、tests/integration/world-model.test.mjs；必要时更新本人已有测试。遵照看板要求不改 TASKS.md，不执行 git 写操作。
+- 严格采用第 7.5 节的三个 check 导出及 parseReviewOutput 签名；删除 addEvents 项时同步重映射 new:N，避免引用错位。保留 A 批行为与旧快照兼容。
+
+## 2026-10-30 [claude-ui] [完成] B-UI
+- 新建：src/ui/world.js（大事记、相关事件、审核记录、资料分组、预算换算、世界书条目筛选，纯函数）、src/ui/chronicle.js（大事记区与卡片里的"相关的事"）、src/ui/settings-lore.js（设置页「世界书」「审核」两节）、tests/ui/world.test.mjs、dev/mock-world.js
+- 修改：src/ui/panel.js、tab-threads.js、tab-characters.js、tab-note.js、signal-sources.js、format.js、state-edits.js、settings-api.js、settings-page.js、style.css、tests/ui/format.test.mjs、tests/ui/signal-sources.test.mjs、tests/ui/state-edits.test.mjs、dev/mock-api.js、dev/preview.js、dev/panel-preview.html
+- 大事记：「暗线」标签改名「暗线与大事」（窄于 340px 的屏幕只显示「暗线」；标签宽度改为按内容分配，不再折行）。顶部"大事记"按时间倒序（同一天按写入先后，时间不明的排最后），每条：第 N 天时段、事实、相关人物与暗线（只列现存的）、主角已知 / 主角尚不知道（未知的文字弱化）。默认显示 5 条，可展开全部。下面是原暗线卡
+- 暗线卡和人物卡加"相关的事"：已知在前、未知弱化并标"主角尚不知道"，最多 4 条，多的提示去大事记看
+- 时间：人物卡的此刻、长期行动下面一行 elapsedText（旧数据显示"开始时间不明"）。面板头部的"第 N 天 · 时段"不变
+- 人物编辑表单：行动文字没改沿用原 since，改了按当前时钟盖戳（与 7.2 的 apply 规则一致；之前编辑会把 since 丢掉）
+- 纸条页：迹象来源行加"指向事实：……（主角尚不知道）"；未挂靠的判断加上事件（与 compose 现在的规则一致），文案改为"没挂在暗线、人物或事件上"
+- 纸条页底部"本轮检查与审核"：送审 / 通过 / 被丢弃条数，逐条列出类别、内容、被程序检查丢弃还是被审核员驳回、原因；审核员失败时显示"审核失败，已放行：原因"；没有高风险改动、手动编辑、推演失败、旧数据各有一句说明
+- 纸条页底部"本轮推演读了哪些资料"：按 推演专用常驻 / 正文触发 / 幕后触发 / 按需调取 分组（可展开），每条标题、世界书名、token，各组小计和合计
+- 这两块取的是"当前状态来自哪一楼"：从聊天最后一楼往前找第一个 getFloorInfo 有效的楼层（最多看 60 层），标题旁注明"第 N 楼的推演"
+- 楼层角标说明浮层加一行"检查与审核：送审 N 条，通过 M 条，丢弃 K 条"；审核失败时为"审核失败，已放行：原因；程序检查丢弃 K 条"
+- 设置页「世界书」：预算滑块 + 数字（单位万，1–30，步长 0.5），显示"10 万 token"；常驻条目从 listLoreEntries 读取，可搜索、多选（已选排前，最多显示 150 条），显示已选条数和 token 合计、超预算提醒；已选但现在读不到的条目单独提示，可一键清除；「允许推演按需调取条目」开关
+- 设置页「审核」：开关（关掉时隐藏下面的选项）、审核用的模型（与推演相同 / 单独直填；直填复用 API 区的地址、密钥、获取模型和测试连接部件）、"时钟前进几天以上需要审核"（1–30，默认 2）、说明文字按任务原文
+- settings-api.js 把直填三项、测试连接、分段选择拆成可复用部件；保存一律先并上当前分组再存（saveMerged），不依赖 host.saveSettings 是否逐组合并 lore / review
+- dev：world=full/none/legacy（有事件 / 无事件 / 旧数据无任何新字段）、review=rejects/fail/clean/none、lore=empty/fail；模拟 api 增加 listLoreEntries、getFloorInfo 的 review 与 loreUsed
+- 已验证（预览页脚本 + 截图）：大事记排序与展开、卡片相关事件、旧数据显示、审核有驳回 / 审核失败 / 资料为空、角标浮层、设置页预算同步、常驻勾选与超预算提醒、清除读不到的条目、搜索、审核直填只写 review 不动主 API、天数超范围规整；深色手机 375 宽无横向滚动，设置页按钮和输入框 ≥ 44px。截图在共享笔记目录 B-UI-screens/
+- 测试：`sh tests/run.sh` 21 个测试文件、257 个用例全部通过（UI 新增 world.test 10 个、format 1 个，改 2 个旧用例以适应 since 盖戳）
+- 需要组长注意：
+  1. 纸条页"本轮"按 getFloorInfo 从最后一楼往前找，没有用 findBase；若两者对不上（比如某层快照有效但不是基底），可考虑在 api 上直接提供当前基底的楼层号
+  2. 世界书条目的唯一键是 world + String(uid)，数字和字符串 uid 视为同一条；请 host 侧的 pinned 匹配也这样处理
+  3. 开发期间用过 8765 端口，已关闭

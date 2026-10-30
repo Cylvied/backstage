@@ -6,13 +6,14 @@ import { emptyState } from '../src/util.js';
 import { composeInjection } from '../src/inject/compose.js';
 import { adoptPlan, setGuideStatus, setGuideIntensity, advanceBeat, skipBeat } from '../src/sim/apply.js';
 import { seedStagedGuide } from './mock-beats.js';
+import { seedWorld, mockReview, mockLoreUsed, mockLoreEntries } from './mock-world.js';
 import * as advisor from './mock-advisor.js';
 import { parsePlanOutput } from '../src/sim/parse.js';
 
 const FIXTURES = '../tests/fixtures';
 
 /**
- * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string, orphans: string, skips: string }} opts
+ * @param {{ fixture: string, status: string, plan: string, saveFails: boolean, advisor: string, guide: string, apiTest: string, profiles: string, orphans: string, skips: string, world: string, review: string, lore: string }} opts
  */
 export async function createMockApi(opts) {
     let state = opts.fixture === 'empty'
@@ -37,7 +38,10 @@ export async function createMockApi(opts) {
     }
     // 模拟 apply 给迹象盖的产生轮次：样本里没有的，前一半算上一轮、后一半算这一轮
     state.signals = state.signals.map((s, i, all) => ({ bornRun: Math.max(1, state.runCount - (i < all.length / 2 ? 1 : 0)), ...s }));
+    // v1.5 世界模型：事件记录、行动开始时间（world=legacy 时去掉全部新字段）
+    if (opts.fixture !== 'empty') state = seedWorld(state, opts.world);
     let settings = structuredClone(DEFAULT_SETTINGS);
+    settings.lore = { ...settings.lore, pinned: [{ world: '启明高中', uid: 1 }, { world: '启明高中', uid: 2 }, { world: '旧世界书', uid: 5 }] };
 
     // 参谋记录按聊天分开存，模拟"跟着聊天走"；预览页的 devSwitchChat() 在两个聊天间切换
     let chatId = 'A';
@@ -113,7 +117,12 @@ export async function createMockApi(opts) {
         previewInjection: () => composeInjection(state, settings),
         getFloorInfo(floor) {
             // state：这一层的推演状态（接口变更提议中的字段）；预览里各层都用当前状态
-            const base = { error: null, edited: false, signalCount: state.signals.length, changedCharacters: [], createdAt: Date.now(), usage: { model: 'mock', ms: 3200 }, state };
+            const legacy = opts.world === 'legacy';
+            const base = {
+                error: null, edited: false, signalCount: state.signals.length, changedCharacters: [], createdAt: Date.now(), usage: { model: 'mock', ms: 3200 }, state,
+                // v1.5：旧数据没有这两个字段
+                ...(legacy ? {} : { review: mockReview(opts.review), loreUsed: mockLoreUsed(opts.lore) }),
+            };
             switch (floor) {
                 case 1: return { ...base, status: 'ok', valid: true, changedCharacters: state.characters.slice(0, 2).map(c => c.name) };
                 case 3: return { ...base, status: 'failed', valid: true, error: '模型输出无法解析：缺少 signals' };
@@ -179,10 +188,18 @@ export async function createMockApi(opts) {
                     ...patch,
                     memory: { ...settings.memory, ...(patch.memory ?? {}) },
                     api: { ...settings.api, ...(patch.api ?? {}) },
+                    lore: { ...settings.lore, ...(patch.lore ?? {}) },
+                    review: { ...settings.review, ...(patch.review ?? {}) },
                 };
                 emitStatus();
                 emitState();
                 return settings;
+            },
+            // v1.5：lore=fail 时读取失败
+            async listLoreEntries() {
+                await delay(500);
+                if (opts.lore === 'fail') throw new Error('读取世界书失败：没有选中角色');
+                return mockLoreEntries();
             },
             listProfiles: () => (opts.profiles === '0' ? [] : [{ id: 'p_cheap', name: 'Gemini Flash（推演用）' }, { id: 'p_main', name: 'Gemini Pro（正文）' }]),
             // 以下三个同 index.js（v1.4）；apiTest=fail 时获取模型和测试连接都失败

@@ -2,6 +2,7 @@
 // 由面板包在 api.editState(s => fn(s, ...)) 里使用。
 
 import { LIMITS, LIVES, LONG_ACTION_STATUSES, THREAD_STAGES, VISIBILITIES } from '../constants.js';
+import { stampOf } from '../util.js';
 
 /** @typedef {import('../types.js').SimState} SimState */
 
@@ -61,18 +62,29 @@ export function updateCharacter(state, id, form) {
     if (typeof form.onStage === 'boolean') c.onStage = form.onStage;
     if (typeof form.currentText === 'string') {
         const text = form.currentText.trim();
-        c.currentAction = text ? { text, duration: String(form.currentDuration ?? '').trim() } : null;
+        c.currentAction = text ? withSince({ text, duration: String(form.currentDuration ?? '').trim() }, c.currentAction, next.clock) : null;
     }
     if (typeof form.longText === 'string') {
         const text = form.longText.trim();
         const status = LONG_ACTION_STATUSES.includes(form.longStatus) ? form.longStatus : (c.longAction?.status ?? 'ongoing');
         const outcome = String(form.longOutcome ?? '').trim();
         c.longAction = text
-            ? { text, duration: String(form.longDuration ?? '').trim(), status: /** @type {any} */ (status), outcome: status === 'ongoing' ? null : (outcome || null) }
+            ? withSince({ text, duration: String(form.longDuration ?? '').trim(), status: /** @type {any} */ (status), outcome: status === 'ongoing' ? null : (outcome || null) }, c.longAction, next.clock)
             : null;
     }
     if (typeof form.knows === 'string') c.knows = parseList(form.knows, LIMITS.knows);
     return next;
+}
+
+/**
+ * 行动的开始时间（v1.5）：文字没变沿用原来的 since；换了内容按当前时钟重新盖戳（与 apply 的规则一致）。
+ * @template T
+ * @param {T & { text: string }} action @param {any} prev @param {import('../types.js').Clock} clock
+ * @returns {T}
+ */
+function withSince(action, prev, clock) {
+    if (prev?.text === action.text) return prev.since ? { ...action, since: prev.since } : action;
+    return { ...action, since: stampOf(clock) };
 }
 
 /**

@@ -1,5 +1,7 @@
 // 面板用的文案、排序与状态判断。纯函数，不访问宿主，便于测试。
 
+import { reviewLine } from './world.js';
+
 /** @typedef {import('../types.js').SimState} SimState */
 /** @typedef {import('../types.js').Character} Character */
 /** @typedef {import('../types.js').Thread} Thread */
@@ -102,6 +104,8 @@ export function badgeView(info, sum) {
         tail = `候选 ${total}`;
     }
 
+    const review = reviewLine(info.review);
+    if (review) signalLines.push(review);
     if (info.edited) return make('edited', ['幕后 · 已编辑', tail].filter(Boolean).join(' · '), ['你在面板里修改过这一层的推演', ...signalLines]);
     if (info.status === 'manual') return make('edited', ['幕后 · 手动', tail].filter(Boolean).join(' · '), ['这一层没有推演，由手动编辑产生', ...signalLines]);
     const changed = info.changedCharacters ?? [];
@@ -150,6 +154,7 @@ export const SETTING_RANGES = {
     maxSignals: [0, 3],
     injectDepth: [0, 10],
     memoryLimit: [1, 20],
+    bigJumpDays: [1, 30],
 };
 
 /**

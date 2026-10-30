@@ -1,9 +1,10 @@
-// 面板里的设置页：模型 API + 推演、注入、数据库纪要。
+// 面板里的设置页：模型 API + 推演、注入、世界书、审核、数据库纪要。
 // 放在我们自己的浮层里（#backstage-panel），控件全用插件自己的样式，不受宿主或主题扩展重排影响。
 
 import { h } from './dom.js';
 import { normalizeNumberSetting, SETTING_RANGES } from './format.js';
-import { buildApiSection } from './settings-api.js';
+import { buildApiSection, saveMerged } from './settings-api.js';
+import { buildLoreSection, buildReviewSection } from './settings-lore.js';
 
 /**
  * @param {any} api
@@ -12,7 +13,7 @@ import { buildApiSection } from './settings-api.js';
 export function buildSettingsPage(api) {
     const s = api.settings.get();
     const save = patch => {
-        api.settings.save(patch);
+        saveMerged(api, patch);
         syncWarning();
     };
 
@@ -40,6 +41,8 @@ export function buildSettingsPage(api) {
         warning.hidden = !(api.settings.get().enabled && !api.settings.isApiReady());
     };
     const apiSection = buildApiSection(api, syncWarning);
+    const loreSection = buildLoreSection(api);
+    const reviewSection = buildReviewSection(api);
 
     const worldbook = h('input', { class: 'bs-input', type: 'text', value: s.memory.worldbook, placeholder: '留空 = 角色主世界书' });
     worldbook.addEventListener('change', () => save({ memory: { worldbook: worldbook.value.trim() } }));
@@ -62,6 +65,9 @@ export function buildSettingsPage(api) {
             h('div', { class: 'bs-set-grid' },
                 number('每层暗流上限', s.maxSignals, 'maxSignals', v => save({ maxSignals: v }), '0–3 条'),
                 number('注入深度', s.injectDepth, 'injectDepth', v => save({ injectDepth: v }), '1 = 最新回复之后；"尽快引爆"固定为 0'))),
+
+        loreSection.element,
+        reviewSection.element,
 
         h('section', { class: 'bs-set-section' },
             h('h3', { class: 'bs-set-head' }, '数据库纪要'),

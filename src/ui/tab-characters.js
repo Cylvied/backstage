@@ -3,6 +3,8 @@
 import { h, confirmButton, field, select } from './dom.js';
 import { LIFE_LABEL, LONG_STATUS_LABEL, sortCharacters } from './format.js';
 import { togglePin, removeCharacter, updateCharacter } from './state-edits.js';
+import { elapsedText } from '../util.js';
+import { relatedEventsBlock } from './chronicle.js';
 
 /** @typedef {import('../types.js').Character} Character */
 
@@ -24,20 +26,21 @@ export function renderCharacters(ctx) {
         return wrap;
     }
     for (const c of sortCharacters(state.characters)) {
-        wrap.append(ctx.ui.editing === `c:${c.id}` ? editForm(ctx, c) : card(ctx, c));
+        wrap.append(ctx.ui.editing === `c:${c.id}` ? editForm(ctx, c) : card(ctx, c, state));
     }
     return wrap;
 }
 
-/** @param {any} ctx @param {Character} c */
-function card(ctx, c) {
+/** @param {any} ctx @param {Character} c @param {import('../types.js').SimState} state */
+function card(ctx, c, state) {
     const meta = [c.onStage ? '在场' : '不在场', LIFE_LABEL[c.life] ?? c.life, c.location].filter(Boolean).join(' · ');
     const rows = [];
-    if (c.currentAction?.text) rows.push(['此刻', c.currentAction.text, c.currentAction.duration]);
+    // 第 4 项：程序盖的开始时间（v1.5），旧数据没有时显示"开始时间不明"
+    if (c.currentAction?.text) rows.push(['此刻', c.currentAction.text, c.currentAction.duration, elapsedText(c.currentAction.since, state.clock)]);
     if (c.longAction?.text) {
         const la = c.longAction;
         const tail = [la.duration, la.status !== 'ongoing' ? LONG_STATUS_LABEL[la.status] : '', la.outcome].filter(Boolean).join('，');
-        rows.push(['长期', la.text, tail]);
+        rows.push(['长期', la.text, tail, elapsedText(la.since, state.clock)]);
     }
 
     return h('article', { class: `bs-card${c.pinned ? ' is-pinned' : ''}${c.life === 'dead' ? ' is-dead' : ''}` },
@@ -46,13 +49,15 @@ function card(ctx, c) {
                 c.aliases?.length ? h('span', { class: 'bs-alias' }, `又名 ${c.aliases.join('、')}`) : null),
             c.pinned ? h('span', { class: 'bs-tag' }, '已钉住') : null),
         h('p', { class: 'bs-meta' }, meta),
-        rows.length ? h('dl', { class: 'bs-dl' }, rows.map(([k, v, d]) => [
+        rows.length ? h('dl', { class: 'bs-dl' }, rows.map(([k, v, d, since]) => [
             h('dt', null, k),
-            h('dd', null, v, d ? h('span', { class: 'bs-muted' }, `（${d}）`) : null),
+            h('dd', null, v, d ? h('span', { class: 'bs-muted' }, `（${d}）`) : null,
+                since ? h('span', { class: 'bs-since' }, since) : null),
         ])) : null,
         c.knows?.length ? h('div', { class: 'bs-knows' },
             h('p', { class: 'bs-subhead' }, '认知'),
             h('ul', null, c.knows.map(k => h('li', null, k)))) : null,
+        relatedEventsBlock(state, { characterId: c.id }),
         h('div', { class: 'bs-actions' },
             h('button', {
                 type: 'button',

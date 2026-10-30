@@ -1,4 +1,4 @@
-// 「暗线」标签页：线卡片；开始 / 调整 / 完成 / 放弃引导（含分阶段引导的逐拍推进），编辑，删除。
+// 「暗线与大事」标签页：顶部大事记（v1.5 事件记录），下面是线卡片；开始 / 调整 / 完成 / 放弃引导（含分阶段引导的逐拍推进），编辑，删除。
 
 import { h, confirmButton, field, select, segmented } from './dom.js';
 import {
@@ -7,6 +7,7 @@ import {
 } from './format.js';
 import { updateThread, removeThread, guideCardForThread } from './state-edits.js';
 import { signalSources } from './signal-sources.js';
+import { chronicleSection, relatedEventsBlock } from './chronicle.js';
 
 /** @typedef {import('../types.js').Thread} Thread */
 
@@ -14,6 +15,10 @@ import { signalSources } from './signal-sources.js';
 export function renderThreads(ctx) {
     const state = ctx.api.getState();
     const wrap = h('div', { class: 'bs-list' });
+    wrap.append(chronicleSection(ctx, state));
+    wrap.append(h('header', { class: 'bs-section-head' },
+        h('h3', { class: 'bs-section-title' }, '暗线'),
+        state.threads.length ? h('span', { class: 'bs-muted' }, `${state.threads.length} 条`) : null));
     if (!state.threads.length) {
         wrap.append(h('div', { class: 'bs-empty' },
             h('p', { class: 'bs-empty-title' }, '还没有暗线'),
@@ -27,7 +32,7 @@ export function renderThreads(ctx) {
         const key = ctx.ui.editing;
         if (key === `t:${t.id}`) wrap.append(editForm(ctx, t));
         else if (key === `g:${t.id}`) wrap.append(guideForm(ctx, t, activeGuideThread(state)));
-        else wrap.append(card(ctx, t, names, leaked.has(t.id)));
+        else wrap.append(card(ctx, t, names, leaked.has(t.id), state));
     }
     return wrap;
 }
@@ -35,8 +40,9 @@ export function renderThreads(ctx) {
 /**
  * @param {any} ctx @param {Thread} t @param {Map<string,string>} names
  * @param {boolean} leaked  本轮有这条线的迹象被注入
+ * @param {import('../types.js').SimState} state
  */
-function card(ctx, t, names, leaked) {
+function card(ctx, t, names, leaked, state) {
     const active = t.guide?.status === 'active';
     const progress = beatProgress(t.guide);
     const who = (t.characterIds ?? []).map(id => names.get(id)).filter(Boolean);
@@ -61,6 +67,7 @@ function card(ctx, t, names, leaked) {
         h('p', { class: 'bs-meta' }, meta.join(' · ')),
         leaked ? h('button', { type: 'button', class: 'bs-leak', title: '查看下一轮要注入的纸条', onclick: () => ctx.goTab('note') }, '本轮已透出迹象 ›') : null,
         rows.length ? h('dl', { class: 'bs-dl' }, rows.map(([k, v]) => [h('dt', null, k), h('dd', null, v)])) : null,
+        relatedEventsBlock(state, { threadId: t.id }),
         progress ? beatList(ctx, t, active) : null,
         active && t.guide.reached ? reachedHint(ctx, t, progress) : null,
         active ? guideActions(ctx, t, progress) : [h('div', { class: 'bs-actions' },

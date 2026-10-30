@@ -49,7 +49,7 @@ test('updateCharacter 更新字段，knows 最多 5 条', () => {
     assert.deepEqual(c.aliases, ['甲', '乙']);
     assert.equal(c.life, 'missing');
     assert.equal(c.onStage, false);
-    assert.deepEqual(c.currentAction, { text: '跑步', duration: '十分钟' });
+    assert.deepEqual(c.currentAction, { text: '跑步', duration: '十分钟', since: { day: state.clock.day, slot: state.clock.slot } });
     assert.equal(c.longAction, null);
     assert.equal(c.knows.length, 5);
 });
@@ -68,7 +68,7 @@ test('updateCharacter 长期行动：完成时记录结果，进行中时结果�
     const state = load('school');
     const id = state.characters[0].id;
     const done = updateCharacter(state, id, { longText: '考试', longDuration: '一周', longStatus: 'done', longOutcome: '考过了' });
-    assert.deepEqual(done.characters[0].longAction, { text: '考试', duration: '一周', status: 'done', outcome: '考过了' });
+    assert.deepEqual(done.characters[0].longAction, { text: '考试', duration: '一周', status: 'done', outcome: '考过了', since: { day: state.clock.day, slot: state.clock.slot } });
     const going = updateCharacter(state, id, { longText: '考试', longStatus: 'ongoing', longOutcome: '不该保留' });
     assert.equal(going.characters[0].longAction.outcome, null);
 });

@@ -92,3 +92,12 @@ test('clockText', () => {
     assert.equal(clockText({ day: 2, slot: '', precision: 'approx' }), '约第 2 天');
     assert.equal(clockText({ day: 1, slot: '夜', precision: 'unknown' }), '时间不明');
 });
+
+test('badgeView 说明里列出检查与审核结果；旧数据没有 review 时不列', () => {
+    const info = { valid: true, status: 'ok', edited: false, signalCount: 0, changedCharacters: [] };
+    assert.equal(badgeView(info).lines.length, 1);
+    const rejected = [{ item: { id: 'r1', kind: 'event', summary: 'x', ref: {} }, by: 'reviewer', reason: 'y' }];
+    const v = badgeView({ ...info, review: { reviewed: 2, approved: 1, rejected, error: null, usage: null } });
+    assert.equal(v.lines.at(-1), '检查与审核：送审 2 条，通过 1 条，丢弃 1 条');
+    assert.match(badgeView({ ...info, review: { reviewed: 2, approved: 2, rejected: [], error: '超时', usage: null } }).title, /审核失败，已放行：超时/);
+});
