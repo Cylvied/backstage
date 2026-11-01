@@ -57,7 +57,11 @@ async function runJob(job, signal) {
         return; // 任务排队期间聊天已经变了
     }
 
-    const base = findBase(view, job.floor - 1);
+    let base = findBase(view, job.floor - 1);
+    const own = readSnapshot(message);
+    if (job.reason === 'manual' && own?.edited && isSnapshotValid(own, message)) {
+        base = { ...base, snapshot: own, state: own.state };
+    }
     const common = { parent: base.snapshot, floor: job.floor, swipeId: job.swipeId, text: message.text };
     /** @type {import('./src/types.js').SimPatch|null} */
     let patch = null;
@@ -105,6 +109,13 @@ async function runJob(job, signal) {
         return;
     } else if (decision.action === 'rebase') {
         snapshot = makeSnapshot({ ...common, state: applyPatch(decision.snapshot.state, patch, opts), status: 'ok', error: null, usage });
+        const beforeGuide = base.state.threads.find(t => t.guide?.status === 'active');
+        const nowGuide = decision.snapshot.state.threads.find(t => t.guide?.status === 'active');
+        if (patch.guideReached && (beforeGuide?.id !== nowGuide?.id
+            || JSON.stringify(beforeGuide?.guide) !== JSON.stringify(nowGuide?.guide))) {
+            const guide = snapshot.state.threads.find(t => t.guide?.status === 'active')?.guide;
+            if (guide) guide.reached = nowGuide?.guide?.reached ?? false;
+        }
         snapshot.parentId = decision.snapshot.parentId;
         snapshot.edited = decision.snapshot.edited;
     } else if (patch) {
@@ -113,6 +124,10 @@ async function runJob(job, signal) {
         snapshot = makeSnapshot({ ...common, state: base.state, status: 'failed', error, usage });
     }
 
+    if (job.reason === 'manual' && own?.edited) {
+        snapshot.edited = true;
+        snapshot.parentId = own.parentId;
+    }
     snapshot.review = review;
     snapshot.loreUsed = loreUsed;
     const written = await host.writeSnapshot(job.floor, job.swipeId, snapshot);
@@ -291,13 +306,14 @@ async function advisorSend(text, options = {}) {
     const settings = host.getSettings();
     const isRetry = Array.isArray(options.history);
     const history = isRetry ? options.history : host.getAdvisorLog();
-    if (!isRetry) {
-        await host.saveAdvisorLog([...history, { role: 'user', text: message, cards: [], at: Date.now() }]);
-    }
     advisorBusy = true;
     notifyState();
 
     try {
+        if (!isRetry) {
+            await host.saveAdvisorLog([...history, { role: 'user', text: message, cards: [], at: Date.now() }]);
+        }
+        if (host.getChatId() !== chatId) return null;
         const { base } = currentBase();
         const input = await host.collectSimInput(host.getChatView().length - 1, settings, base.state);
         const messages = buildAdvisorPrompt({ state: base.state, input, history, message });

@@ -63,3 +63,14 @@
 |---|---|---|
 | T0 | 协作约束与项目骨架 | Claude |
 | B1–B3 | 第 1 轮头脑风暴与汇总 | Codex / dsh / Claude |
+
+## 总览审查（2026-11-01）
+
+| 编号 | 任务 | 负责人 | 状态 | 认领的文件 |
+|---|---|---|---|---|
+| R1 | 总体架构、宿主接线与审查汇总 | Codex（主会话） | 已完成 | TASKS.md, docs/LOG.md；源码只读 |
+| R1-state | 状态、调度、解析、合并及注入审查 | Codex（state 子代理） | 已完成 | 无；只读，复现放系统临时目录 |
+| R1-host | 模型连接、世界书、提示词及宿主契约审查 | Codex（host 子代理） | 已完成 | 无；只读，复现放系统临时目录 |
+| R1-ui | 面板、设置、参谋交互审查 | Codex（ui 子代理） | 已完成 | 无；只读，复现放系统临时目录 |
+
+| F1 | 修复 R1 九项问题，保留历史快照失效规则 | Codex | 已完成 | index.js, src/host/host.js, src/sim/check.js, src/ui/panel.js, src/ui/plan-card.js, docs/INTERFACES.md, TASKS.md, docs/LOG.md, tests/integration/*review*.test.mjs, tests/sim/world-model.test.mjs, tests/integration/world-model.test.mjs |

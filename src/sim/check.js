@@ -29,6 +29,10 @@ function filterEvents(patch, removed) {
         indices.set(index, indices.size);
         return true;
     });
+    patch.signals = (patch.signals ?? []).filter(signal => {
+        const match = /^new:(\d+)$/.exec(signal.eventId);
+        return !match || !removed.has(Number(match[1]));
+    });
     for (const signal of patch.signals ?? []) {
         const match = /^new:(\d+)$/.exec(signal.eventId);
         if (!match) continue;

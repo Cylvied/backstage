@@ -236,7 +236,7 @@ async function loadAllEntries() {
                     world,
                     uid: e.uid,
                     title: String(e.comment || (Array.isArray(e.key) ? e.key[0] : '') || `条目 ${e.uid}`),
-                    content: String(e.content ?? ''),
+                    content: String(c.substituteParams?.(e.content ?? '') ?? e.content ?? ''),
                     keys: Array.isArray(e.key) ? e.key.map(String) : [],
                     disabled: !!e.disable,
                     constant: !!e.constant,
@@ -302,7 +302,7 @@ async function readDatabaseMemos(settings, recent) {
             .filter(e => !e.disable)
             .map(e => ({
                 name: String(e.comment ?? ''),
-                content: String(e.content ?? ''),
+                content: String(c.substituteParams?.(e.content ?? '') ?? e.content ?? ''),
                 keys: Array.isArray(e.key) ? e.key.map(String) : [],
             }))
             .filter(e => MEMO_NAME_PATTERN.test(e.name));
@@ -338,12 +338,14 @@ function generationRunning() {
  * @param {number} floor
  * @returns {Promise<{ text: string, swipeId: number }|null>} 这一楼不再是有效的 AI 回复时返回 null
  */
-async function waitForFinalText(floor) {
+async function waitForFinalText(floor, chatId, original, isCurrent) {
     const started = Date.now();
     let last = null;
     while (Date.now() - started < SETTLE_TIMEOUT_MS) {
         await new Promise(resolve => setTimeout(resolve, SETTLE_INTERVAL_MS));
+        if (getChatId() !== chatId || !isCurrent()) return null;
         const message = ctx().chat?.[floor];
+        if (message !== original) return null;
         if (!isAiMessage(message)) return null;
         const now = { text: String(message.mes ?? ''), swipeId: Number(message.swipe_id ?? 0) };
         const stable = last && last.text === now.text && last.swipeId === now.swipeId;
@@ -373,11 +375,13 @@ export function onHostEvents(handlers) {
     const { eventSource, eventTypes } = c;
     let stoppedSinceStart = false;
     const pendingFloors = new Set();
+    let chatEpoch = 0;
 
     const listeners = [
         [eventTypes.GENERATION_STARTED, (type, _options, dryRun) => {
             if (dryRun || type === 'quiet' || type === 'impersonate') return;
             stoppedSinceStart = false;
+            lastActivatedWorldInfo = [];
             handlers.onGenerationStarting({ type: String(type ?? 'normal'), lastFloor: (ctx().chat?.length ?? 0) - 1 });
         }],
         [eventTypes.GENERATION_STOPPED, () => { stoppedSinceStart = true; }],
@@ -385,14 +389,17 @@ export function onHostEvents(handlers) {
             if (type === 'impersonate' || type === 'quiet') return;
             const floor = Number(messageId);
             if (!Number.isInteger(floor) || pendingFloors.has(floor)) return; // 工具续轮等会对同一楼多次触发，只跟一次
+            const chatId = getChatId();
+            const epoch = chatEpoch;
+            const original = ctx().chat?.[floor];
             pendingFloors.add(floor);
-            waitForFinalText(floor)
+            waitForFinalText(floor, chatId, original, () => epoch === chatEpoch)
                 .then(final => {
-                    if (!final || stoppedSinceStart) return; // 用户中途停止：不自动推演，可在面板手动触发
+                    if (!final || stoppedSinceStart || epoch !== chatEpoch || getChatId() !== chatId) return; // 用户中途停止：不自动推演，可在面板手动触发
                     handlers.onReplyFinalized({ chatId: getChatId(), floor, swipeId: final.swipeId, text: final.text });
                 })
                 .catch(error => console.warn(LOG_PREFIX, '等待正文定稿失败', error))
-                .finally(() => pendingFloors.delete(floor));
+                .finally(() => { if (epoch === chatEpoch) pendingFloors.delete(floor); });
         }],
         [eventTypes.MESSAGE_SWIPED, () => handlers.onChanged()],
         [eventTypes.MESSAGE_EDITED, () => handlers.onChanged()],
@@ -400,6 +407,8 @@ export function onHostEvents(handlers) {
         [eventTypes.MESSAGE_DELETED, () => handlers.onChanged()],
         [eventTypes.MESSAGE_SWIPE_DELETED, () => handlers.onChanged()],
         [eventTypes.CHAT_CHANGED, () => {
+            chatEpoch++;
+            pendingFloors.clear();
             lastActivatedWorldInfo = [];
             handlers.onChatChanged({ chatId: getChatId() });
         }],

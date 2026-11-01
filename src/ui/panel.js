@@ -99,12 +99,17 @@ export function mountPanel(api) {
         noticeTimer = setTimeout(() => notice.classList.remove('is-shown'), kind === 'error' ? 6000 : 2500);
     }
 
+    const editIdentity = () => {
+        const st = globalThis.SillyTavern?.getContext?.();
+        return JSON.stringify([st?.getCurrentChatId?.(), (st?.chat ?? []).map(m => [m.swipe_id, m.mes])]);
+    };
+    let editingIdentity = null;
     const ctx = {
         api,
         ui,
         render,
         notify,
-        startEdit(key) { ui.editing = key; render(); },
+        startEdit(key) { editingIdentity = editIdentity(); ui.editing = key; render(); },
         stopEdit() { ui.editing = null; render(); },
         /** 包一层错误展示；成功返回 true */
         async call(fn, okText) {
@@ -144,6 +149,11 @@ export function mountPanel(api) {
         },
         /** 表单提交：保存成功才关闭表单，失败时保留输入 */
         async submit(fn, okText) {
+            if (editingIdentity !== editIdentity()) {
+                ctx.stopEdit();
+                notify('聊天或分支已变化，请重新打开编辑。', 'error');
+                return;
+            }
             if (await ctx.call(fn, okText)) ctx.stopEdit();
         },
     };
@@ -275,6 +285,7 @@ export function mountPanel(api) {
 
     api.onStatus(s => renderStatus(s));
     api.onStateChanged(() => {
+        if (ui.editing && editingIdentity !== editIdentity()) ui.editing = null;
         // 正在编辑时不重画，免得冲掉输入；关闭编辑后再补画
         if (ui.editing) { ui.dirty = true; return; }
         render();

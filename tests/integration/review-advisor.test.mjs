@@ -1,0 +1,23 @@
+import {test, assert} from '../harness.js';
+let advisorBusy = false;
+let log = []; let gate = []; let requests = [];
+const host = {getChatId:()=> 'chat', getSettings:()=>({maxTokens:2000}), getAdvisorLog:()=>JSON.parse(JSON.stringify(log)), saveAdvisorLog: entries => {log=entries; return new Promise(resolve=>gate.push(resolve));}, getChatView:()=>({length:2}), collectSimInput:async()=>({})};
+const currentBase=()=>({base:{state:{}}});
+const notifyState=()=>{};
+const buildAdvisorPrompt=({message})=>message;
+const splitAdvisorReply=text=>({text,cards:[]});
+const llm={call:({messages})=>new Promise(resolve=>requests.push({message:messages,resolve}))};
+const source = readFile(__FIXTURES__ + '/../../index.js');
+const advisorSend = eval('(async function advisorSend' + source.split('async function advisorSend')[1].split('\nconst api =')[0] + ')');
+
+const p1 = advisorSend('第一次');
+let refused = false;
+await advisorSend('第二次').catch(() => { refused = true; });
+gate.splice(0).forEach(r=>r());
+for(let i=0;i<8;i++) await Promise.resolve();
+const count = requests.length;
+requests[0].resolve({text:'回复'});
+for(let i=0;i<8;i++) await Promise.resolve();
+gate.splice(0).forEach(r=>r());
+await p1;
+test('参谋保存期间也拒绝重复请求', () => { assert.ok(refused); assert.equal(count, 1); assert.equal(advisorBusy, false); });

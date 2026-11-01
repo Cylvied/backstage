@@ -103,7 +103,7 @@ test('裁决按原始位置批量删除，未知 id 忽略、缺裁决通过且�
     assert.deepEqual(patch, before);
     assert.equal(result.patch.clock, null);
     assert.deepEqual(result.patch.addEvents.map(e => e.text), ['二', '三']);
-    assert.deepEqual(result.patch.signals.map(s => s.eventId), [null, 'new:0', 'new:1']);
+    assert.deepEqual(result.patch.signals.map(s => s.eventId), ['new:0', 'new:1']);
     assert.deepEqual(result.patch.markKnown, []);
     assert.deepEqual(result.patch.upsertCharacters[0].knows, ['知道：二（目击）']);
     assert.equal(result.patch.upsertCharacters[0].longAction, undefined);

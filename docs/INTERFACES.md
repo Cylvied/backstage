@@ -528,3 +528,13 @@ export function parseReviewOutput(text): { ok: true, verdicts: Array<{ id: strin
 
 **v1.5.2（用户真机反馈，取代 v1.5.1 的"蓝灯常驻层"）**："推演常驻"= 世界书里设为常驻的条目（**默认勾选**）＋ 用户手动勾选的条目；用户取消勾选的常驻条目记入 `settings.lore.unpinned`，不再带上。判断统一用 `src/memory/lore.js` 的 `isPinned(entry, pinnedSet, unpinnedSet)`（面板的勾选状态也用它）。新推演不再产生 `constant` 层，`LORE_LAYERS` 保留 `constant` 只为兼容 v1.5.1 的旧快照。`settings.lore.constant` 已删除。
 | `settings.get()/save()` | 新增 `lore`、`review` 两组设置（见 types.js） |
+
+
+### 2026-11-01 审查修复补充
+
+- 手动重推时，当前楼已有有效用户编辑快照则以它为基底，保留 edited 和原父链；自动推演仍从前楼取基底。
+- 审核驳回新增事件时，同时删除明确引用该事件的迹象。
+- 重基时若引导或拍内容发生变化，旧 guideReached 判断不写入新引导。
+- 定稿等待绑定聊天与消息身份；切聊天取消等待。每轮正常生成清理正文世界书触发缓存；世界书正文展开宏后计预算及传入模型。
+- 编辑表单绑定聊天正文与 swipe 身份，发生变化关闭并拒绝旧表单保存；方案卡采纳状态按当前引导判断。参谋在保存用户消息前即占用 busy。
+- 历史楼层修改后的后续快照失效规则本次不变。

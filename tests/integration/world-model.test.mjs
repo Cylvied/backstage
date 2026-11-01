@@ -81,8 +81,8 @@ test('审核只驳回一条事实与行动完成，其余更新保留，new:N �
     assert.deepEqual(state.chronicle.map(e => e.text), ['保留']);
     assert.deepEqual(state.characters[0].longAction, base.characters[0].longAction);
     assert.equal(state.characters[0].location, '城外');
-    assert.equal(state.signals[0].eventId, null);
-    assert.equal(state.signals[1].eventId, state.chronicle[0].id);
+    assert.equal(state.signals.length, 1);
+    assert.equal(state.signals[0].eventId, state.chronicle[0].id);
     const saved = snapshot(state, { review: { rejected: reviewed.rejected, reviewed: items.length,
         approved: items.length - 2, error: null, usage: null } });
     assert.ok(readSnapshot(msg(saved)));

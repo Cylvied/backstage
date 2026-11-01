@@ -12,7 +12,8 @@ import { INTENSITY_LABEL, activeGuideThread, adoptView } from './format.js';
  */
 export function planCard(ctx, card, key) {
     const ui = ctx.ui;
-    const adopted = ui.adopted.has(key);
+    const adopted = ctx.api.getState().threads.some(t => t.guide?.status === 'active'
+        && t.title === card.title && t.guide.goal === card.goal);
     let intensity = ui.planIntensity[key] ?? card.suggestedIntensity ?? 'normal';
     const current = activeGuideThread(ctx.api.getState());
     const view = adoptView(card, current);

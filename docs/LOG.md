@@ -500,3 +500,32 @@
 - 改动文件：index.js、TASKS.md、docs/INTERFACES.md、docs/LOG.md。
 - 验证：全部测试文件通过；临时 JavaScriptCore 探针直接提取实际 enqueueFor，验证首楼自动跳过、首楼手动可用、后续自动可用；git diff --check 通过。
 - 安装前确认本机已安装入口与修改前源码一致，仅更新已安装的 index.js，cmp 校验一致。刷新 TauriTavern 后生效，尚未执行真机生成验证。
+
+## 2026-11-01 [codex] [开始] R1 总览审查
+- 用户要求总览插件并报告问题，本次不修复运行代码、不部署、不提交。
+- 主会话检查入口编排与宿主事件，三个只读子代理分别复核状态链路、模型/资料/提示词、UI。任务已记入看板；共享文档只由主会话更新，临时复现放系统临时目录。
+
+## 2026-11-01 [codex] [审查意见] R1 总览结果（未修复）
+- 基线：24 个测试文件、317 个用例全部通过。另用实际模块/提取的实际函数和宿主 mock 做针对性复现；没有调用真实模型或操作真机聊天。运行源码未修改，未部署或提交。
+- 高优先级：
+  1. 手动重推会丢推演开始前已经保存到当前楼的用户修改。index.js:60 总取上一楼，write-guard.js:19 仅保护请求开始后的编辑；noChange 也能使 pinned=true 变 false、active 引导丢失。
+  2. 被审核驳回的事件仍能通过迹象注入。src/sim/check.js:32–36 仅清 eventId，而 src/inject/compose.js:42 允许按人物/暗线继续注入；复现大事记无“公主被杀”但纸条仍传播此事。
+  3. 编辑表单期间切换 swipe，再保存会把 A 分支字段写到 B。src/ui/panel.js:277–280 编辑中跳过刷新，仅 CHAT_CHANGED 清表单；tab-characters.js:93 保存时操作最新状态。桌面面板不遮挡聊天，实际可切换。复现 B 的皇宫位置被 A 的客栈覆盖。
+  4. 等待正文定稿期间切聊天，会把原聊天事件当作新聊天事件。src/host/host.js:341–350 每次读当前 ctx，392 才获取 chatId，CHAT_CHANGED 不取消待定稿任务。复现 A 第 2 楼 MESSAGE_RECEIVED 后切 B，最终触发 B 的旧回复推演。
+- 其他已复现问题：
+  5. 本轮世界书零命中仍沿用上轮 triggered 缓存（host.js:267、378–381、407–408）；宿主 world-info.js:930 只在非空命中发激活事件。
+  6. 世界书宏未展开（host.js:239、280），{{user}} 与 {{getvar::身份}} 原样进入模型资料；角色卡已有替换但世界书没有，直连请求服务也不替换消息宏。
+  7. 推演过程中换拍，旧 guideReached=true 重基到新拍（index.js:107、src/sim/apply.js:101–103），造成错误“已演完”提示，不会自动换拍。
+  8. 方案卡已采纳标记只保存在面板 Set（src/ui/plan-card.js:15、38–49）；切到未采纳的 swipe 仍隐藏采纳按钮，当前状态没有引导也显示已采纳。
+  9. 参谋 busy 在异步保存后才设置（index.js:288–297），快速重复点示例/整理方案可发起两次模型请求；首个请求 finally 又提前解除 busy。延迟保存 mock 复现并发请求=2。
+- 设计缺口（区别于实现错误）：快照只校验本楼正文 hash，不校验 parentId 对应祖先有效性；编辑早期剧情后，后续幕后状态仍有效并继续注入。符合当前接口，但需明确“改历史如何让后续推演失效”的产品规则。
+- 复现脚本均在系统临时目录：/tmp/backstage-r1-host-race.mjs、/tmp/backstage-r1-state.mjs、/tmp/backstage-ui-review.mjs、/tmp/backstage-host-review.mjs、/tmp/backstage-advisor-race.mjs。现有测试结果 /tmp/backstage-r1-tests.log。
+- 建议顺序：先保护用户修改与分支身份、封堵审核依赖残留，再处理资料输入和交互状态；目前不建议先扩展 Agent/导演功能。
+
+## 2026-11-01 [codex] [完成] F1 九项审查修复
+- 用户授权修复九项，历史修改导致后续快照失效的设计暂不改。
+- 修改 index.js、src/host/host.js、src/sim/check.js、src/ui/panel.js、src/ui/plan-card.js；更新接口补充、任务看板和本日志。
+- 手动重推采用本楼有效编辑状态并保留原父链；驳回事件同时删除依赖迹象；表单绑定聊天/swipe/正文身份并在保存前复核；定稿等待绑定聊天代次和消息对象；新生成清触发缓存；世界书展开宏；换拍重基丢弃旧 reached；方案卡按当前 active 引导而非面板缓存判采纳；参谋 busy 提前到首次 await 前。
+- 更新 tests/sim/world-model.test.mjs、tests/integration/world-model.test.mjs 两处旧预期为删除被驳回迹象，保留其他验证。新增 tests/integration/review-{host,chat,advisor,ui,job}.test.mjs 共六条回归；job/advisor 测试读取实际入口函数执行，不复制实现。
+- sh tests/run.sh：29 个文件、323 个用例全部通过；git diff --check 通过。未调用真实模型，尚无真机生成验证。
+- 五个运行文件已同步本机已安装插件并逐字节验证；原文件备份 /tmp/backstage-f1-installed-before。刷新酒馆后生效。未提交或推送远程。
