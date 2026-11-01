@@ -175,6 +175,8 @@ scheduler.onStatus(() => notifyStatus());
 
 /** @param {'reply'|'manual'} reason */
 function enqueueFor(floor, reason) {
+    // 开场白由用户决定是否推演，重抽或续写首楼也不自动触发。
+    if (floor === 0 && reason === 'reply') return false;
     const view = host.getChatView();
     const message = view.getMessage(floor);
     if (!message || message.isUser) return false;

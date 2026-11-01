@@ -485,3 +485,18 @@
 - 修改：src/ui/format.js（SETTING_RANGES 的 recentFloors: [1, 20] 改为 recentRounds: [1, 10]）、src/ui/settings-page.js（「读取最近楼层」改为「读取最近几轮对话」，读写 recentRounds，下方小字"一轮 = 一条 AI 回复和它前面你的输入"）
 - dev 和 tests/ui 里没有直接用到 recentFloors（模拟设置取自 DEFAULT_SETTINGS），无需改动
 - 测试：`sh tests/run.sh` 24 个测试文件、317 个用例全部通过
+
+## 2026-11-01 [codex] [决定] 维护交接
+- 用户明确指定由 Codex 接手插件维护；Codex 承接原组长、核心逻辑与面板的维护、接口、审查和集成职责。历史作者与决策保留，后续修改继续按 TASKS.md 认领。
+- 当前功能记录至 v1.5.3，manifest.json 的发布版本仍为 0.1.0；T7 真机联调负责人转为 Codex + 用户，既有待办优先级保持不变。
+
+## 2026-11-01 [codex] [完成] M1 维护接手基线
+- 改动文件：COLLAB.md、TASKS.md、docs/INTERFACES.md、docs/LOG.md。更新当前职责与交接说明，保留历史分工；未修改运行代码或接口契约。
+- 开始时工作区干净；已阅读协作约束、任务看板、接口文档、最近 20 条日志及真机测试清单。
+- 验证：sh tests/run.sh 全部测试文件通过；git diff --check 通过。未执行部署、真实模型调用或真机操作，真机清单仍需后续验证。
+
+## 2026-11-01 [codex] [完成] M2 首楼不自动推演
+- 用户要求首楼不默认自动推演：index.js 的入队入口跳过 floor=0 且 reason=reply 的任务，覆盖开场白及其重抽/续写；手动「立即推演」及后续楼层自动推演保持可用。
+- 改动文件：index.js、TASKS.md、docs/INTERFACES.md、docs/LOG.md。
+- 验证：全部测试文件通过；临时 JavaScriptCore 探针直接提取实际 enqueueFor，验证首楼自动跳过、首楼手动可用、后续自动可用；git diff --check 通过。
+- 安装前确认本机已安装入口与修改前源码一致，仅更新已安装的 index.js，cmp 校验一致。刷新 TauriTavern 后生效，尚未执行真机生成验证。
