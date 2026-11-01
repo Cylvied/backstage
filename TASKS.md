@@ -74,3 +74,5 @@
 | R1-ui | 面板、设置、参谋交互审查 | Codex（ui 子代理） | 已完成 | 无；只读，复现放系统临时目录 |
 
 | F1 | 修复 R1 九项问题，保留历史快照失效规则 | Codex | 已完成 | index.js, src/host/host.js, src/sim/check.js, src/ui/panel.js, src/ui/plan-card.js, docs/INTERFACES.md, TASKS.md, docs/LOG.md, tests/integration/*review*.test.mjs, tests/sim/world-model.test.mjs, tests/integration/world-model.test.mjs |
+
+| F2 | 纸条来源列表在手机上被挤成窄列 | Codex | 已完成 | style.css, TASKS.md, docs/LOG.md |

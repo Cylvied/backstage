@@ -529,3 +529,8 @@
 - 更新 tests/sim/world-model.test.mjs、tests/integration/world-model.test.mjs 两处旧预期为删除被驳回迹象，保留其他验证。新增 tests/integration/review-{host,chat,advisor,ui,job}.test.mjs 共六条回归；job/advisor 测试读取实际入口函数执行，不复制实现。
 - sh tests/run.sh：29 个文件、323 个用例全部通过；git diff --check 通过。未调用真实模型，尚无真机生成验证。
 - 五个运行文件已同步本机已安装插件并逐字节验证；原文件备份 /tmp/backstage-f1-installed-before。刷新酒馆后生效。未提交或推送远程。
+
+## 2026-11-01 [codex] [完成] F2 纸条手机布局
+- 来源条目新增事件说明后共有四个子元素，旧标签只跨两行，第三行来源自动落入第一列，撑宽标签列并挤压正文。
+- style.css：标签固定第一列，正文/事件/来源固定第二列；内容列 minmax(0,1fr) 并允许长内容换行。600px 以下改为标签与内容上下排列。审核驳回列表共用规则同样修复。
+- git diff --check 通过；浏览器策略禁止 file:// 本地预览，未做截图或 iPhone 真机验证。

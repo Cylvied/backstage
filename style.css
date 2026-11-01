@@ -632,13 +632,15 @@ html[data-bs-theme="dark"] .bs-badge-pop {
 
 #backstage-panel .bs-source {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 2px 10px;
     font-size: 13.5px;
 }
 
 #backstage-panel .bs-source-voice {
-    grid-row: span 2;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
     align-self: start;
     padding: 0 6px;
     border-radius: 4px;
@@ -647,6 +649,20 @@ html[data-bs-theme="dark"] .bs-badge-pop {
     font-size: 12px;
     line-height: 1.8;
     white-space: nowrap;
+}
+
+/* 事件说明是可选的第三行，所有正文必须留在内容列。 */
+#backstage-panel .bs-source-text,
+#backstage-panel .bs-source-event,
+#backstage-panel .bs-source-from {
+    grid-column: 2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    #backstage-panel .bs-source { grid-template-columns: minmax(0, 1fr); }
+    #backstage-panel .bs-source > span { grid-column: 1; }
 }
 
 #backstage-panel .bs-source-from { font-size: 12.5px; color: var(--bs-muted); }
